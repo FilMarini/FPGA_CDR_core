@@ -28,6 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr is
   generic (
+    g_gen_vio        : boolean  := true;
     g_number_of_bits : positive := 28
     );
   port (
@@ -40,17 +41,18 @@ end entity top_cdr;
 
 architecture rtl of top_cdr is
 
-  type t_uns_counter is array (3 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
-  type t_uns_base is array (2 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
-  type t_std_counter is array (3 downto 0) of std_logic_vector (g_number_of_bits - 1 downto 0);
+  type t_uns_counter is array (7 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
+  type t_uns_base is array (6 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
+  type t_std_counter is array (7 downto 0) of std_logic_vector (g_number_of_bits - 1 downto 0);
 
   signal s_sysclk_locked       : std_logic;
   signal s_clk_250             : std_logic;
   signal s_clk_500             : std_logic;
+  signal s_clk_1000            : std_logic;
   signal u_phase_wheel_counter : t_uns_counter;
   signal s_phase_wheel_counter : t_std_counter;
   signal u_vector_rst          : t_uns_counter;
-  signal s_clk                 : std_logic_vector(3 downto 0);
+  signal s_clk                 : std_logic_vector(7 downto 0);
   signal u_M                   : unsigned(g_number_of_bits - 1 downto 0);
   -- signal u_base                : unsigned(g_number_of_bits - 1 downto 0);
   signal u_base                : t_uns_base;
@@ -62,13 +64,17 @@ architecture rtl of top_cdr is
 
 begin  -- architecture rtl
 
---  M_i <= x"3000000";
+
 
   u_M <= unsigned(M_i);
 
-  u_base(0) <= shift_right(u_M, 2);
-  u_base(1) <= shift_right(u_M, 1);
+  u_base(0) <= shift_right(u_M, 3);
+  u_base(1) <= shift_right(u_M, 2);
   u_base(2) <= u_base(0) + u_base(1);
+  u_base(3) <= shift_right(u_M, 1);
+  u_base(4) <= u_base(3) + u_base(0);
+  u_base(5) <= u_base(1) + u_base(3);
+  u_base(6) <= u_base(5) + u_base(0);
 
   -----------------------------------------------------------------------------
   -- Clk Manager
@@ -79,7 +85,7 @@ begin  -- architecture rtl
       glbl_rst        => '0',
       locked          => s_sysclk_locked,
       clk_out_250     => s_clk_250,
-      clk_out_1000     => s_clk_1000,
+      clk_out_1000    => s_clk_1000,
       clk_out_200     => open,
       clk_out_125_ps  => open,
       clk_out_125B_ps => open,
@@ -101,7 +107,7 @@ begin  -- architecture rtl
 
   s_clk(0) <= s_phase_wheel_counter(0)(g_number_of_bits - 1);
 
-  G_DECR_JITTER : for i in 1 to 3 generate
+  G_DECR_JITTER : for i in 1 to 7 generate
 
     u_phase_wheel_counter(i) <= u_phase_wheel_counter(0) + u_base(i-1);
 
@@ -115,7 +121,7 @@ begin  -- architecture rtl
     generic map (
       DATA_RATE_OQ   => "DDR",          -- DDR, SDR
       DATA_RATE_TQ   => "DDR",          -- DDR, BUF, SDR
-      DATA_WIDTH     => 4,              -- Parallel data width (2-8,10,14)
+      DATA_WIDTH     => 8,              -- Parallel data width (2-8,10,14)
       INIT_OQ        => '0',  -- Initial value of OQ output (1'b0,1'b1)
       INIT_TQ        => '0',  -- Initial value of TQ output (1'b0,1'b1)
       SERDES_MODE    => "MASTER",       -- MASTER, SLAVE
@@ -123,7 +129,7 @@ begin  -- architecture rtl
       SRVAL_TQ       => '0',  -- TQ output value when SR is used (1'b0,1'b1)
       TBYTE_CTL      => "FALSE",  -- Enable tristate byte operation (FALSE, TRUE)
       TBYTE_SRC      => "FALSE",        -- Tristate byte source (FALSE, TRUE)
-      TRISTATE_WIDTH => 4               -- 3-state converter width (1,4)
+      TRISTATE_WIDTH => 1               -- 3-state converter width (1,4)
       )
     port map (
       OFB       => open,                -- 1-bit output: Feedback path for data
@@ -134,17 +140,17 @@ begin  -- architecture rtl
       TBYTEOUT  => open,                -- 1-bit output: Byte group tristate
       TFB       => open,                -- 1-bit output: 3-state control
       TQ        => open,                -- 1-bit output: 3-state control
-      CLK       => s_clk_1000,           -- 1-bit input: High speed clock
+      CLK       => s_clk_1000,          -- 1-bit input: High speed clock
       CLKDIV    => s_clk_250,           -- 1-bit input: Divided clock
       -- D1 - D8: 1-bit (each) input: Parallel data inputs (1-bit each)
       D1        => s_clk(0),
       D2        => s_clk(1),
       D3        => s_clk(2),
       D4        => s_clk(3),
-      D5        => '0',
-      D6        => '0',
-      D7        => '0',
-      D8        => '0',
+      D5        => s_clk(4),
+      D6        => s_clk(5),
+      D7        => s_clk(6),
+      D8        => s_clk(7),
       OCE       => '1',       -- 1-bit input: Output data clock enable
       RST       => not s_sysclk_locked,  -- 1-bit input: Reset
       -- SHIFTIN1 / SHIFTIN2: 1-bit (each) input: Data input expansion (1-bit each)
@@ -158,12 +164,23 @@ begin  -- architecture rtl
       TBYTEIN   => '0',                 -- 1-bit input: Byte group tristate
       TCE       => '0'                  -- 1-bit input: 3-state clock enable
       );
-      
-  i_vio : entity work.vio_0
-  PORT MAP (
-    clk => s_clk_250,
-    probe_out0 => M_i
-  );
+
+  G_VIO_GENERATION : if g_gen_vio generate
+
+    i_vio : entity work.vio_0
+      port map (
+        clk        => s_clk_250,
+        probe_out0 => M_i
+        );
+
+  end generate G_VIO_GENERATION;
+
+  G_FIXED_M : if not g_gen_vio generate
+
+    M_i <= x"3000000";
+
+  end generate G_FIXED_M;
+
 
   tap_edge_detector_I : entity work.r_edge_detect
     generic map(
