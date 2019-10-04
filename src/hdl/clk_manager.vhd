@@ -26,12 +26,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity clk_manager is
+  generic (
+    g_board : string := "KC705"
+    );
   port (
     board_clk       : in  std_logic;
     glbl_rst        : in  std_logic;
     locked          : out std_logic;
     clk_out_250     : out std_logic;
-    clk_out_1000     : out std_logic;
+    clk_out_1000    : out std_logic;
     clk_out_200     : out std_logic;
     clk_out_125_ps  : out std_logic;
     clk_out_125B_ps : out std_logic;
@@ -88,20 +91,45 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- MMCM Clock generator
   -----------------------------------------------------------------------------
-  clock_generator : entity work.clk_wiz
-    port map (
-      clk_in     => board_clk,
-      reset      => glbl_rst,
-      clk_out0   => clk_out_1000,
-      clk_out1   => clk_out_250,
-      clk_out2   => clk_out_200,
-      clk_out3   => clk_out_125_ps,
-      clk_out4   => clk_out_125B_ps,
-      locked     => locked_int,
-      psen_p     => psen_p,
-      psincdec_p => psincdec_p,
-      psdone_p   => psdone_p
-      );
+  G_GCU_CLK_MAN : if g_board = "GCU" generate
+    clock_generator : entity work.clk_wiz
+      generic map (
+        g_mult_f => 8.000
+        )
+      port map (
+        clk_in     => board_clk,
+        reset      => glbl_rst,
+        clk_out0   => clk_out_1000,
+        clk_out1   => clk_out_250,
+        clk_out2   => clk_out_200,
+        clk_out3   => clk_out_125_ps,
+        clk_out4   => clk_out_125B_ps,
+        locked     => locked_int,
+        psen_p     => psen_p,
+        psincdec_p => psincdec_p,
+        psdone_p   => psdone_p
+        );
+  end generate G_GCU_CLK_MAN;
+
+  G_KC705_CLK_MAN : if g_board = "KC705" generate
+    clock_generator : entity work.clk_wiz
+      generic map (
+        g_mult_f => 5.000
+        )
+      port map (
+        clk_in     => board_clk,
+        reset      => glbl_rst,
+        clk_out0   => clk_out_1000,
+        clk_out1   => clk_out_250,
+        clk_out2   => clk_out_200,
+        clk_out3   => clk_out_125_ps,
+        clk_out4   => clk_out_125B_ps,
+        locked     => locked_int,
+        psen_p     => psen_p,
+        psincdec_p => psincdec_p,
+        psdone_p   => psdone_p
+        );
+  end generate G_KC705_CLK_MAN;
 
   locked <= locked_int;
 

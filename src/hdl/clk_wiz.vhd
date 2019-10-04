@@ -26,7 +26,10 @@ library unisim;
 use unisim.vcomponents.all;
 
 
-entity clk_wiz is
+entity clk_wiz is 
+  generic (
+    g_mult_f : real := 8.000
+    );
   port (
     clk_in     : in  std_logic;         -- 62.5 MHz
     reset      : in  std_logic;
@@ -66,6 +69,7 @@ architecture behavioural of clk_wiz is
   signal clkfbstopped_unused : std_logic;
 
 
+
 begin
 
   -----------------------------------------------------------------------------
@@ -76,7 +80,7 @@ begin
     (BANDWIDTH           => "OPTIMIZED",
      COMPENSATION        => "ZHOLD",
      DIVCLK_DIVIDE       => 1,
-     CLKFBOUT_MULT_F     => 8.000,
+     CLKFBOUT_MULT_F     => g_mult_f,
      CLKFBOUT_PHASE      => 0.000,
      CLKOUT0_DIVIDE_F    => 1.000,
      CLKOUT0_PHASE       => 0.000,

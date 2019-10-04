@@ -2,7 +2,7 @@
 -- Title      : DDS based CDR
 -- Project    : 
 -------------------------------------------------------------------------------
--- File       : top_cdr.vhd
+-- File       : top_cdr_gcu.vhd
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
@@ -26,7 +26,7 @@ library UNISIM;
 use UNISIM.vcomponents.all;
 
 
-entity top_cdr is
+entity top_cdr_gcu is
   generic (
     g_gen_vio        : boolean  := true;
     g_number_of_bits : positive := 28
@@ -37,9 +37,9 @@ entity top_cdr is
     cdrclk_o : out std_logic;
     led_o    : out std_logic
     );
-end entity top_cdr;
+end entity top_cdr_gcu;
 
-architecture rtl of top_cdr is
+architecture rtl of top_cdr_gcu is
 
   type t_uns_counter is array (7 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
   type t_uns_base is array (6 downto 0) of unsigned (g_number_of_bits - 1 downto 0);
