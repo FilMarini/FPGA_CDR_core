@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-10-02
+-- Last update: 2019-10-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ architecture rtl of top_cdr_tb is
   -- component ports
   signal sysclk_i : std_logic := '0';
   signal cdrclk_o : std_logic;
-  signal M_i : std_logic_vector(31 downto 0);
+--  signal M_i : std_logic_vector(31 downto 0);
 
 
   -- clock
@@ -46,7 +46,7 @@ begin  -- architecture rtl
   DUT: entity work.top_cdr
     port map (
       sysclk_i => sysclk_i,
-      M_i      => M_i,
+--      M_i      => M_i,
       cdrclk_o => cdrclk_o);
 
   -- clock generation
@@ -56,7 +56,7 @@ begin  -- architecture rtl
   WaveGen_Proc: process
   begin
     -- insert signal assignments here
-  M_i <= x"30000000";   
+--  M_i <= x"4068DB8C";   
   wait; 
     
   end process WaveGen_Proc;

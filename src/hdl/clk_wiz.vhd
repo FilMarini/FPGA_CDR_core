@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-10-03
+-- Last update: 2019-10-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -78,11 +78,11 @@ begin
      DIVCLK_DIVIDE       => 1,
      CLKFBOUT_MULT_F     => 8.000,
      CLKFBOUT_PHASE      => 0.000,
-     CLKOUT0_DIVIDE_F    => 4.000,
+     CLKOUT0_DIVIDE_F    => 1.000,
      CLKOUT0_PHASE       => 0.000,
      CLKOUT0_DUTY_CYCLE  => 0.500,
      CLKOUT0_USE_FINE_PS => false,
-     CLKOUT1_DIVIDE      => 2,
+     CLKOUT1_DIVIDE      => 4,
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,
@@ -163,6 +163,18 @@ begin
     (O  => clk_out1,
      CE => '1',
      I  => clk_out1_in);
+     
+--  BUFR_inst : BUFR
+--   generic map (
+--      BUFR_DIVIDE => "BYPASS",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8" 
+--      SIM_DEVICE => "7SERIES"  -- Must be set to "7SERIES" 
+--   )
+--   port map (
+--      O => clk_out1,     -- 1-bit output: Clock output port
+--      CE => '1',   -- 1-bit input: Active high, clock enable (Divided modes only)
+--      CLR => '0', -- 1-bit input: Active high, asynchronous clear (Divided modes only)
+--      I => clk_out1_in      -- 1-bit input: Clock buffer input driven by an IBUF, MMCM or local interconnect
+--   );
 
   clkout2_buf : BUFGCE
     port map
