@@ -64,6 +64,11 @@ architecture rtl of top_cdr_kc705 is
   signal s_led_counter         : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal sysclk_i_bufg         : std_logic;
   signal sysclk_i              : std_logic;
+  signal s_cdrclk              : std_logic;
+
+
+  attribute mark_debug : string;
+  -- attribute mark_debug of s_phase_wheel_counter : signal is "true";
 
 
 begin  -- architecture rtl
@@ -87,18 +92,18 @@ begin  -- architecture rtl
     generic map (
       DIFF_TERM    => false,            -- Differential Termination 
       IBUF_LOW_PWR => true,  -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-      IOSTANDARD   => "DEFAULT")
+      IOSTANDARD   => "LVDS")
     port map (
-      O  => sysclk_i_bufg,              -- Buffer output
+      O  => sysclk_i,              -- Buffer output
       I  => sysclk_p_i,  -- Diff_p buffer input (connect directly to top-level port)
       IB => sysclk_n_i  -- Diff_n buffer input (connect directly to top-level port)
       );
 
-  BUFG_inst : BUFG
-    port map (
-      O => sysclk_i,                    -- 1-bit output: Clock output
-      I => sysclk_i_bufg                -- 1-bit input: Clock input
-      );
+  -- BUFG_inst : BUFG
+  --   port map (
+  --     O => sysclk_i,                    -- 1-bit output: Clock output
+  --     I => sysclk_i_bufg                -- 1-bit input: Clock input
+  --     );
 
   -----------------------------------------------------------------------------
   -- Clk Manager
@@ -160,7 +165,7 @@ begin  -- architecture rtl
       )
     port map (
       OFB       => open,                -- 1-bit output: Feedback path for data
-      OQ        => cdrclk_o,            -- 1-bit output: Data path output
+      OQ        => s_cdrclk,            -- 1-bit output: Data path output
       -- SHIFTOUT1 / SHIFTOUT2: 1-bit (each) output: Data output expansion (1-bit each)
       SHIFTOUT1 => open,
       SHIFTOUT2 => open,
@@ -234,5 +239,16 @@ begin  -- architecture rtl
 
   led_o <= s_led_counter(25);
   led1_o <= s_sysclk_locked;
+
+  OBUF_inst : OBUF
+   generic map (
+      DRIVE => 12,
+      IOSTANDARD => "DEFAULT",
+      SLEW => "SLOW")
+   port map (
+      O => cdrclk_o,     -- Buffer output (connect directly to top-level port)
+      I => s_cdrclk      -- Buffer input 
+   );
+  -- cdrclk_o <= s_phase_wheel_counter(0)(27);
 
 end architecture rtl;

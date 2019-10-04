@@ -102,7 +102,7 @@ begin
      CLKOUT4_PHASE       => 90.000,
      CLKOUT4_DUTY_CYCLE  => 0.500,
      CLKOUT4_USE_FINE_PS => false,
-     CLKIN1_PERIOD       => 8.000,
+     CLKIN1_PERIOD       => g_mult_f,
      REF_JITTER1         => 0.010)
     port map
     -- Output clocks

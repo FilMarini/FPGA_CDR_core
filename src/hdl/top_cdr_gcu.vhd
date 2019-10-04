@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_gcu is
   generic (
-    g_gen_vio        : boolean  := true;
+    g_gen_vio        : boolean  := false;
     g_number_of_bits : positive := 28
     );
   port (
@@ -80,6 +80,9 @@ begin  -- architecture rtl
   -- Clk Manager
   -----------------------------------------------------------------------------
   clk_manager_cdr : entity work.clk_manager
+    generic map (
+      g_board => "GCU"
+      )
     port map (
       board_clk       => sysclk_i,
       glbl_rst        => '0',

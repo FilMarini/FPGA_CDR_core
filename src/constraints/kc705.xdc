@@ -6,8 +6,8 @@ set_property IOSTANDARD LVCMOS15 [get_ports led1_o]
 
 #set_property IOSTANDARD LVCMOS25  [get_ports xc7k_coax_n_o]
 #set_property PACKAGE_PIN Y24 [get_ports xc7k_coax_n_o]
-set_property IOSTANDARD LVCMOS [get_ports cdrclk_o]
-set_property PACKAGE_PIN AB29 [get_ports cdrclk_o]
+set_property IOSTANDARD LVCMOS25 [get_ports cdrclk_o]
+set_property PACKAGE_PIN AF26 [get_ports cdrclk_o]
 
 set_property PACKAGE_PIN AD12 [get_ports sysclk_p_i]
 set_property IOSTANDARD LVDS [get_ports sysclk_p_i]
