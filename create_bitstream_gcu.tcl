@@ -13,7 +13,7 @@ read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
 #include pre-synthesized ip_cores
 set_part $partNum
 
-#read_checkpoint src/ip_cores/vio_0/vio_0.dcp
+read_checkpoint src/ip_cores/vio_0/vio_0.dcp
 #Run Synthesis
 synth_design -top $topentityname -part $partNum
 #write_checkpoint -force $outputDir/post_synth.dcp

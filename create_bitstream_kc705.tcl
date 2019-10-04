@@ -13,7 +13,7 @@ read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
 #include pre-synthesized ip_cores
 set_part $partNum
 
-#read_checkpoint src/ip_cores/vio_0/vio_0.dcp
+read_checkpoint src/ip_cores/vio_0/vio_0.dcp
 #Run Synthesis
 synth_design -top $topentityname -part $partNum
 #write_checkpoint -force $outputDir/post_synth.dcp
@@ -21,7 +21,8 @@ synth_design -top $topentityname -part $partNum
 #write checkpoint
 write_checkpoint -force $outputDir/post_synth_kc705.dcp
 
-#report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
+report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
+
 #report_utilization -file $outputDir/post_synth_util.rpt
 
 #read constraints file
@@ -56,6 +57,6 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 write_bitstream -force $outputDir/$bitstreamname
 # Write Flash configuration file
 #write_cfgmem -format mcs -size 128 -interface SPIx1 -loadbit {up 0x00000000 $outputDir/$bitstreamname} -file $outputDir/$flash_bitstreamnam
-#write_debug_probes -force $outputDir/$probefilename
+write_debug_probes -force $outputDir/$probefilename
 
 
