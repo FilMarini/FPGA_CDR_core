@@ -15,3 +15,4 @@ rm -rf sim
 rm -rf simulation
 rm -rf synth
 rm  vivado*
+rm -rf .Xil

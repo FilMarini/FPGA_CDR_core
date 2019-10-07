@@ -2,29 +2,30 @@
 set partNum xc7k325tffg900-2
 set outputDir ./results
 set topentityname top_cdr
-set bitstreamname firmware.bit
-set probefilename firmware.ltx
-set flash_bitstreamname firmware.mcs
+set bitstreamname firmware_kc705.bit
+set probefilename firmware_kc705.ltx
+set flash_bitstreamname firmware_kc705.mcs
 file mkdir $outputDir
 
 #read hdl files
-read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
+read_vhdl -library usrDefLib [glob common_src/hdl/*.vhd]
+read_vhdl -library usrDefLib [glob kc705/src/hdl/*.vhd]
 
 #include pre-synthesized ip_cores
 set_part $partNum
 
-read_checkpoint src/ip_cores/vio_0/vio_0.dcp
+read_checkpoint common_src/ip_cores/vio_0/vio_0.dcp
 #Run Synthesis
 synth_design -top $topentityname -part $partNum
 
 #write checkpoint
-write_checkpoint -force $outputDir/post_synth.dcp
+write_checkpoint -force $outputDir/post_synth_kc705.dcp
 
 #report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
 #report_utilization -file $outputDir/post_synth_util.rpt
 
 #read constraints file
-source src/constraints/gcu_board_cons.tcl
+source kc705/src/constraints/kc705_board_cons.tcl
 
 #run optimization
 opt_design
@@ -37,13 +38,13 @@ if {[get_property SLACK [get_timing_paths -max_paths 1 -nworst 1 -setup]] < 0} {
  puts "Found setup timing violations => running physical optimization"
  phys_opt_design
 }
-write_checkpoint -force $outputDir/post_place.dcp
+write_checkpoint -force $outputDir/post_place_kc705.dcp
 #report_utilization -file $outputDir/post_place_util.rpt
 #report_timing_summary -file $outputDir/post_place_timing_summary.rpt
 
 #Route design and generate bitstream
 route_design -directive Explore
-write_checkpoint -force $outputDir/post_route.dcp
+write_checkpoint -force $outputDir/post_route_kc705.dcp
 #report_route_status -file $outputDir/post_route_status.rpt
 #report_timing_summary -file $outputDir/post_route_timing_summary.rpt
 #report_power -file $outputDir/post_route_power.rpt
