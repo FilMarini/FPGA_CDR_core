@@ -24,7 +24,8 @@ use ieee.numeric_std.all;
 
 entity led_counter is
   generic (
-    g_bit_to_pulse : positive := 25
+    g_bit_to_pulse   : positive := 25;
+    g_number_of_bits : positive := 28
     );
   port (
     clk_i             : in  std_logic;

@@ -1,7 +1,7 @@
 #Define target part and create output directory
 set partNum xc7k325tffg900-2
 set outputDir ./results
-set topentityname top_cdr
+set topentityname top_cdr_fpga
 set bitstreamname firmware_gcu.bit
 set probefilename firmware_gcu.ltx
 set flash_bitstreamname firmware_gcu.mcs

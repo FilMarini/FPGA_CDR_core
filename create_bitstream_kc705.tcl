@@ -1,7 +1,7 @@
 #Define target part and create output directory
 set partNum xc7k325tffg900-2
 set outputDir ./results
-set topentityname top_cdr
+set topentityname top_cdr_fpga
 set bitstreamname firmware_kc705.bit
 set probefilename firmware_kc705.ltx
 set flash_bitstreamname firmware_kc705.mcs
