@@ -175,7 +175,7 @@ begin  -- architecture rtl
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i <= x"2100000";
+    M_i <= x"4000000";
 
   end generate G_FIXED_M;
 
