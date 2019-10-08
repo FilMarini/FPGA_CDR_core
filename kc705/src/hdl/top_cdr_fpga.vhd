@@ -61,6 +61,7 @@ architecture rtl of top_cdr_fpga is
   signal s_jc_locked_re    : std_logic;
   signal s_clk_250_vio     : std_logic;
   signal s_cdrclk_o        : std_logic;
+  signal s_oddr_reset : std_logic;
 
 begin  -- architecture rtl
   -----------------------------------------------------------------------------
@@ -214,20 +215,22 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- DDR
   -----------------------------------------------------------------------------
-  -- ODDR_inst : ODDR
-  --   generic map(
-  --     DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
-  --     INIT         => '0',  -- Initial value for Q port ('1' or '0')
-  --     SRTYPE       => "SYNC")           -- Reset Type ("ASYNC" or "SYNC")
-  --   port map (
-  --     Q  => s_cdrclk_jc_fwd,            -- 1-bit DDR output
-  --     C  => s_cdrclk_jc,                -- 1-bit clock input
-  --     CE => '1',                -- 1-bit clock enable input
-  --     D1 => '1',                        -- 1-bit data input (positive edge)
-  --     D2 => '0',                        -- 1-bit data input (negative edge)
-  --     R  => '0',        -- 1-bit reset input
-  --     S  => s_sysclk_locked                         -- 1-bit set input
-  --     );
+  s_oddr_reset <= not s_sysclk_locked;
+
+  ODDR_inst : ODDR
+    generic map(
+      DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
+      INIT         => '0',  -- Initial value for Q port ('1' or '0')
+      SRTYPE       => "SYNC")           -- Reset Type ("ASYNC" or "SYNC")
+    port map (
+      Q  => s_cdrclk_jc_fwd,            -- 1-bit DDR output
+      C  => s_cdrclk_jc,                -- 1-bit clock input
+      CE => s_jc_locked,                -- 1-bit clock enable input
+      D1 => '1',                        -- 1-bit data input (positive edge)
+      D2 => '0',                        -- 1-bit data input (negative edge)
+      R  => s_oddr_reset,        -- 1-bit reset input
+      S  => '0'                         -- 1-bit set input
+      );
 
   -----------------------------------------------------------------------------
   -- Output buffer
@@ -239,7 +242,7 @@ begin  -- architecture rtl
       SLEW       => "SLOW")
     port map (
       O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
-      I => s_cdrclk_jc              -- Buffer input 
+      I => s_cdrclk_jc_fwd              -- Buffer input 
       );
 
   -----------------------------------------------------------------------------
