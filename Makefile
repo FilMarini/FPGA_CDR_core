@@ -1,11 +1,8 @@
 ip_cores:
-	$(MAKE) -C common_src/ip_cores
+	$(MAKE) -C src/ip_cores
 
-all_gcu: ip_cores
-	vivado -nolog -nojournal -mode batch -source create_bitstream_gcu.tcl
-
-all_kc705: ip_cores
-	vivado -nolog -nojournal -mode batch -source create_bitstream_kc705.tcl
+all: ip_cores
+	vivado -nolog -nojournal -mode batch -source create_bitstream.tcl
 
 clean:
 	rm -rf results vivado*.jou vivado*.log usage* .Xil .cache
