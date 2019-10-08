@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-10-04
+-- Last update: 2019-10-08
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -31,8 +31,8 @@ entity clk_manager is
     glbl_rst        : in  std_logic;
     locked          : out std_logic;
     clk_out_250     : out std_logic;
-    clk_out_1000     : out std_logic;
-    clk_out_200     : out std_logic;
+    clk_out_1000    : out std_logic;
+    clk_out_250_vio : out std_logic;
     clk_out_125_ps  : out std_logic;
     clk_out_125B_ps : out std_logic;
     psen_p          : in  std_logic;
@@ -94,7 +94,7 @@ begin  -- architecture rtl
       reset      => glbl_rst,
       clk_out0   => clk_out_1000,
       clk_out1   => clk_out_250,
-      clk_out2   => clk_out_200,
+      clk_out2   => clk_out_250_vio,
       clk_out3   => clk_out_125_ps,
       clk_out4   => clk_out_125B_ps,
       locked     => locked_int,

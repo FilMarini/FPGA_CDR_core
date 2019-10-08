@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-10-04
+-- Last update: 2019-10-08
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ begin
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,
-     CLKOUT2_DIVIDE      => 5,
+     CLKOUT2_DIVIDE      => 4,
      CLKOUT2_PHASE       => 0.000,
      CLKOUT2_DUTY_CYCLE  => 0.500,
      CLKOUT2_USE_FINE_PS => false,
