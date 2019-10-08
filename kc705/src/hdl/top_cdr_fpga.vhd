@@ -34,8 +34,11 @@ entity top_cdr_fpga is
   port (
     sysclk_p_i  : in  std_logic;
     sysclk_n_i  : in  std_logic;
-    cdrclk_o    : out std_logic;
-    cdrclk_i    : in  std_logic;
+    -- cdrclk_o  : out std_logic;
+    cdrclk_p_o  : out std_logic;
+    cdrclk_n_o  : out std_logic;
+    cdrclk_p_i  : in  std_logic;
+    cdrclk_n_i  : in  std_logic;
     cdrclk_jc_o : out std_logic;
     led1_o      : out std_logic;
     led_o       : out std_logic
@@ -57,6 +60,7 @@ architecture rtl of top_cdr_fpga is
   signal s_cdrclk_jc_fwd   : std_logic;
   signal s_jc_locked_re    : std_logic;
   signal s_clk_250_vio     : std_logic;
+  signal s_cdrclk_o        : std_logic;
 
 begin  -- architecture rtl
   -----------------------------------------------------------------------------
@@ -72,6 +76,7 @@ begin  -- architecture rtl
       I  => sysclk_p_i,  -- Diff_p buffer input (connect directly to top-level port)
       IB => sysclk_n_i  -- Diff_n buffer input (connect directly to top-level port)
       );
+  
   -----------------------------------------------------------------------------
   -- Clk Manager
   -----------------------------------------------------------------------------
@@ -113,9 +118,32 @@ begin  -- architecture rtl
       hs_clk_i      => s_clk_1000,
       deser_clk_i   => s_deser_clk,
       mmcm_locked_i => s_sysclk_locked,
-      ser_clk_o     => cdrclk_o
+      ser_clk_o     => s_cdrclk_o
       );
 
+  -----------------------------------------------------------------------------
+  -- Output buffer
+  -----------------------------------------------------------------------------
+  OBUFDS_cdrclk : OBUFDS
+    generic map (
+      IOSTANDARD => "DEFAULT",          -- Specify the output I/O standard
+      SLEW       => "SLOW")             -- Specify the output slew rate
+    port map (
+      O  => cdrclk_p_o,  -- Diff_p output (connect directly to top-level port)
+      OB => cdrclk_n_o,  -- Diff_n output (connect directly to top-level port)
+      I  => s_cdrclk_o                  -- Buffer input 
+      );
+  
+  -- OBUF_cdrclk : OBUF
+  --   generic map (
+  --     DRIVE      => 12,
+  --     IOSTANDARD => "DEFAULT",
+  --     SLEW       => "SLOW")
+  --   port map (
+  --     O => cdrclk_o,  -- Buffer output (connect directly to top-level port)
+  --     I => s_cdrclk_o              -- Buffer input 
+  --     );
+  
   -----------------------------------------------------------------------------
   -- LED Counter
   -----------------------------------------------------------------------------
@@ -146,7 +174,7 @@ begin  -- architecture rtl
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i <= x"3000000";
+    M_i <= x"2100000";
 
   end generate G_FIXED_M;
 
@@ -158,13 +186,15 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Input buffer
   -----------------------------------------------------------------------------
-  IBUF_inst : IBUF
+  IBUFDS_cdrclk_i : IBUFDS
     generic map (
+      DIFF_TERM    => false,            -- Differential Termination 
       IBUF_LOW_PWR => true,  -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
       IOSTANDARD   => "DEFAULT")
     port map (
-      O => s_cdrclk,                    -- Buffer output
-      I => cdrclk_i  -- Buffer input (connect directly to top-level port)
+      O  => s_cdrclk,                   -- Buffer output
+      I  => cdrclk_p_i,  -- Diff_p buffer input (connect directly to top-level port)
+      IB => cdrclk_n_i  -- Diff_n buffer input (connect directly to top-level port)
       );
 
   -----------------------------------------------------------------------------
@@ -184,20 +214,20 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- DDR
   -----------------------------------------------------------------------------
-  ODDR_inst : ODDR
-    generic map(
-      DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
-      INIT         => '0',  -- Initial value for Q port ('1' or '0')
-      SRTYPE       => "SYNC")           -- Reset Type ("ASYNC" or "SYNC")
-    port map (
-      Q  => s_cdrclk_jc_fwd,            -- 1-bit DDR output
-      C  => s_cdrclk_jc,                -- 1-bit clock input
-      CE => s_jc_locked,                -- 1-bit clock enable input
-      D1 => '1',                        -- 1-bit data input (positive edge)
-      D2 => '0',                        -- 1-bit data input (negative edge)
-      R  => not s_sysclk_locked,        -- 1-bit reset input
-      S  => '0'                         -- 1-bit set input
-      );
+  -- ODDR_inst : ODDR
+  --   generic map(
+  --     DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
+  --     INIT         => '0',  -- Initial value for Q port ('1' or '0')
+  --     SRTYPE       => "SYNC")           -- Reset Type ("ASYNC" or "SYNC")
+  --   port map (
+  --     Q  => s_cdrclk_jc_fwd,            -- 1-bit DDR output
+  --     C  => s_cdrclk_jc,                -- 1-bit clock input
+  --     CE => '1',                -- 1-bit clock enable input
+  --     D1 => '1',                        -- 1-bit data input (positive edge)
+  --     D2 => '0',                        -- 1-bit data input (negative edge)
+  --     R  => '0',        -- 1-bit reset input
+  --     S  => s_sysclk_locked                         -- 1-bit set input
+  --     );
 
   -----------------------------------------------------------------------------
   -- Output buffer
@@ -209,7 +239,7 @@ begin  -- architecture rtl
       SLEW       => "SLOW")
     port map (
       O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
-      I => s_cdrclk_jc_fwd              -- Buffer input 
+      I => s_cdrclk_jc              -- Buffer input 
       );
 
   -----------------------------------------------------------------------------
