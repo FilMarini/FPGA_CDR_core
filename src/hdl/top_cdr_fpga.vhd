@@ -29,6 +29,7 @@ use UNISIM.vcomponents.all;
 entity top_cdr_fpga is
   generic (
     g_gen_vio        : boolean  := true;
+    g_check_jc_clk   : boolean  := true;
     g_number_of_bits : positive := 28
     );
   port (
@@ -61,7 +62,7 @@ architecture rtl of top_cdr_fpga is
   signal s_jc_locked_re    : std_logic;
   signal s_clk_250_vio     : std_logic;
   signal s_cdrclk_o        : std_logic;
-  signal s_oddr_reset : std_logic;
+  signal s_oddr_reset      : std_logic;
 
 begin  -- architecture rtl
   -----------------------------------------------------------------------------
@@ -77,7 +78,7 @@ begin  -- architecture rtl
       I  => sysclk_p_i,  -- Diff_p buffer input (connect directly to top-level port)
       IB => sysclk_n_i  -- Diff_n buffer input (connect directly to top-level port)
       );
-  
+
   -----------------------------------------------------------------------------
   -- Clk Manager
   -----------------------------------------------------------------------------
@@ -134,7 +135,7 @@ begin  -- architecture rtl
       OB => cdrclk_n_o,  -- Diff_n output (connect directly to top-level port)
       I  => s_cdrclk_o                  -- Buffer input 
       );
-  
+
   -- OBUF_cdrclk : OBUF
   --   generic map (
   --     DRIVE      => 12,
@@ -144,7 +145,7 @@ begin  -- architecture rtl
   --     O => cdrclk_o,  -- Buffer output (connect directly to top-level port)
   --     I => s_cdrclk_o              -- Buffer input 
   --     );
-  
+
   -----------------------------------------------------------------------------
   -- LED Counter
   -----------------------------------------------------------------------------
@@ -184,6 +185,7 @@ begin  -- architecture rtl
   -- Recovered Clock
   -----------------------------------------------------------------------------
   -----------------------------------------------------------------------------
+
   -----------------------------------------------------------------------------
   -- Input buffer
   -----------------------------------------------------------------------------
@@ -213,37 +215,50 @@ begin  -- architecture rtl
       );
 
   -----------------------------------------------------------------------------
-  -- DDR
+  -- Check Jitter Cleaned Recovered Clock
   -----------------------------------------------------------------------------
-  s_oddr_reset <= not s_sysclk_locked;
+  G_CHECK_CLK_AFTER_JC : if g_check_jc_clk generate
 
-  ODDR_inst : ODDR
-    generic map(
-      DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
-      INIT         => '0',  -- Initial value for Q port ('1' or '0')
-      SRTYPE       => "SYNC")           -- Reset Type ("ASYNC" or "SYNC")
-    port map (
-      Q  => s_cdrclk_jc_fwd,            -- 1-bit DDR output
-      C  => s_cdrclk_jc,                -- 1-bit clock input
-      CE => s_jc_locked,                -- 1-bit clock enable input
-      D1 => '1',                        -- 1-bit data input (positive edge)
-      D2 => '0',                        -- 1-bit data input (negative edge)
-      R  => s_oddr_reset,        -- 1-bit reset input
-      S  => '0'                         -- 1-bit set input
-      );
+    -----------------------------------------------------------------------------
+    -- DDR
+    -----------------------------------------------------------------------------
+    s_oddr_reset <= not s_sysclk_locked;
 
-  -----------------------------------------------------------------------------
-  -- Output buffer
-  -----------------------------------------------------------------------------
-  OBUF_inst : OBUF
-    generic map (
-      DRIVE      => 12,
-      IOSTANDARD => "DEFAULT",
-      SLEW       => "SLOW")
-    port map (
-      O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
-      I => s_cdrclk_jc_fwd              -- Buffer input 
-      );
+    ODDR_inst : ODDR
+      generic map(
+        DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
+        INIT         => '0',  -- Initial value for Q port ('1' or '0')
+        SRTYPE       => "SYNC")         -- Reset Type ("ASYNC" or "SYNC")
+      port map (
+        Q  => s_cdrclk_jc_fwd,          -- 1-bit DDR output
+        C  => s_cdrclk_jc,              -- 1-bit clock input
+        CE => s_jc_locked,              -- 1-bit clock enable input
+        D1 => '1',                      -- 1-bit data input (positive edge)
+        D2 => '0',                      -- 1-bit data input (negative edge)
+        R  => s_oddr_reset,             -- 1-bit reset input
+        S  => '0'                       -- 1-bit set input
+        );
+
+    -----------------------------------------------------------------------------
+    -- Output buffer
+    -----------------------------------------------------------------------------
+    OBUF_inst : OBUF
+      generic map (
+        DRIVE      => 12,
+        IOSTANDARD => "DEFAULT",
+        SLEW       => "SLOW")
+      port map (
+        O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
+        I => s_cdrclk_jc_fwd            -- Buffer input 
+        );
+
+  end generate G_CHECK_CLK_AFTER_JC;
+
+  G_NOT_CHECK_CLK_AFTER_JC: if not g_check_jc_clk generate
+
+    cdrclk_jc_o <= '0';
+
+  end generate G_NOT_CHECK_CLK_AFTER_JC;
 
   -----------------------------------------------------------------------------
   -- MMCM reset control

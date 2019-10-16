@@ -9,6 +9,7 @@ file mkdir $outputDir
 
 #read hdl files
 read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
+read_vhdl -library usrDefLib [glob src/hdl/nco/*.vhd]
 
 #include pre-synthesized ip_cores
 set_part $partNum
