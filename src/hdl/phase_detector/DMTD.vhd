@@ -82,6 +82,9 @@ architecture rtl of DMTD is
   signal s_incr             : std_logic;
   signal s_en               : std_logic;
 
+  attribute mark_debug : string;
+  attribute mark_debug of sgn_counter : signal is "true";
+
 begin  -- architecture rtl
 
   -----------------------------------------------------------------------------
@@ -109,7 +112,7 @@ begin  -- architecture rtl
       ls_clk_i        => ls_clk_i,
       output_A_i      => s_output_fixed_clk,
       output_B_i      => s_output_var_clk,
-      calc_en_i       => '1',
+      calc_en_i       => DMTD_en_i,
       rst_i           => rst_i,
       n_cycle_o       => s_n_cycle,
       n_cycle_ready_o => s_n_cycle_ready

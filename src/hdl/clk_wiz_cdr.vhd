@@ -26,23 +26,23 @@ library unisim;
 use unisim.vcomponents.all;
 
 
-entity clk_wiz is
+entity clk_wiz_cdr is
   port (
     clk_in     : in  std_logic;         -- 62.5 MHz
     reset      : in  std_logic;
-    clk_out0   : out std_logic;         -- 125 MHz
-    clk_out1   : out std_logic;         -- 62.5 MHz
-    clk_out2   : out std_logic;         -- 200 MHz
-    clk_out3   : out std_logic;         -- 62.5 MHz
-    clk_out4   : out std_logic;         -- 125 MHz 90 degrees shift
+    clk_out0   : out std_logic;         -- 62.5 MHz
+    clk_out1   : out std_logic;         -- (20 / 41 * 62.5) MHz
+    clk_out2   : out std_logic;         -- 
+    clk_out3   : out std_logic;         -- 
+    clk_out4   : out std_logic;         -- 
     locked     : out std_logic;
     psen_p     : in  std_logic;
     psincdec_p : in  std_logic;
     psdone_p   : out std_logic
     );
-end entity clk_wiz;
+end entity clk_wiz_cdr;
 
-architecture behavioural of clk_wiz is
+architecture behavioural of clk_wiz_cdr is
 
   signal clk_fbout           : std_logic;
   signal clk_fbout_in        : std_logic;
@@ -76,13 +76,13 @@ begin
     (BANDWIDTH           => "OPTIMIZED",
      COMPENSATION        => "ZHOLD",
      DIVCLK_DIVIDE       => 1,
-     CLKFBOUT_MULT_F     => 5.000,
+     CLKFBOUT_MULT_F     => 20.000,
      CLKFBOUT_PHASE      => 0.000,
-     CLKOUT0_DIVIDE_F    => 1.000,
+     CLKOUT0_DIVIDE_F    => 20.000,
      CLKOUT0_PHASE       => 0.000,
      CLKOUT0_DUTY_CYCLE  => 0.500,
      CLKOUT0_USE_FINE_PS => false,
-     CLKOUT1_DIVIDE      => 4,
+     CLKOUT1_DIVIDE      => 41,
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,

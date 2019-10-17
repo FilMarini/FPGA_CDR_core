@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2019-10-08
+-- Last update: 2019-10-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,7 +26,8 @@ use UNISIM.VComponents.all;
 
 entity jitter_cleaner is
   generic (
-    use_ip : boolean := true
+    g_use_ip : boolean := true;
+    g_bandwidth : string := "LOW"
     );
   port (
     clk_in  : in  std_logic;
@@ -57,11 +58,11 @@ architecture rtl of jitter_cleaner is
 
 begin  -- architecture rtl
 
-  use_primitive : if not use_ip generate
+  use_primitive : if not g_use_ip generate
 
     MMCME2_ADV_inst : MMCME2_ADV
       generic map (
-        BANDWIDTH            => "LOW",  -- Jitter programming (OPTIMIZED, HIGH, LOW)
+        BANDWIDTH            => g_bandwidth,  -- Jitter programming (OPTIMIZED, HIGH, LOW)
         CLKFBOUT_MULT_F      => 16.0,  -- Multiply value for all CLKOUT (2.000-64.000).
         CLKFBOUT_PHASE       => 0.0,  -- Phase offset in degrees of CLKFB (-360.000-360.000).
         -- CLKIN_PERIOD: Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
@@ -172,7 +173,7 @@ begin  -- architecture rtl
 
   end generate use_primitive;
 
-  use_clk_wiz : if use_ip generate
+  use_clk_wiz : if g_use_ip generate
 
     clk_wiz_inst : clk_wiz_0
       port map (
