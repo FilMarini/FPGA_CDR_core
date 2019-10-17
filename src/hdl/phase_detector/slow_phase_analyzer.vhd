@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-10-16
+-- Last update: 2019-10-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,7 +26,6 @@ entity slow_phase_analyzer is
   port (
     hs_clk_i : in  std_logic;
     ls_clk_i : in  std_logic;
-    rst_i    : in  std_logic;
     output_o : out std_logic
     );
 end entity slow_phase_analyzer;

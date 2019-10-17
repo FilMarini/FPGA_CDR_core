@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-10-16
+-- Last update: 2019-10-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   p_update_state : process (ls_clk_i, rst_i) is
   begin  -- process p_update_state
-    if rst_i = '1' or calc_en_i = '0' then  -- asynchronous reset (active high)
+    if rst_i = '1' or calc_en_i = '0' or s_bomb = '1' then  -- asynchronous reset (active high)
       s_state <= st0_idle;
     elsif rising_edge(ls_clk_i) then        -- rising clock edge
       case s_state is

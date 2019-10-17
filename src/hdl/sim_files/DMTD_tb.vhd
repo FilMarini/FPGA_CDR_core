@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-10-16
+-- Last update: 2019-10-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,6 +39,7 @@ architecture rtl of DMTD_tb is
   signal rst_i            : std_logic;
   signal change_freq_o    : std_logic;
   signal change_freq_en_o : std_logic;
+  signal DMTD_en_i : std_logic;
   signal clk_veloce : std_logic := '0';
   signal clk_lento : std_logic := '0';
   signal ps_clk : std_logic := '0';
@@ -55,6 +56,7 @@ begin  -- architecture rtl
       hs_fixed_clk_i   => hs_fixed_clk_i,
       hs_var_clk_i     => hs_var_clk_i,
       rst_i            => rst_i,
+      DMTD_en_i        => DMTD_en_i,
       change_freq_o    => change_freq_o,
       change_freq_en_o => change_freq_en_o);
 
@@ -82,6 +84,7 @@ begin  -- architecture rtl
   -- waveform generation
   WaveGen_Proc : process
   begin
+    DMTD_en_i <= '1';
     rst_i <= '1';
     chg_clk <= '0';
     wait for 50 ns;
