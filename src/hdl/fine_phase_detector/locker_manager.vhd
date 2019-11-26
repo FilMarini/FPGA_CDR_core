@@ -23,7 +23,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reset_manager is
+entity locker_manager is
 
   port (
     ls_clk_i            : in  std_logic;
@@ -38,9 +38,9 @@ entity reset_manager is
     DMTD_locked_o       : out std_logic
     );
 
-end entity reset_manager;
+end entity locker_manager;
 
-architecture rtl of reset_manager is
+architecture rtl of locker_manager is
 
   type t_state is (st0_idle,
                    st1_calculate_n_cycle_max,
