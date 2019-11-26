@@ -45,7 +45,8 @@ architecture rtl of locker_monitoring is
   type t_state is (st0_idle,
                    st1_monitoring,
                    st2a_incr,
-                   st2b_decr
+                   st2b_decr,
+                   st3_slocked
                    );
 
   type t_fsm_signals is record
@@ -56,9 +57,9 @@ architecture rtl of locker_monitoring is
   end record t_fsm_signals;
 
   constant c_fsm_signals : t_fsm_signals := (
-    DMTD_slocked => '0';
-    monitoring   => '0';
-    incr         => '0';
+    DMTD_slocked => '0',
+    monitoring   => '0',
+    incr         => '0',
     en           => '0'
     );
 
@@ -69,15 +70,15 @@ architecture rtl of locker_monitoring is
   signal s_change_freq_en        : std_logic;
   signal s_locked_re             : std_logic;
   signal s_n_cycle_max           : std_logic_vector(7 downto 0);
-  signal u_n_cycle_max           : unsigned(7 downto 0);
-  signal u_n_cycle_opt           : unsigned(7 downto 0);
-  signal s_locked_re             : std_logic;
+  signal sgn_n_cycle_max         : signed(7 downto 0);
+  signal sgn_n_cycle_opt         : signed(7 downto 0);
   signal s_change_freq_en_re     : std_logic;
   signal s_incr_freq_re          : std_logic;
   signal sgn_n_cycle_fixed       : signed(7 downto 0);
   signal sgn_n_cycle_diff        : signed(7 downto 0);
   signal sgn_phase_shift_counter : signed(7 downto 0);
   signal sgn_phase_shift         : signed(7 downto 0);
+  signal sgn_n_cycle             : signed(7 downto 0);
 
 begin  -- architecture rtl
 
@@ -93,8 +94,9 @@ begin  -- architecture rtl
     end if;
   end process p_n_cycle_max_latcher;
 
-  u_n_cycle_max <= unsigned(s_n_cycle_max);
-  u_n_cycle_opt <= shift_right(u_n_cycle_max, 1);
+  sgn_n_cycle_max <= signed(s_n_cycle_max);
+  sgn_n_cycle_opt <= shift_right(sgn_n_cycle_max, 1);
+  sgn_n_cycle     <= signed(n_cycle_i);
 
   -----------------------------------------------------------------------------
   -- What is the n_cycle value now?
@@ -133,7 +135,7 @@ begin  -- architecture rtl
   begin  -- process p_fix_n_cycle
     if rising_edge(ls_clk_i) then       -- rising clock edge
       if s_locked_re = '1' then
-        sgn_n_cycle_fixed <= u_n_cycle_opt;
+        sgn_n_cycle_fixed <= sgn_n_cycle_opt;
       elsif s_change_freq_en_re = '1' then
         case s_incr_freq_re is
           when '0' =>
@@ -147,7 +149,7 @@ begin  -- architecture rtl
     end if;
   end process p_fix_n_cycle;
 
-  sgn_n_cycle_diff <= sgn_n_cycle_fixed - u_n_cycle_opt;
+  sgn_n_cycle_diff <= sgn_n_cycle_fixed - sgn_n_cycle_opt;
 
   -----------------------------------------------------------------------------
   -- Low pass filter (counter) to determine the phase shift
@@ -160,7 +162,7 @@ begin  -- architecture rtl
         sgn_phase_shift         <= (others => '0');
       else
         if n_cycle_ready_i = '1' then
-          sgn_phase_shift         <= signed(n_cycle_i) - u_n_cycle_opt;
+          sgn_phase_shift         <= sgn_n_cycle - sgn_n_cycle_opt;
           sgn_phase_shift_counter <= sgn_phase_shift_counter + sgn_phase_shift;
         end if;
       end if;
@@ -168,7 +170,23 @@ begin  -- architecture rtl
   end process p_phase_shift_counter;
 
   -----------------------------------------------------------------------------
-  -- FSM ("-3" is used cause sgn_n_cycle_diff can not be > u_n_cycle_opt)
+  -- Phase shifts too fast checker [ needed in case n_cycle varies several time
+  -- while the counter is still counting ]
+  -----------------------------------------------------------------------------
+  p_lampo_shifter_checker: process (ls_clk_i) is
+  begin  -- process p_lampo_shifter_checker
+    if rising_edge(ls_clk_i) then    -- rising clock edge
+      if s_change_freq_en = '1' then
+        if n_cycle_ready_i = '1' then 
+          sgn_n_cycle_messed_up <= sgn_n_cycle - sgn_n_cycle_fixed;
+        end if;
+      end if;
+    end if;
+  end process p_lampo_shifter_checker;
+
+  -----------------------------------------------------------------------------
+  -- FSM [ "-3" is used cause sgn_n_cycle_diff can not be > sgn_n_cycle_opt
+  -- (and to be 100% sure of the behaviour) ]
   -----------------------------------------------------------------------------
   p_update_state : process (ls_clk_i, rst_i) is
   begin  -- process p_update_state
@@ -191,8 +209,8 @@ begin  -- architecture rtl
         --
         when st2a_incr =>
           if n_cycle_ready_i = '1' then
-            if abs(sgn_n_cycle_diff) > u_n_cycle_opt - 3 then
-              s_state <= st0_idle;
+            if (abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3) or (sgn_n_cycle > sgn_n_cycle_max - 3) then
+              s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;
             end if;
@@ -200,13 +218,16 @@ begin  -- architecture rtl
         --
         when st2b_decr =>
           if n_cycle_ready_i = '1' then
-            if abs(sgn_n_cycle_diff) > u_n_cycle_opt - 3 then
-              s_state <= st0_idle;
+            if abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3 or sgn_n_cycle < 3 then
+              s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;
             end if;
           end if;
-        -- 
+        --
+        when st3_slocked =>
+          s_state <= st0_idle;
+        --
         when others =>
           s_state <= st0_idle;
       --
@@ -220,7 +241,7 @@ begin  -- architecture rtl
     case s_state is
       --
       when st0_idle =>
-        s_fsm_signals.DMTD_slocked <= '1';
+        null;
       --
       when st1_monitoring =>
         s_fsm_signals.monitoring <= '1';
@@ -231,6 +252,9 @@ begin  -- architecture rtl
       --
       when st2b_decr =>
         s_fsm_signals.en <= '1';
+      --
+      when st3_slocked =>
+        s_fsm_signals.DMTD_slocked <= '1';
       --
       when others =>
         null;

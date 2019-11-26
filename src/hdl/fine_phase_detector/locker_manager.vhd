@@ -32,7 +32,7 @@ entity locker_manager is
     n_cycle_i           : in  std_logic_vector(7 downto 0);
     n_cycle_ready_i     : in  std_logic;
     n_cycle_max_i       : in  std_logic_vector(7 downto 0);
-    n_cycle_max_ready_i : in  std_logic_vector(7 downto 0);
+    n_cycle_max_ready_i : in  std_logic;
     slocked_i           : in  std_logic;
     DMTD_max_en_o       : out std_logic;
     DMTD_locked_o       : out std_logic
@@ -56,8 +56,8 @@ architecture rtl of locker_manager is
   end record t_fsm_signals;
 
   constant c_fsm_signals : t_fsm_signals := (
-    lock        => '0';
-    DMTD_max_en => '0';
+    lock        => '0',
+    DMTD_max_en => '0',
     DMTD_locked => '0'
     );
 
@@ -65,10 +65,25 @@ architecture rtl of locker_manager is
   signal s_state       : t_state;
 
   signal s_lock : std_logic;
+  signal s_n_cycle_max : std_logic_vector(7 downto 0);
+  signal u_n_cycle_max : unsigned(7 downto 0);
+  signal u_n_cycle_opt : unsigned(7 downto 0);
 
 begin  -- architecture rtl
 
-  u_n_cycle_max <= unsigned(n_cycle_max_i);
+  -----------------------------------------------------------------------------
+  -- N_cycles max latcher
+  -----------------------------------------------------------------------------
+  p_n_cycle_max_latcher : process (ls_clk_i) is
+  begin  -- process p_n_cycle_max_latcher
+    if rising_edge(ls_clk_i) then       -- rising clock edge
+      if n_cycle_max_ready_i = '1' then
+        s_n_cycle_max <= n_cycle_max_i;
+      end if;
+    end if;
+  end process p_n_cycle_max_latcher;
+
+  u_n_cycle_max <= unsigned(s_n_cycle_max);
   u_n_cycle_opt <= shift_right(u_n_cycle_max, 1);
 
   -----------------------------------------------------------------------------

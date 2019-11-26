@@ -47,6 +47,9 @@ architecture rtl of DMTD is
   signal s_DMTD_locked       : std_logic;
   signal s_output_fixed_clk  : std_logic;
   signal s_output_var_clk    : std_logic;
+  signal s_DMTD_slocked : std_logic;
+  signal s_incr_freq : std_logic;
+  signal s_change_freq_en : std_logic;
 
 begin  -- architecture rtl
 
