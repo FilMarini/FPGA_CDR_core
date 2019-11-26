@@ -95,7 +95,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Locker manager FSM
   -----------------------------------------------------------------------------
-  i_reset_manager_1 : entity work.reset_manager
+  i_locker_manager_1 : entity work.locker_manager
     port map (
       ls_clk_i            => ls_clk_i,
       rst_i               => rst_i,
@@ -104,7 +104,7 @@ begin  -- architecture rtl
       n_cycle_ready_i     => s_n_cycle_ready,
       n_cycle_max_i       => s_n_cycle_max,
       n_cycle_max_ready_i => s_n_cycle_max_ready,
-      slocked_i           => s_slocked,
+      slocked_i           => s_DMTD_slocked,
       DMTD_max_en_o       => s_DMTD_max_en,
       DMTD_locked_o       => s_DMTD_locked
       );
@@ -112,6 +112,21 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Locker monitoring FSM
   -----------------------------------------------------------------------------
-
+  i_locker_monitoring_1: entity work.locker_monitoring
+    generic map (
+      g_threshold => 8
+      )
+    port map (
+      ls_clk_i            => ls_clk_i,
+      rst_i               => rst_i,
+      n_cycle_i           => s_n_cycle,
+      n_cycle_ready_i     => s_n_cycle_ready,
+      n_cycle_max_i       => s_n_cycle_max,
+      n_cycle_max_ready_i => s_n_cycle_max_ready,
+      locked_i            => s_DMTD_locked,
+      slocked_o           => s_DMTD_slocked,
+      incr_freq_o         => s_incr_freq,
+      change_freq_en_o    => s_change_freq_en
+      );
 
 end architecture rtl;
