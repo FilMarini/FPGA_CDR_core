@@ -62,12 +62,22 @@ architecture rtl of locker_monitoring is
     en           => '0'
     );
 
-  signal s_state          : t_state;
-  signal s_fsm_signals    : t_fsm_signals;
-  signal s_monitoring     : std_logic;
-  signal s_incr_freq      : std_logic;
-  signal s_change_freq_en : std_logic;
-  signal s_locked_re      : std_logic;
+  signal s_state                 : t_state;
+  signal s_fsm_signals           : t_fsm_signals;
+  signal s_monitoring            : std_logic;
+  signal s_incr_freq             : std_logic;
+  signal s_change_freq_en        : std_logic;
+  signal s_locked_re             : std_logic;
+  signal s_n_cycle_max           : std_logic_vector(7 downto 0);
+  signal u_n_cycle_max           : unsigned(7 downto 0);
+  signal u_n_cycle_opt           : unsigned(7 downto 0);
+  signal s_locked_re             : std_logic;
+  signal s_change_freq_en_re     : std_logic;
+  signal s_incr_freq_re          : std_logic;
+  signal sgn_n_cycle_fixed       : signed(7 downto 0);
+  signal sgn_n_cycle_diff        : signed(7 downto 0);
+  signal sgn_phase_shift_counter : signed(7 downto 0);
+  signal sgn_phase_shift         : signed(7 downto 0);
 
 begin  -- architecture rtl
 
