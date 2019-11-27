@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-10-17
+-- Last update: 2019-10-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ end entity slow_phase_analyzer;
 architecture rtl of slow_phase_analyzer is
 
   signal s_hs_toggle : std_logic := '0';
-  signal s_hs_toggle_df : std_logic;
+  signal s_hs_toggle_tf : std_logic;
 
 begin  -- architecture rtl
 
@@ -58,10 +58,10 @@ begin  -- architecture rtl
     port map (
       clk_i => ls_clk_i,
       sig_i(0) => s_hs_toggle,
-      sig_o(0) => s_hs_toggle_df
+      sig_o(0) => s_hs_toggle_tf
       );
 
-  output_o <= s_hs_toggle_df;
+  output_o <= s_hs_toggle_tf;
 
 
 end architecture rtl;

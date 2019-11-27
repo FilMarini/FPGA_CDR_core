@@ -8,4 +8,4 @@ clean:
 	rm -rf results vivado*.jou vivado*.log usage* .Xil .cache
 
 ip_cores_clean: clean
-	$(MAKE) -C common_src/ip_cores clean
+	$(MAKE) -C src/ip_cores clean

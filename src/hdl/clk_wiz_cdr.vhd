@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-10-17
+-- Last update: 2019-10-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,8 +30,8 @@ entity clk_wiz_cdr is
   port (
     clk_in     : in  std_logic;         -- 62.5 MHz
     reset      : in  std_logic;
-    clk_out0   : out std_logic;         -- 62.5 MHz
-    clk_out1   : out std_logic;         -- (20 / 41 * 62.5) MHz
+    clk_out0   : out std_logic;         -- (10 / 20.125 * 62.5) MHz
+    clk_out1   : out std_logic;         -- 62.5 MHz
     clk_out2   : out std_logic;         -- 
     clk_out3   : out std_logic;         -- 
     clk_out4   : out std_logic;         -- 
@@ -78,11 +78,11 @@ begin
      DIVCLK_DIVIDE       => 1,
      CLKFBOUT_MULT_F     => 20.000,
      CLKFBOUT_PHASE      => 0.000,
-     CLKOUT0_DIVIDE_F    => 20.000,
+     CLKOUT0_DIVIDE_F    => 40.500,
      CLKOUT0_PHASE       => 0.000,
      CLKOUT0_DUTY_CYCLE  => 0.500,
      CLKOUT0_USE_FINE_PS => false,
-     CLKOUT1_DIVIDE      => 41,
+     CLKOUT1_DIVIDE      => 20,
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,

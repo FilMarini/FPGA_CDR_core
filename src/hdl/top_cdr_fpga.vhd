@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-10-17
+-- Last update: 2019-10-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := true;
+    g_gen_vio        : boolean  := false;
     g_check_jc_clk   : boolean  := false;
     g_number_of_bits : positive := 28
     );
@@ -190,7 +190,8 @@ begin  -- architecture rtl
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i <= x"4000000";
+    M_i <= x"4000001";
+    vio_DTMD_en <= '1';
 
   end generate G_FIXED_M;
 
@@ -217,7 +218,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Jitter cleaner
   -----------------------------------------------------------------------------
-  jitter_cleaner_1 : entity work.jitter_cleaner
+  i_jitter_cleaner_1 : entity work.jitter_cleaner
     generic map (
       g_use_ip    => false,
       g_bandwidth => "LOW"
@@ -229,7 +230,7 @@ begin  -- architecture rtl
       locked  => s_jc_locked
       );
 
-  jitter_cleaner_2 : entity work.jitter_cleaner
+  i_jitter_cleaner_2 : entity work.jitter_cleaner
     generic map (
       g_use_ip    => false,
       g_bandwidth => "OPTIMIZED"
@@ -323,8 +324,8 @@ begin  -- architecture rtl
     port map (
       clk_in     => s_clk_625,
       reset      => '0',
-      clk_out0   => s_clk_625_cdr,
-      clk_out1   => s_clk_about_3125,
+      clk_out0   => s_clk_about_3125,
+      clk_out1   => s_clk_625_cdr,
       clk_out2   => open,
       clk_out3   => open,
       clk_out4   => open,
@@ -339,7 +340,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   DMTD_1 : entity work.DMTD
     generic map (
-      g_counter_threshold => 50
+      g_counter_threshold => 1
       )
     port map (
       ls_clk_i         => s_clk_about_3125,

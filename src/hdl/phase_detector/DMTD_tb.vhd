@@ -59,9 +59,9 @@ begin  -- architecture tb
       change_freq_en_o => change_freq_en_o);
 
   -- clock generation
-  ls_clk_i       <= not ls_clk_i       after 16.2 us;
-  hs_fixed_clk_i <= not hs_fixed_clk_i after 8 us;
-  hs_var_clk_i   <= not hs_var_clk_i   after 7999.999 ns;
+  ls_clk_i       <= not ls_clk_i       after 16.2 ns;
+  hs_fixed_clk_i <= not hs_fixed_clk_i after 8 ns;
+  hs_var_clk_i   <= not hs_var_clk_i   after 7.999 ns;
 
   -- waveform generation
   WaveGen_Proc : process

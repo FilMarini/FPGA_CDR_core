@@ -1,4 +1,3 @@
-rm  vio_0.xdc
 rm  vio_0.dcp
 rm  vio_0_ooc.xdc
 rm  vio_0_sim_netlist.v
@@ -12,7 +11,6 @@ rm  vio_0.xml
 rm -rf doc
 rm -rf hdl
 rm -rf sim
-rm -rf simulation
 rm -rf synth
 rm  vivado*
 rm -rf .Xil
