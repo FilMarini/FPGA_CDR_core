@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-18
--- Last update: 2019-11-26
+-- Last update: 2019-11-27
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -31,7 +31,8 @@ entity DMTD is
     hs_var_clk_i     : in  std_logic;
     rst_i            : in  std_logic;
     DMTD_en_i        : in  std_logic;
-    change_freq_o    : out std_logic;
+    DMTD_locked_o    : out std_logic;
+    incr_freq_o      : out std_logic;
     change_freq_en_o : out std_logic
     );
 end entity DMTD;
@@ -47,11 +48,16 @@ architecture rtl of DMTD is
   signal s_DMTD_locked       : std_logic;
   signal s_output_fixed_clk  : std_logic;
   signal s_output_var_clk    : std_logic;
-  signal s_DMTD_slocked : std_logic;
-  signal s_incr_freq : std_logic;
-  signal s_change_freq_en : std_logic;
+  signal s_DMTD_slocked      : std_logic;
+  signal s_incr_freq         : std_logic;
+  signal s_change_freq_en    : std_logic;
 
 begin  -- architecture rtl
+
+  -----------------------------------------------------------------------------
+  -- Connections to top_level ports
+  -----------------------------------------------------------------------------
+  DMTD_locked_o <= s_DMTD_locked;
 
   -----------------------------------------------------------------------------
   -- Obtain Output
@@ -115,7 +121,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Locker monitoring FSM
   -----------------------------------------------------------------------------
-  i_locker_monitoring_1: entity work.locker_monitoring
+  i_locker_monitoring_1 : entity work.locker_monitoring
     generic map (
       g_threshold => 8
       )
@@ -128,8 +134,9 @@ begin  -- architecture rtl
       n_cycle_max_ready_i => s_n_cycle_max_ready,
       locked_i            => s_DMTD_locked,
       slocked_o           => s_DMTD_slocked,
-      incr_freq_o         => s_incr_freq,
-      change_freq_en_o    => s_change_freq_en
+      incr_freq_o         => incr_freq_o,
+      change_freq_en_o    => change_freq_en_o
       );
+
 
 end architecture rtl;

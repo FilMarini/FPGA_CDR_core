@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-11-26
+-- Last update: 2019-11-27
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -170,21 +170,6 @@ begin  -- architecture rtl
   end process p_phase_shift_counter;
 
   -----------------------------------------------------------------------------
-  -- Phase shifts too fast checker [ needed in case n_cycle varies several time
-  -- while the counter is still counting ]
-  -----------------------------------------------------------------------------
-  p_lampo_shifter_checker: process (ls_clk_i) is
-  begin  -- process p_lampo_shifter_checker
-    if rising_edge(ls_clk_i) then    -- rising clock edge
-      if s_change_freq_en = '1' then
-        if n_cycle_ready_i = '1' then 
-          sgn_n_cycle_messed_up <= sgn_n_cycle - sgn_n_cycle_fixed;
-        end if;
-      end if;
-    end if;
-  end process p_lampo_shifter_checker;
-
-  -----------------------------------------------------------------------------
   -- FSM [ "-3" is used cause sgn_n_cycle_diff can not be > sgn_n_cycle_opt
   -- (and to be 100% sure of the behaviour) ]
   -----------------------------------------------------------------------------
@@ -209,7 +194,7 @@ begin  -- architecture rtl
         --
         when st2a_incr =>
           if n_cycle_ready_i = '1' then
-            if (abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3) or (sgn_n_cycle > sgn_n_cycle_max - 3) then
+            if (abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3) or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
               s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;
@@ -218,7 +203,7 @@ begin  -- architecture rtl
         --
         when st2b_decr =>
           if n_cycle_ready_i = '1' then
-            if abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3 or sgn_n_cycle < 3 then
+            if abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3 or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
               s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;
