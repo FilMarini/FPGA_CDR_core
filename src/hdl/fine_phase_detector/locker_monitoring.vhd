@@ -162,7 +162,7 @@ begin  -- architecture rtl
         sgn_phase_shift         <= (others => '0');
       else
         if n_cycle_ready_i = '1' then
-          sgn_phase_shift         <= sgn_n_cycle - sgn_n_cycle_opt;
+          sgn_phase_shift         <= sgn_n_cycle - sgn_n_cycle_fixed;
           sgn_phase_shift_counter <= sgn_phase_shift_counter + sgn_phase_shift;
         end if;
       end if;
