@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-10-17
+-- Last update: 2019-11-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -69,6 +69,12 @@ architecture rtl of n_cycles_calc is
   signal s_lock            : std_logic;
   signal s_evaluate        : std_logic;
 
+  attribute mark_debug                      : string;
+  attribute mark_debug of s_output_B_re     : signal is "true";
+  attribute mark_debug of s_output_A_re     : signal is "true";
+  attribute mark_debug of u_n_cycle_counter : signal is "true";
+  attribute mark_debug of s_evaluate        : signal is "true";
+
 begin  -- architecture rtl
 
   -----------------------------------------------------------------------------
@@ -126,9 +132,9 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   p_n_cycle_counter : process (ls_clk_i, rst_i) is
   begin  -- process p_n_cycle_counter
-    if rst_i = '1' or s_idle = '1' then                 -- asynchronous reset (active high)
+    if rst_i = '1' or s_idle = '1' then  -- asynchronous reset (active high)
       u_n_cycle_counter <= (others => '0');
-    elsif rising_edge(ls_clk_i) then    -- rising clock edge
+    elsif rising_edge(ls_clk_i) then     -- rising clock edge
       if s_counting = '1' then
         u_n_cycle_counter <= u_n_cycle_counter + 1;
       end if;
@@ -146,7 +152,7 @@ begin  -- architecture rtl
   begin  -- process p_update_state
     if rst_i = '1' or calc_en_i = '0' or s_bomb = '1' then  -- asynchronous reset (active high)
       s_state <= st0_idle;
-    elsif rising_edge(ls_clk_i) then        -- rising clock edge
+    elsif rising_edge(ls_clk_i) then    -- rising clock edge
       case s_state is
         --
         when st0_idle =>

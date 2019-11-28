@@ -80,7 +80,7 @@ architecture rtl of locker_monitoring is
   signal sgn_phase_shift         : signed(7 downto 0);
   signal sgn_n_cycle             : signed(7 downto 0);
   -- debug
-  signal s_n_cycle_ready : std_logic;
+  signal s_n_cycle_ready         : std_logic;
 
   attribute mark_debug                            : string;
   attribute mark_debug of sgn_n_cycle             : signal is "true";
@@ -91,6 +91,8 @@ architecture rtl of locker_monitoring is
   attribute mark_debug of sgn_n_cycle_fixed       : signal is "true";
   attribute mark_debug of sgn_n_cycle_diff        : signal is "true";
   attribute mark_debug of s_state                 : signal is "true";
+  attribute mark_debug of s_change_freq_en        : signal is "true";
+  attribute mark_debug of s_incr_freq             : signal is "true";
 
 
 
@@ -172,16 +174,20 @@ begin  -- architecture rtl
 
   -----------------------------------------------------------------------------
   -- Low pass filter (counter) to determine the phase shift
+  -- [the "if sgn_phase_shift = 0 is needed to count only consecutive phase
+  -- shift, otherwise, when you are at the edge (in the beginning you are at
+  -- the edge of 0 and -1) some bad behaviour happens"]
   -----------------------------------------------------------------------------
   p_phase_shift_counter : process (ls_clk_i) is
   begin  -- process p_phase_shift_counter
     if rising_edge(ls_clk_i) then       -- rising clock edge
       if s_monitoring = '0' then
         sgn_phase_shift_counter <= (others => '0');
-        sgn_phase_shift         <= (others => '0');
-      else
-        if n_cycle_ready_i = '1' then
-          sgn_phase_shift         <= sgn_n_cycle - sgn_n_cycle_fixed;
+      elsif n_cycle_ready_i = '1' then
+        sgn_phase_shift <= sgn_n_cycle - sgn_n_cycle_fixed;
+        if sgn_phase_shift = 0 then
+          sgn_phase_shift_counter <= (others => '0');
+        else
           sgn_phase_shift_counter <= sgn_phase_shift_counter + sgn_phase_shift;
         end if;
       end if;
