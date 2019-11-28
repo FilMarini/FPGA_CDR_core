@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-11-27
+-- Last update: 2019-11-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -79,8 +79,27 @@ architecture rtl of locker_monitoring is
   signal sgn_phase_shift_counter : signed(7 downto 0);
   signal sgn_phase_shift         : signed(7 downto 0);
   signal sgn_n_cycle             : signed(7 downto 0);
+  -- debug
+  signal s_n_cycle_ready : std_logic;
+
+  attribute mark_debug                            : string;
+  attribute mark_debug of sgn_n_cycle             : signal is "true";
+  attribute mark_debug of sgn_n_cycle_opt         : signal is "true";
+  attribute mark_debug of s_n_cycle_ready         : signal is "true";
+  attribute mark_debug of sgn_phase_shift_counter : signal is "true";
+  attribute mark_debug of sgn_phase_shift         : signal is "true";
+  attribute mark_debug of sgn_n_cycle_fixed       : signal is "true";
+  attribute mark_debug of sgn_n_cycle_diff        : signal is "true";
+  attribute mark_debug of s_state                 : signal is "true";
+
+
 
 begin  -- architecture rtl
+
+  -----------------------------------------------------------------------------
+  -- debug
+  -----------------------------------------------------------------------------
+  s_n_cycle_ready <= n_cycle_ready_i;
 
   -----------------------------------------------------------------------------
   -- N_cycles max latcher
@@ -99,7 +118,7 @@ begin  -- architecture rtl
   sgn_n_cycle     <= signed(n_cycle_i);
 
   -----------------------------------------------------------------------------
-  -- What is the n_cycle value now?
+  -- What is the n_cycle(_fixed) value now?
   -----------------------------------------------------------------------------
   i_edge_detect_1 : entity work.r_edge_detect
     generic map (

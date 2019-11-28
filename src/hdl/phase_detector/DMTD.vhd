@@ -123,7 +123,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_locker_monitoring_1 : entity work.locker_monitoring
     generic map (
-      g_threshold => 8
+      g_threshold => 120
       )
     port map (
       ls_clk_i            => ls_clk_i,

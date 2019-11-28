@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-10-18
+-- Last update: 2019-11-27
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := false;
+    g_gen_vio        : boolean  := true;
     g_check_jc_clk   : boolean  := false;
     g_number_of_bits : positive := 28
     );
@@ -44,7 +44,7 @@ entity top_cdr_fpga is
     led1_o           : out std_logic;
     led_o            : out std_logic;
     -- debug
-    change_freq_o    : out std_logic;
+    incr_freq_o      : out std_logic;
     change_freq_en_o : out std_logic
     );
 end entity top_cdr_fpga;
@@ -71,10 +71,11 @@ architecture rtl of top_cdr_fpga is
   signal s_clk_625_cdr       : std_logic;
   signal s_clk_about_3125    : std_logic;
   signal s_sysclk_cdr_locked : std_logic;
-  signal s_change_freq       : std_logic;
+  signal s_incr_freq       : std_logic;
   signal s_change_freq_en    : std_logic;
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
+  signal s_DMTD_locked       : std_logic;
 
 begin  -- architecture rtl
 
@@ -190,7 +191,7 @@ begin  -- architecture rtl
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i <= x"4000001";
+    M_i         <= x"4000001";
     vio_DTMD_en <= '1';
 
   end generate G_FIXED_M;
@@ -259,7 +260,7 @@ begin  -- architecture rtl
         SRTYPE       => "SYNC")         -- Reset Type ("ASYNC" or "SYNC")
       port map (
         Q  => s_cdrclk_jc_fwd,          -- 1-bit DDR output
-        C  => s_cdrclk_jc_2,              -- 1-bit clock input
+        C  => s_cdrclk_jc_2,            -- 1-bit clock input
         CE => s_jc_locked,              -- 1-bit clock enable input
         D1 => '1',                      -- 1-bit data input (positive edge)
         D2 => '0',                      -- 1-bit data input (negative edge)
@@ -338,22 +339,21 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- DMTD
   -----------------------------------------------------------------------------
-  DMTD_1 : entity work.DMTD
-    generic map (
-      g_counter_threshold => 1
-      )
+  i_DMTD : entity work.DMTD
     port map (
       ls_clk_i         => s_clk_about_3125,
       hs_fixed_clk_i   => s_clk_625_cdr,
       hs_var_clk_i     => s_cdrclk_jc_2,
       rst_i            => not s_jc_locked,
       DMTD_en_i        => vio_DTMD_en,
-      change_freq_o    => s_change_freq,
+      DMTD_locked_o    => s_DMTD_locked,
+      incr_freq_o      => s_incr_freq,
       change_freq_en_o => s_change_freq_en
       );
 
+
   change_freq_en_o <= s_change_freq_en;
-  change_freq_o    <= s_change_freq;
+  incr_freq_o      <= s_incr_freq;
 
 
 end architecture rtl;
