@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2019-10-17
+-- Last update: 2019-11-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,12 +26,13 @@ use UNISIM.VComponents.all;
 
 entity jitter_cleaner is
   generic (
-    g_use_ip : boolean := true;
-    g_bandwidth : string := "LOW"
+    g_use_ip    : boolean := true;
+    g_bandwidth : string  := "LOW";
+    g_last      : boolean := true
     );
   port (
     clk_in  : in  std_logic;
-    rst_i   : in std_logic;
+    rst_i   : in  std_logic;
     clk_out : out std_logic;
     locked  : out std_logic
     );
@@ -144,7 +145,7 @@ begin  -- architecture rtl
         -- Control Ports: 1-bit (each) input: MMCM control ports
         CLKINSEL     => '1',  -- 1-bit input: Clock select, High=CLKIN1 Low=CLKIN2
         PWRDWN       => '0',            -- 1-bit input: Power-down
-        RST          => rst_i,            -- 1-bit input: Reset
+        RST          => rst_i,          -- 1-bit input: Reset
         -- DRP Ports: 7-bit (each) input: Dynamic reconfiguration ports
         DADDR        => (others => '0'),  -- 7-bit input: DRP address
         DCLK         => '0',            -- 1-bit input: DRP clock
@@ -156,20 +157,26 @@ begin  -- architecture rtl
         PSEN         => '0',            -- 1-bit input: Phase shift enable
         PSINCDEC     => '0',  -- 1-bit input: Phase shift increment/decrement
         -- Feedback Clocks: 1-bit (each) input: Clock feedback ports
-        CLKFBIN      => in_clk_fb       -- 1-bit input: Feedback clock
+        CLKFBIN      => out_clk_fb       -- 1-bit input: Feedback clock
         );
 
-    BUFG_inst : BUFG
-      port map (
-        O => in_clk_fb,                 -- 1-bit output: Clock output
-        I => out_clk_fb                 -- 1-bit input: Clock input
-        );
+    -- BUFG_inst : BUFG
+    --   port map (
+    --     O => in_clk_fb,                 -- 1-bit output: Clock output
+    --     I => out_clk_fb                 -- 1-bit input: Clock input
+    --     );
 
-    BUFG_clk : BUFG
-      port map (
-        O => clk_out,                   -- 1-bit output: Clock output
-        I => s_clk_bufg                 -- 1-bit input: Clock input
-        );
+    GEN_BUFG : if g_last generate
+      i_BUFG_clk : BUFG
+        port map (
+          O => clk_out,                 -- 1-bit output: Clock output
+          I => s_clk_bufg               -- 1-bit input: Clock input
+          );
+    end generate GEN_BUFG;
+
+    GEN_NO_BUFG : if not g_last generate
+      clk_out <= s_clk_bufg;
+    end generate GEN_NO_BUFG;
 
   end generate use_primitive;
 

@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-11-27
+-- Last update: 2019-11-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ architecture rtl of top_cdr_fpga is
   signal s_clk_625_cdr       : std_logic;
   signal s_clk_about_3125    : std_logic;
   signal s_sysclk_cdr_locked : std_logic;
-  signal s_incr_freq       : std_logic;
+  signal s_incr_freq         : std_logic;
   signal s_change_freq_en    : std_logic;
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
@@ -222,7 +222,8 @@ begin  -- architecture rtl
   i_jitter_cleaner_1 : entity work.jitter_cleaner
     generic map (
       g_use_ip    => false,
-      g_bandwidth => "LOW"
+      g_bandwidth => "LOW",
+      g_last      => false
       )
     port map (
       clk_in  => s_cdrclk,
@@ -234,7 +235,8 @@ begin  -- architecture rtl
   i_jitter_cleaner_2 : entity work.jitter_cleaner
     generic map (
       g_use_ip    => false,
-      g_bandwidth => "OPTIMIZED"
+      g_bandwidth => "HIGH",
+      g_last      => true
       )
     port map (
       clk_in  => s_cdrclk_jc,
