@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-18
--- Last update: 2019-11-28
+-- Last update: 2019-11-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_locker_monitoring_1 : entity work.locker_monitoring
     generic map (
-      g_threshold => 8
+      g_threshold => 50
       )
     port map (
       ls_clk_i            => ls_clk_i,

@@ -157,15 +157,8 @@ begin  -- architecture rtl
     if rising_edge(ls_clk_i) then       -- rising clock edge
       if s_locked_re = '1' then
         sgn_n_cycle_fixed <= sgn_n_cycle_opt;
-      elsif s_change_freq_en_re = '1' then
-        case s_incr_freq_re is
-          when '0' =>
-            sgn_n_cycle_fixed <= sgn_n_cycle_fixed - 1;
-          when '1' =>
-            sgn_n_cycle_fixed <= sgn_n_cycle_fixed + 1;
-          when others =>
-            null;
-        end case;
+      elsif s_change_freq_en_re = '1' then 
+            sgn_n_cycle_fixed <= sgn_n_cycle_fixed + sgn_phase_shift;
       end if;
     end if;
   end process p_fix_n_cycle;
