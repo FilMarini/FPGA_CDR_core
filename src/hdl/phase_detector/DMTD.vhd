@@ -25,6 +25,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity DMTD is
+  generic (
+    g_threshold : positive := 16
+    );
   port (
     ls_clk_i         : in  std_logic;
     hs_fixed_clk_i   : in  std_logic;
@@ -123,7 +126,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_locker_monitoring_1 : entity work.locker_monitoring
     generic map (
-      g_threshold => 50
+      g_threshold => g_threshold
       )
     port map (
       ls_clk_i            => ls_clk_i,

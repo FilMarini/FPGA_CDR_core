@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := true;
+    g_gen_vio        : boolean  := false;
     g_check_jc_clk   : boolean  := false;
     g_number_of_bits : positive := 28
     );
@@ -342,6 +342,9 @@ begin  -- architecture rtl
   -- DMTD
   -----------------------------------------------------------------------------
   i_DMTD : entity work.DMTD
+    generic map (
+      g_threshold => 16
+      )
     port map (
       ls_clk_i         => s_clk_about_3125,
       hs_fixed_clk_i   => s_clk_625_cdr,
