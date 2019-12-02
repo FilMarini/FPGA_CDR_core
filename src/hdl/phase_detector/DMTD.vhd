@@ -82,27 +82,6 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Calculate n_cycle
   -----------------------------------------------------------------------------
-  i_n_cycles_calc_1 : entity work.n_cycles_calc
-    port map (
-      ls_clk_i        => ls_clk_i,
-      output_A_i      => s_output_fixed_clk,
-      output_B_i      => s_output_var_clk,
-      calc_en_i       => DMTD_en_i,
-      rst_i           => rst_i,
-      n_cycle_o       => s_n_cycle,
-      n_cycle_ready_o => s_n_cycle_ready
-      );
-
-  i_n_cycles_max_calc : entity work.n_cycles_calc
-    port map (
-      ls_clk_i        => ls_clk_i,
-      output_A_i      => s_output_fixed_clk,
-      output_B_i      => s_output_fixed_clk,
-      calc_en_i       => s_DMTD_max_en,
-      rst_i           => rst_i,
-      n_cycle_o       => s_n_cycle_max,
-      n_cycle_ready_o => s_n_cycle_max_ready
-      );
 
 
 end architecture rtl;

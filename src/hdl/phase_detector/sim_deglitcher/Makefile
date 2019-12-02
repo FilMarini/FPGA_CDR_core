@@ -10,7 +10,7 @@ GHDLFLAGS=
 all: deglitcher_tb
 
 # Elaboration target
-deglitcher_tb: /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o /usr/local/lib/ghdl/ieee/v93/numeric_std-body.o deglitcher.o deglitcher_tb.o
+deglitcher_tb: /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o /usr/local/lib/ghdl/ieee/v93/numeric_std-body.o deglitcher.o n_cycle_generator.o deglitcher_tb.o
 	$(GHDL) -e $(GHDLFLAGS) $@
 
 # Run target
@@ -32,6 +32,8 @@ run: deglitcher_tb
 	exit 1
 deglitcher.o: deglitcher.vhd
 	$(GHDL) -a $(GHDLFLAGS) $<
+n_cycle_generator.o: n_cycle_generator.vhd
+	$(GHDL) -a $(GHDLFLAGS) $<
 deglitcher_tb.o: deglitcher_tb.vhd
 	$(GHDL) -a $(GHDLFLAGS) $<
 
@@ -41,4 +43,5 @@ deglitcher_tb.o: deglitcher_tb.vhd
 /usr/local/lib/ghdl/ieee/v93/numeric_std.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o
 /usr/local/lib/ghdl/ieee/v93/numeric_std-body.o:  /usr/local/lib/ghdl/ieee/v93/numeric_std.o
 deglitcher.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o
-deglitcher_tb.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o /usr/local/lib/ghdl/ieee/v93/numeric_std-body.o deglitcher.o
+n_cycle_generator.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o
+deglitcher_tb.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o /usr/local/lib/ghdl/ieee/v93/numeric_std.o /usr/local/lib/ghdl/ieee/v93/numeric_std-body.o deglitcher.o n_cycle_generator.o

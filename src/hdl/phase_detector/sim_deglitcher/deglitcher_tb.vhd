@@ -42,6 +42,8 @@ architecture behav of deglitcher_tb is
   signal calc_en_i         : std_logic;
   signal phase_tag_o       : std_logic_vector(31 downto 0);
   signal phase_tag_ready_o : std_logic;
+  signal n_cycle_o         : std_logic_vector(15 downto 0);
+  signal n_cycle_ready_o   : std_logic;
 
   -- clock
   signal ls_clk_i : std_logic := '1';
@@ -64,6 +66,17 @@ begin  -- architecture behav
       calc_en_i         => calc_en_i,
       phase_tag_o       => phase_tag_o,
       phase_tag_ready_o => phase_tag_ready_o);
+
+  n_cycle_generator_1 : entity work.n_cycle_generator
+    port map (
+      ls_clk_i             => ls_clk_i,
+      rst_i                => rst_i,
+      phase_tag_A_in       => phase_tag_o,
+      phase_tag_A_ready_in => phase_tag_ready_o,
+      phase_tag_B_in       => phase_tag_o,
+      phase_tag_B_ready_in => phase_tag_ready_o,
+      n_cycle_o            => n_cycle_o,
+      n_cycle_ready_o      => n_cycle_ready_o);
 
   -- clock generation
   ls_clk_i <= not ls_clk_i after 16 ns;
