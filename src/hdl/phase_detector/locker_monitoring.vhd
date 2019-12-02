@@ -33,6 +33,7 @@ entity locker_monitoring is
     n_cycle_ready_i     : in  std_logic;
     n_cycle_max_i       : in  std_logic_vector(15 downto 0);
     n_cycle_max_ready_i : in  std_logic;
+    n_cycle_opt_in      : in std_logic_vector(15 downto 0);
     locked_i            : in  std_logic;
     slocked_o           : out std_logic;
     incr_freq_o         : out std_logic;
@@ -104,19 +105,9 @@ begin  -- architecture rtl
   s_n_cycle_ready <= n_cycle_ready_i;
 
   -----------------------------------------------------------------------------
-  -- N_cycles max latcher
+  -- type manager
   -----------------------------------------------------------------------------
-  p_n_cycle_max_latcher : process (ls_clk_i) is
-  begin  -- process p_n_cycle_max_latcher
-    if rising_edge(ls_clk_i) then       -- rising clock edge
-      if n_cycle_max_ready_i = '1' then
-        s_n_cycle_max <= n_cycle_max_i;
-      end if;
-    end if;
-  end process p_n_cycle_max_latcher;
-
-  sgn_n_cycle_max <= signed(s_n_cycle_max);
-  sgn_n_cycle_opt <= shift_right(sgn_n_cycle_max, 1);
+  sgn_n_cycle_opt <= signed(n_cycle_opt_in);
   sgn_n_cycle     <= signed(n_cycle_i);
 
   -----------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-11-29
+-- Last update: 2019-12-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := false;
+    g_gen_vio        : boolean  := true;
     g_check_jc_clk   : boolean  := false;
     g_number_of_bits : positive := 28
     );
@@ -343,7 +343,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_DMTD : entity work.DMTD
     generic map (
-      g_threshold => 16
+      g_threshold => 64
       )
     port map (
       ls_clk_i         => s_clk_about_3125,

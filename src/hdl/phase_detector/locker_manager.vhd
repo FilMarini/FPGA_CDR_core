@@ -34,6 +34,7 @@ entity locker_manager is
     n_cycle_max_i       : in  std_logic_vector(15 downto 0);
     n_cycle_max_ready_i : in  std_logic;
     slocked_i           : in  std_logic;
+    n_cycle_opt_o       : out std_logic_vector(15 downto 0);
     DMTD_max_en_o       : out std_logic;
     DMTD_locked_o       : out std_logic
     );
@@ -85,7 +86,7 @@ begin  -- architecture rtl
 
   u_n_cycle_max <= unsigned(s_n_cycle_max);
   u_n_cycle_opt <= shift_right(u_n_cycle_max, 1);
-
+  n_cycle_opt_o <= std_logic_vector(u_n_cycle_opt);
   -----------------------------------------------------------------------------
   -- FSM
   -----------------------------------------------------------------------------

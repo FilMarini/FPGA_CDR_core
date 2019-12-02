@@ -54,6 +54,7 @@ architecture rtl of DMTD is
   signal s_DMTD_slocked      : std_logic;
   signal s_incr_freq         : std_logic;
   signal s_change_freq_en    : std_logic;
+  signal s_n_cycle_opt       : std_logic_vector(15 downto 0);
 
 begin  -- architecture rtl
 
@@ -82,6 +83,72 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Calculate n_cycle
   -----------------------------------------------------------------------------
+  n_cycle_calc_1 : entity work.n_cycle_calc
+    generic map (
+      g_stable_threshold => 16
+      )
+    port map (
+      ls_clk_i        => ls_clk_i,
+      rst_i           => rst_i,
+      output_A_i      => s_output_fixed_clk,
+      output_B_i      => s_output_var_clk,
+      calc_en_i       => DMTD_en_i,
+      n_cycle_o       => s_n_cycle,
+      n_cycle_ready_o => s_n_cycle_ready
+      );
+
+  n_cycle_calc_2 : entity work.n_cycle_calc
+    generic map (
+      g_stable_threshold => 16
+      )
+    port map (
+      ls_clk_i        => ls_clk_i,
+      rst_i           => rst_i,
+      output_A_i      => s_output_fixed_clk,
+      output_B_i      => s_output_fixed_clk,
+      calc_en_i       => s_DMTD_max_en,
+      n_cycle_o       => s_n_cycle_max,
+      n_cycle_ready_o => s_n_cycle_max_ready
+      );
+
+  -----------------------------------------------------------------------------
+  -- Locker manager FSM
+  -----------------------------------------------------------------------------
+  i_locker_manager_1 : entity work.locker_manager
+    port map (
+      ls_clk_i            => ls_clk_i,
+      rst_i               => rst_i,
+      DMTD_en_i           => DMTD_en_i,
+      n_cycle_i           => s_n_cycle,
+      n_cycle_ready_i     => s_n_cycle_ready,
+      n_cycle_max_i       => s_n_cycle_max,
+      n_cycle_max_ready_i => s_n_cycle_max_ready,
+      slocked_i           => s_DMTD_slocked,
+      n_cycle_opt_o       => s_n_cycle_opt,
+      DMTD_max_en_o       => s_DMTD_max_en,
+      DMTD_locked_o       => s_DMTD_locked
+      );
+
+  -----------------------------------------------------------------------------
+  -- Locker monitoring FSM
+  -----------------------------------------------------------------------------
+  i_locker_monitoring_1 : entity work.locker_monitoring
+    generic map (
+      g_threshold => g_threshold
+      )
+    port map (
+      ls_clk_i            => ls_clk_i,
+      rst_i               => rst_i,
+      n_cycle_i           => s_n_cycle,
+      n_cycle_ready_i     => s_n_cycle_ready,
+      n_cycle_max_i       => s_n_cycle_max,
+      n_cycle_max_ready_i => s_n_cycle_max_ready,
+      n_cycle_opt_in      => s_n_cycle_opt,
+      locked_i            => s_DMTD_locked,
+      slocked_o           => s_DMTD_slocked,
+      incr_freq_o         => incr_freq_o,
+      change_freq_en_o    => change_freq_en_o
+      );
 
 
 end architecture rtl;
