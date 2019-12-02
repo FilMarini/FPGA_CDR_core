@@ -37,3 +37,22 @@ This process will determine which is the present n_cycle value (sgn_n_cycle_fixe
 | Otherwise, if the nco frequency is changed, i.e. the change_freq_en_o goes to '1', than sgn_n_cycle_fixed increases (or decreases) its present value by sgn_phase_shift, which represents the current n_cycle offset (more details on p_phase_shift_counter section).  
 
 The difference between the current n_cycle (sgn_n_cycle_fixed) and the starting n_cycle (n_cycle_opt) is always given by the sgn_n_cycle_diff signal.
+
+p_phase_shift_counter
+---------------------
+
+.. figure:: locker_monitoring/p_phase_shift_counter.png
+   :scale: 50%
+
+   p_phase_shift_counter process block diagram
+
+| The process is in charge of the phase shifting determination, that means it decides whether the phase has actually moved (forward or backward) one step (phase detector's sensibility) from the previous position (sgn_n_cycle_fixed).
+| The idea is to mimic the low-pass filter of a PLL with a simple counter and threshold.
+
+| First of all the process only works when the signal s_monitoring from the Finite State Machine (FSM) = '1', otherwise the counter is resetted.
+| When active, the istantaneous phase shift is dynamically monitored (sgn_phase_shift), subtracting the present n_cycle value (sgn_n_cycle_fixed) to the istantanous n_cycle (sgn_n_cycle). Of course this presents an enable signal (sgn_n_cycle_ready) in order to sample the correct n_cycle value.
+
+| The n_cycle counter, when entering a new value, keeps jumping from the old to the new value (and vice-versa) until a semi-stable condition is reached (for example, is n_cycle is increasing, sgn_phase_shift would be something like this ...00001001000101011111..., if decreasing just substitute '1' with '-1').
+| The counter should only reach the threshold when the stable condition is met, therefore if sgn_phase_shift = 0 the counter is resetted. This way, only consecutive ones or minus ones are taken into cosideration.
+
+The output of the process is the phase shift counter (sgn_phase_shift_counter) which will be a crucial input to the FSM.
