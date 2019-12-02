@@ -61,7 +61,7 @@ begin  -- architecture rtl
   begin  -- process p_update_state
     if rst_i = '1' or calc_en_i = '0' then  -- asynchronous reset (active high)
       v_stab_counter := (others => '0');
-      state          <= st0_wait_stable_0;
+      s_state          <= st0_wait_stable_0;
     elsif rising_edge(ls_clk_i) then        -- rising clock edge
       case s_state is
         --
@@ -102,8 +102,11 @@ begin  -- architecture rtl
       --
       end case;
     end if;
-  end process p_update_state;
+  end process p_update_state_and_output;
 
+  -----------------------------------------------------------------------------
+  -- Output control
+  -----------------------------------------------------------------------------
   phase_tag_o       <= s_phase_tag;
   phase_tag_ready_o <= s_phase_tag_ready;
 
