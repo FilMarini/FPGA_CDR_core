@@ -56,3 +56,17 @@ p_phase_shift_counter
 | The counter should only reach the threshold when the stable condition is met, therefore if sgn_phase_shift = 0 the counter is resetted. This way, only consecutive ones or minus ones are taken into cosideration.
 
 The output of the process is the phase shift counter (sgn_phase_shift_counter) which will be a crucial input to the FSM.
+
+FSM (p_update_state & p_update_output)
+--------------------------------------
+
+.. figure:: locker_monitoring/FSM.png
+   :scale: 50%
+
+   FSM block diagram
+
+The FSM manages the frequency of the NCO and the loss of lock control.
+
+As soon as the locker_manager module is locked, the FSM enters the st1_monitoring state. Here the phase shift counter is continuosly monitored to check whether it goes above the threshold or beyond - threshold. Depending on which of these two conditions are satisfied, the next state will be st2a_incr or st2b_decr, which will change the NCO frequency.
+
+When the FSM find itself in the incr/decr state, an "if" condition monitors the loss of lock: if the current n_cycle (n_cycle_fixed) is very close to the edge of the n_cycle_range, than the lock is lost (the reader should remember that the lock condition starts at the middle of the range, so to get to the edge means that the NCO frequency is really not that close to the data frequency). Also, if the istantaneous n_cycle (sgn_n_cycle) differs from the current n_cycle (again, sgn_n_cycle_fixed) of (currently) 3 units, than there is loss of lock. This condition is needed to avoid funny behaviour when the clock frequency is very different and n_cycle changes several time while the counter is reaching the threshold.
