@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-11-28
+-- Last update: 2019-12-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,9 +29,9 @@ entity locker_monitoring is
   port (
     ls_clk_i            : in  std_logic;
     rst_i               : in  std_logic;
-    n_cycle_i           : in  std_logic_vector(7 downto 0);
+    n_cycle_i           : in  std_logic_vector(15 downto 0);
     n_cycle_ready_i     : in  std_logic;
-    n_cycle_max_i       : in  std_logic_vector(7 downto 0);
+    n_cycle_max_i       : in  std_logic_vector(15 downto 0);
     n_cycle_max_ready_i : in  std_logic;
     locked_i            : in  std_logic;
     slocked_o           : out std_logic;
@@ -69,16 +69,16 @@ architecture rtl of locker_monitoring is
   signal s_incr_freq             : std_logic;
   signal s_change_freq_en        : std_logic;
   signal s_locked_re             : std_logic;
-  signal s_n_cycle_max           : std_logic_vector(7 downto 0);
-  signal sgn_n_cycle_max         : signed(7 downto 0);
-  signal sgn_n_cycle_opt         : signed(7 downto 0);
+  signal s_n_cycle_max           : std_logic_vector(15 downto 0);
+  signal sgn_n_cycle_max         : signed(15 downto 0);
+  signal sgn_n_cycle_opt         : signed(15 downto 0);
   signal s_change_freq_en_re     : std_logic;
   signal s_incr_freq_re          : std_logic;
-  signal sgn_n_cycle_fixed       : signed(7 downto 0);
-  signal sgn_n_cycle_diff        : signed(7 downto 0);
-  signal sgn_phase_shift_counter : signed(7 downto 0);
-  signal sgn_phase_shift         : signed(7 downto 0);
-  signal sgn_n_cycle             : signed(7 downto 0);
+  signal sgn_n_cycle_fixed       : signed(15 downto 0);
+  signal sgn_n_cycle_diff        : signed(15 downto 0);
+  signal sgn_phase_shift_counter : signed(15 downto 0);
+  signal sgn_phase_shift         : signed(15 downto 0);
+  signal sgn_n_cycle             : signed(15 downto 0);
   -- debug
   signal s_n_cycle_ready         : std_logic;
 

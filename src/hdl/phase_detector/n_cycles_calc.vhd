@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-11-28
+-- Last update: 2019-12-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ entity n_cycles_calc is
     output_B_i      : in  std_logic;
     calc_en_i       : in  std_logic;
     rst_i           : in  std_logic;
-    n_cycle_o       : out std_logic_vector(7 downto 0);
+    n_cycle_o       : out std_logic_vector(15 downto 0);
     n_cycle_ready_o : out std_logic
     );
 end entity n_cycles_calc;
@@ -63,7 +63,7 @@ architecture rtl of n_cycles_calc is
   signal u_bomb            : unsigned(31 downto 0);
   signal s_bomb_count      : std_logic_vector(31 downto 0);
   signal s_bomb            : std_logic;
-  signal u_n_cycle_counter : unsigned(7 downto 0);
+  signal u_n_cycle_counter : unsigned(15 downto 0);
   signal s_idle            : std_logic;
   signal s_counting        : std_logic;
   signal s_lock            : std_logic;

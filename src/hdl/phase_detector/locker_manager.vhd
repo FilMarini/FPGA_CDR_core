@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-11-26
+-- Last update: 2019-12-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,9 +29,9 @@ entity locker_manager is
     ls_clk_i            : in  std_logic;
     rst_i               : in  std_logic;
     DMTD_en_i           : in  std_logic;
-    n_cycle_i           : in  std_logic_vector(7 downto 0);
+    n_cycle_i           : in  std_logic_vector(15 downto 0);
     n_cycle_ready_i     : in  std_logic;
-    n_cycle_max_i       : in  std_logic_vector(7 downto 0);
+    n_cycle_max_i       : in  std_logic_vector(15 downto 0);
     n_cycle_max_ready_i : in  std_logic;
     slocked_i           : in  std_logic;
     DMTD_max_en_o       : out std_logic;
@@ -65,9 +65,9 @@ architecture rtl of locker_manager is
   signal s_state       : t_state;
 
   signal s_lock : std_logic;
-  signal s_n_cycle_max : std_logic_vector(7 downto 0);
-  signal u_n_cycle_max : unsigned(7 downto 0);
-  signal u_n_cycle_opt : unsigned(7 downto 0);
+  signal s_n_cycle_max : std_logic_vector(15 downto 0);
+  signal u_n_cycle_max : unsigned(15 downto 0);
+  signal u_n_cycle_opt : unsigned(15 downto 0);
 
 begin  -- architecture rtl
 
