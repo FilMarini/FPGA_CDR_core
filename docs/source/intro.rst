@@ -10,3 +10,7 @@ The very basic idea is to create a clock signal using a Direct Digital Synthesis
 After this arbitrary clock is created, it must be confronted with the digital data entering the FPGA (for now the digital data is another clock) in order to match its frequency. This will be obtained by a digital Phase Detector (PD), in order to re-create in FPGA a Phase-Locked Loop (PLL). The PD will detect phase shifting of the data vs. clock, and will tell the NCO to increase or decrease the frequency.
 Since it's impossible (or maybe very very hard) for an FPGA to detect phase shifting with an infinite resolution (like an analog phase detector), a finite resolution on the phase shifting must be taken into account. This means that, even though is possible to match the data frequency vary precisely, the clock will always "walk". That means its just a matter of time before a phase offset of, at least, the phase resolution is created. The aim is to decrease this phase resolution as much as possible (the limits are given mainly by the clock and data jitter).
 
+Unfortunately, the phase detector implemented is strongly non-linear since
+
+* its operation consists on the generation of fixed length pulses every time the counter meets the threshold
+* it does not collect any data about the phase-difference amount or the time between phase-shifts
