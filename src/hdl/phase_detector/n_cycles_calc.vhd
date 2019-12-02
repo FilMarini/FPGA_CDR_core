@@ -70,10 +70,10 @@ architecture rtl of n_cycles_calc is
   signal s_evaluate        : std_logic;
 
   attribute mark_debug                      : string;
-  attribute mark_debug of s_output_B_re     : signal is "true";
-  attribute mark_debug of s_output_A_re     : signal is "true";
-  attribute mark_debug of u_n_cycle_counter : signal is "true";
-  attribute mark_debug of s_evaluate        : signal is "true";
+  -- attribute mark_debug of s_output_B_re     : signal is "true";
+  -- attribute mark_debug of s_output_A_re     : signal is "true";
+  -- attribute mark_debug of u_n_cycle_counter : signal is "true";
+  -- attribute mark_debug of s_evaluate        : signal is "true";
 
 begin  -- architecture rtl
 
