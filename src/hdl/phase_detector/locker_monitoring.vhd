@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-12-02
+-- Last update: 2019-12-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -84,16 +84,16 @@ architecture rtl of locker_monitoring is
   signal s_n_cycle_ready         : std_logic;
 
   attribute mark_debug                            : string;
-  attribute mark_debug of sgn_n_cycle             : signal is "true";
-  attribute mark_debug of sgn_n_cycle_opt         : signal is "true";
-  attribute mark_debug of s_n_cycle_ready         : signal is "true";
-  attribute mark_debug of sgn_phase_shift_counter : signal is "true";
-  attribute mark_debug of sgn_phase_shift         : signal is "true";
-  attribute mark_debug of sgn_n_cycle_fixed       : signal is "true";
-  attribute mark_debug of sgn_n_cycle_diff        : signal is "true";
-  attribute mark_debug of s_state                 : signal is "true";
-  attribute mark_debug of s_change_freq_en        : signal is "true";
-  attribute mark_debug of s_incr_freq             : signal is "true";
+  -- attribute mark_debug of sgn_n_cycle             : signal is "true";
+  -- attribute mark_debug of sgn_n_cycle_opt         : signal is "true";
+  -- attribute mark_debug of s_n_cycle_ready         : signal is "true";
+  -- attribute mark_debug of sgn_phase_shift_counter : signal is "true";
+  -- attribute mark_debug of sgn_phase_shift         : signal is "true";
+  -- attribute mark_debug of sgn_n_cycle_fixed       : signal is "true";
+  -- attribute mark_debug of sgn_n_cycle_diff        : signal is "true";
+  -- attribute mark_debug of s_state                 : signal is "true";
+  -- attribute mark_debug of s_change_freq_en        : signal is "true";
+  -- attribute mark_debug of s_incr_freq             : signal is "true";
 
 
 
@@ -203,7 +203,7 @@ begin  -- architecture rtl
         --
         when st2a_incr =>
           if n_cycle_ready_i = '1' then
-            if (abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3) or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
+            if (abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 6) or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
               s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;
@@ -212,7 +212,7 @@ begin  -- architecture rtl
         --
         when st2b_decr =>
           if n_cycle_ready_i = '1' then
-            if abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 3 or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
+            if abs(sgn_n_cycle_diff) > sgn_n_cycle_opt - 6 or (abs(sgn_n_cycle - sgn_n_cycle_fixed) > 3) then
               s_state <= st3_slocked;
             else
               s_state <= st1_monitoring;

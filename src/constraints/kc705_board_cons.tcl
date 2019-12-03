@@ -5,6 +5,9 @@ set_property IOSTANDARD LVCMOS15 [get_ports led_o]
 set_property PACKAGE_PIN AA8 [get_ports led1_o]
 set_property IOSTANDARD LVCMOS15 [get_ports led1_o]
 
+set_property PACKAGE_PIN AC9 [get_ports led2_o]
+set_property IOSTANDARD LVCMOS15 [get_ports led2_o]
+
 #set_property IOSTANDARD LVCMOS25 [get_ports cdrclk_o]
 #set_property PACKAGE_PIN AB29 [get_ports cdrclk_o]
 #set_property IOSTANDARD LVDS_25 [get_ports cdrclk_p_o]

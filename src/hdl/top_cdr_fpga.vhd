@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-12-02
+-- Last update: 2019-12-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,8 +28,9 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := true;
+    g_gen_vio        : boolean  := false;
     g_check_jc_clk   : boolean  := false;
+    g_check_pd       : boolean  := true;
     g_number_of_bits : positive := 28
     );
   port (
@@ -41,6 +42,7 @@ entity top_cdr_fpga is
     cdrclk_p_i       : in  std_logic;
     cdrclk_n_i       : in  std_logic;
     cdrclk_jc_o      : out std_logic;
+    led2_o           : out std_logic;
     led1_o           : out std_logic;
     led_o            : out std_logic;
     -- debug
@@ -51,31 +53,36 @@ end entity top_cdr_fpga;
 
 architecture rtl of top_cdr_fpga is
 
-  signal s_sysclk            : std_logic;
-  signal s_clk_250           : std_logic;
-  signal s_clk_1000          : std_logic;
-  signal s_clk_625           : std_logic;
-  signal s_sysclk_locked     : std_logic;
-  signal M_i                 : std_logic_vector(g_number_of_bits - 1 downto 0);
-  signal s_deser_clk         : std_logic_vector(7 downto 0);
-  signal s_cdrclk            : std_logic;
-  signal s_jc_locked_re_df   : std_logic;
-  signal s_cdrclk_jc         : std_logic;
-  signal s_jc_locked         : std_logic;
-  signal s_cdrclk_jc_fwd     : std_logic;
-  signal s_jc_locked_re      : std_logic;
-  signal s_clk_250_vio       : std_logic;
-  signal s_cdrclk_o          : std_logic;
-  signal s_oddr_reset        : std_logic;
-  signal vio_DTMD_en         : std_logic;
-  signal s_clk_625_cdr       : std_logic;
-  signal s_clk_about_3125    : std_logic;
-  signal s_sysclk_cdr_locked : std_logic;
-  signal s_incr_freq         : std_logic;
-  signal s_change_freq_en    : std_logic;
-  signal s_cdrclk_jc_2       : std_logic;
-  signal s_jc_locked_2       : std_logic;
-  signal s_DMTD_locked       : std_logic;
+  signal s_sysclk             : std_logic;
+  signal s_clk_250            : std_logic;
+  signal s_clk_1000           : std_logic;
+  signal s_clk_625            : std_logic;
+  signal s_sysclk_locked      : std_logic;
+  signal M_i                  : std_logic_vector(g_number_of_bits - 1 downto 0);
+  signal s_deser_clk          : std_logic_vector(7 downto 0);
+  signal s_cdrclk             : std_logic;
+  signal s_jc_locked_re_df    : std_logic;
+  signal s_cdrclk_jc          : std_logic;
+  signal s_jc_locked          : std_logic;
+  signal s_cdrclk_jc_fwd      : std_logic;
+  signal s_jc_locked_re       : std_logic;
+  signal s_clk_250_vio        : std_logic;
+  signal s_cdrclk_o           : std_logic;
+  signal s_oddr_reset         : std_logic;
+  signal vio_DTMD_en          : std_logic;
+  signal s_clk_625_cdr        : std_logic;
+  signal s_clk_about_3125     : std_logic;
+  signal s_sysclk_cdr_locked  : std_logic;
+  signal s_incr_freq          : std_logic;
+  signal s_change_freq_en     : std_logic;
+  signal s_cdrclk_jc_2        : std_logic;
+  signal s_jc_locked_2        : std_logic;
+  signal s_DMTD_locked        : std_logic;
+  signal s_M                  : std_logic_vector(g_number_of_bits - 1 downto 0);
+  signal s_change_freq_en_nco : std_logic;
+  signal s_incr_freq_nco      : std_logic;
+  signal s_change_freq_en_re  : std_logic;
+  signal s_incr_freq_re       : std_logic;
 
 begin  -- architecture rtl
 
@@ -97,6 +104,9 @@ begin  -- architecture rtl
   -- Clk Manager
   -----------------------------------------------------------------------------
   i_clock_generator : entity work.clk_wiz
+    generic map (
+      g_bandwidth => "LOW"
+      )
     port map (
       clk_in     => s_sysclk,
       reset      => '0',
@@ -120,9 +130,63 @@ begin  -- architecture rtl
       )
     port map (
       clk_i         => s_clk_250,
-      M_i           => M_i,
+      M_i           => s_M,             -- M_i if wanted from user
       mmcm_locked_i => s_sysclk_locked,
       clk_o         => s_deser_clk
+      );
+
+  -- r_edge_detect_1 : entity work.r_edge_detect
+  --   generic map (
+  --     g_clk_rise => "TRUE"
+  --     )
+  --   port map (
+  --     clk_i => s_clk_about_3125,
+  --     sig_i => s_change_freq_en,
+  --     sig_o => s_change_freq_en_re
+  --     );
+
+  -- r_edge_detect_2 : entity work.r_edge_detect
+  --   generic map (
+  --     g_clk_rise => "TRUE"
+  --     )
+  --   port map (
+  --     clk_i => s_clk_about_3125,
+  --     sig_i => s_incr_freq,
+  --     sig_o => s_incr_freq_re
+  --     );
+
+  -- closed_loop_cdc_1 : entity work.closed_loop_cdc
+  --   generic map (
+  --     n_stages => 3
+  --     )
+  --   port map (
+  --     a_clk     => s_clk_about_3125,
+  --     pulse_in  => s_change_freq_en_re,
+  --     b_clk     => s_clk_250,
+  --     pulse_out => s_change_freq_en_nco
+  --     );
+
+  -- closed_loop_cdc_2 : entity work.closed_loop_cdc
+  --   generic map (
+  --     n_stages => 3
+  --     )
+  --   port map (
+  --     a_clk     => s_clk_about_3125,
+  --     pulse_in  => s_incr_freq_re,
+  --     b_clk     => s_clk_250,
+  --     pulse_out => s_incr_freq_nco
+  --     );
+
+  frequency_manager_1 : entity work.frequency_manager
+    generic map (
+      g_number_of_bits => g_number_of_bits
+      )
+    port map (
+      clk_i            => s_clk_250,
+      rst_i            => not s_sysclk_locked,
+      change_freq_en_i => s_change_freq_en,
+      incr_freq_en_i   => s_incr_freq,
+      M_o              => s_M
       );
 
   -----------------------------------------------------------------------------
@@ -223,7 +287,7 @@ begin  -- architecture rtl
     generic map (
       g_use_ip    => false,
       g_bandwidth => "LOW",
-      g_last      => false
+      g_last      => true
       )
     port map (
       clk_in  => s_cdrclk,
@@ -232,18 +296,21 @@ begin  -- architecture rtl
       locked  => s_jc_locked
       );
 
-  i_jitter_cleaner_2 : entity work.jitter_cleaner
-    generic map (
-      g_use_ip    => false,
-      g_bandwidth => "HIGH",
-      g_last      => true
-      )
-    port map (
-      clk_in  => s_cdrclk_jc,
-      rst_i   => s_jc_locked_re_df,
-      clk_out => s_cdrclk_jc_2,
-      locked  => s_jc_locked_2
-      );
+  -- i_jitter_cleaner_2 : entity work.jitter_cleaner
+  --   generic map (
+  --     g_use_ip    => false,
+  --     g_bandwidth => "HIGH",
+  --     g_last      => true
+  --     )
+  --   port map (
+  --     clk_in  => s_cdrclk_jc,
+  --     rst_i   => s_jc_locked_re_df,
+  --     clk_out => s_cdrclk_jc_2,
+  --     locked  => s_jc_locked_2
+  --     );
+
+  s_cdrclk_jc_2 <= s_cdrclk_jc;
+  s_jc_locked_2 <= s_jc_locked;
 
   -----------------------------------------------------------------------------
   -- Check Jitter Cleaned Recovered Clock
@@ -319,11 +386,15 @@ begin  -- architecture rtl
   -- LED Control
   -----------------------------------------------------------------------------
   led1_o <= s_jc_locked;
+  led2_o <= s_DMTD_locked;
 
   -----------------------------------------------------------------------------
   -- Clk Manager for CDR
   -----------------------------------------------------------------------------
   i_clock_generator_cdr : entity work.clk_wiz_cdr
+    generic map (
+      g_bandwidth => "LOW"
+      )
     port map (
       clk_in     => s_clk_625,
       reset      => '0',
@@ -343,7 +414,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_DMTD : entity work.DMTD
     generic map (
-      g_threshold => 64
+      g_threshold => 32
       )
     port map (
       ls_clk_i         => s_clk_about_3125,
@@ -356,9 +427,14 @@ begin  -- architecture rtl
       change_freq_en_o => s_change_freq_en
       );
 
+  GEN_PD_CHECK : if g_check_pd generate
+    change_freq_en_o <= s_change_freq_en;
+    incr_freq_o      <= s_incr_freq;
+  end generate GEN_PD_CHECK;
 
-  change_freq_en_o <= s_change_freq_en;
-  incr_freq_o      <= s_incr_freq;
-
+  GEN_NO_PD_CHECK : if not g_check_pd generate
+    change_freq_en_o <= '0';
+    incr_freq_o      <= '0';
+  end generate GEN_NO_PD_CHECK;
 
 end architecture rtl;

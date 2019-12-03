@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-10-17
+-- Last update: 2019-12-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -27,6 +27,9 @@ use unisim.vcomponents.all;
 
 
 entity clk_wiz is
+  generic (
+    g_bandwidth : string  := "LOW"
+    );
   port (
     clk_in     : in  std_logic;         -- 62.5 MHz
     reset      : in  std_logic;
@@ -73,7 +76,7 @@ begin
   -----------------------------------------------------------------------------
   mmcm_adv_inst : MMCME2_ADV
     generic map
-    (BANDWIDTH           => "OPTIMIZED",
+    (BANDWIDTH           => g_bandwidth,
      COMPENSATION        => "ZHOLD",
      DIVCLK_DIVIDE       => 1,
      CLKFBOUT_MULT_F     => 5.000,

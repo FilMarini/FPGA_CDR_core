@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-07
--- Last update: 2019-10-07
+-- Last update: 2019-12-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ entity phase_weel_counter is
     );
   port (
     clk_i         : in  std_logic;
-    M_i           : in  std_logic_vector(27 downto 0);
+    M_i           : in  std_logic_vector(g_number_of_bits - 1 downto 0);
     mmcm_locked_i : in  std_logic;
     clk_o         : out std_logic_vector(7 downto 0)
     );
