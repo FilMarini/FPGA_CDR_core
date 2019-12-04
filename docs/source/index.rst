@@ -6,5 +6,6 @@ Welcome to dds_cdr's documentation!
    :caption: DDR based CDR contents
    
    intro
+   nco
    phase_detector
 

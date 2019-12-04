@@ -1,7 +1,18 @@
 ==============
 Phase Detector
 ==============
-The Phase Detector (PD) is based on the White Rabbit (WR) Dual Mixer Time Difference (DMTD) phase detector.
+
+After this arbitrary clock is created by the NCO, it must be confronted with the digital data entering the FPGA (for now the digital data is another clock) in order to match its frequency. This will be obtained by a digital Phase Detector (PD), in order to re-create in FPGA a Phase-Locked Loop (PLL). The PD will dynamically detect the phase shifting of data vs. clock, and will tell the NCO to increase or decrease the frequency accordingly.
+
+Since it's impossible (or maybe just not trivial) for an FPGA to detect phase shifting with an infinite resolution (like an analog phase detector), a finite resolution on the phase shifting must be taken into account. This means that, even though is possible for the NCO to match very closely the data frequency, the clock will always "walk", up to the phase shifting resolution, before getting re-adjusted (and walking on the other direction, keeping going back and forth).
+
+This "adjusting" operation is strongly non-linear, since
+
+* its operation consists on the generation of fixed length pulses every time the counter meets the threshold.
+* it does not collect any data about the phase-difference amount or the time between phase-shifts.
+
+
+The implemented PD is based on the White Rabbit (WR) Dual Mixer Time Difference (DMTD) phase detector.
 For reference go to section 3.5.4 and 4.3.5 of this document_.
 
 .. _document: https://white-rabbit.web.cern.ch/documents/Precise_time_and_frequency_transfer_in_a_White_Rabbit_network.pdf
