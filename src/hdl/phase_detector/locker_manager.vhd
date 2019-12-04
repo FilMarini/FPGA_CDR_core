@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-11-26
--- Last update: 2019-12-02
+-- Last update: 2019-12-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -87,6 +87,7 @@ begin  -- architecture rtl
   u_n_cycle_max <= unsigned(s_n_cycle_max);
   u_n_cycle_opt <= shift_right(u_n_cycle_max, 1);
   n_cycle_opt_o <= std_logic_vector(u_n_cycle_opt);
+
   -----------------------------------------------------------------------------
   -- FSM
   -----------------------------------------------------------------------------

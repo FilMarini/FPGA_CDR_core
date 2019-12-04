@@ -9,3 +9,10 @@ clean:
 
 ip_cores_clean: clean
 	$(MAKE) -C src/ip_cores clean
+
+dummy_hw:
+	$(MAKE) -C dummy_data_sender all
+
+dummy_hw_clean:
+	$(MAKE) -C dummy_data_sender clean
+
