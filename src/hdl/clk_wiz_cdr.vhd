@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-12-03
+-- Last update: 2019-12-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ begin
      CLKOUT4_PHASE       => 90.000,
      CLKOUT4_DUTY_CYCLE  => 0.500,
      CLKOUT4_USE_FINE_PS => false,
-     CLKIN1_PERIOD       => 5.000,
+     CLKIN1_PERIOD       => 16.000,
      REF_JITTER1         => 0.010)
     port map
     -- Output clocks

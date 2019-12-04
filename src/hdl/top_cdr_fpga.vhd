@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-12-03
+-- Last update: 2019-12-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -36,12 +36,14 @@ entity top_cdr_fpga is
   port (
     sysclk_p_i       : in  std_logic;
     sysclk_n_i       : in  std_logic;
+    clk_to_rec_i     : in  std_logic;
     -- cdrclk_o  : out std_logic;
     cdrclk_p_o       : out std_logic;
     cdrclk_n_o       : out std_logic;
     cdrclk_p_i       : in  std_logic;
     cdrclk_n_i       : in  std_logic;
     cdrclk_jc_o      : out std_logic;
+    led3_o           : out std_logic;
     led2_o           : out std_logic;
     led1_o           : out std_logic;
     led_o            : out std_logic;
@@ -83,6 +85,7 @@ architecture rtl of top_cdr_fpga is
   signal s_incr_freq_nco      : std_logic;
   signal s_change_freq_en_re  : std_logic;
   signal s_incr_freq_re       : std_logic;
+  signal s_clk_to_rec : std_logic;
 
 begin  -- architecture rtl
 
@@ -387,16 +390,25 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   led1_o <= s_jc_locked;
   led2_o <= s_DMTD_locked;
+  led3_o <= s_sysclk_cdr_locked;
 
   -----------------------------------------------------------------------------
-  -- Clk Manager for CDR
+  -- Clk Manager for clk to reconstruct to feed the CDR
   -----------------------------------------------------------------------------
+  -- BUFIO_inst : BUFIO
+  --   port map (
+  --     O => s_clk_to_rec,  -- 1-bit output: Clock output (connect to I/O clock loads).
+  --     I => clk_to_rec_i   -- 1-bit input: Clock input (connect to an IBUF or BUFMR).
+  --     );
+
+  s_clk_to_rec <= clk_to_rec_i;
+
   i_clock_generator_cdr : entity work.clk_wiz_cdr
     generic map (
       g_bandwidth => "LOW"
       )
     port map (
-      clk_in     => s_clk_625,
+      clk_in     => s_clk_to_rec,
       reset      => '0',
       clk_out0   => s_clk_about_3125,
       clk_out1   => s_clk_625_cdr,
@@ -421,7 +433,7 @@ begin  -- architecture rtl
       hs_fixed_clk_i   => s_clk_625_cdr,
       hs_var_clk_i     => s_cdrclk_jc_2,
       rst_i            => not s_jc_locked,
-      DMTD_en_i        => vio_DTMD_en,
+      DMTD_en_i        => '0', --s_sysclk_cdr_locked,
       DMTD_locked_o    => s_DMTD_locked,
       incr_freq_o      => s_incr_freq,
       change_freq_en_o => s_change_freq_en

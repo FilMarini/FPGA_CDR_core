@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2019-12-03
+-- Last update: 2019-12-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ begin  -- architecture rtl
   p_freq_manager : process (clk_i, rst_i) is
   begin  -- process p_freq_manager
     if rst_i = '1' then                 -- asynchronous reset (active high)
-      sgn_M <= x"4000100";              -- should start at 4000000
+      sgn_M <= x"4000000";              -- should start at 4000000
     elsif rising_edge(clk_i) then       -- rising clock edge
       if s_change_freq_en_re = '1' then
         case s_incr_freq_re is
