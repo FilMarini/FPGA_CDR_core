@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2019-12-04
+-- Last update: 2019-12-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,6 +39,8 @@ architecture rtl of frequency_manager is
 
   signal s_change_freq_en_re : std_logic;
   signal s_incr_freq_re      : std_logic;
+  signal s_change_freq_en_df : std_logic;
+  signal s_incr_freq_en_df   : std_logic;
   signal sgn_M               : signed(g_number_of_bits - 1 downto 0);
 
   attribute mark_debug                        : string;
@@ -51,13 +53,35 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Rising edge detectors
   -----------------------------------------------------------------------------
+  i_double_flop_1 : entity work.double_flop
+    generic map (
+      g_width    => 1,
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i    => clk_i,
+      sig_i(0) => change_freq_en_i,
+      sig_o(0) => s_change_freq_en_df
+      );
+
+  i_double_flop_2 : entity work.double_flop
+    generic map (
+      g_width    => 1,
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i    => clk_i,
+      sig_i(0) => incr_freq_en_i,
+      sig_o(0) => s_incr_freq_en_df
+      );
+
   r_edge_detect_1 : entity work.r_edge_detect
     generic map (
       g_clk_rise => "TRUE"
       )
     port map (
       clk_i => clk_i,
-      sig_i => change_freq_en_i,
+      sig_i => s_change_freq_en_df,
       sig_o => s_change_freq_en_re
       );
 
@@ -67,7 +91,7 @@ begin  -- architecture rtl
       )
     port map (
       clk_i => clk_i,
-      sig_i => incr_freq_en_i,
+      sig_i => s_incr_freq_en_df,
       sig_o => s_incr_freq_re
       );
 

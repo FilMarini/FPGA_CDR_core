@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-12-04
+-- Last update: 2019-12-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := false;
+    g_gen_vio        : boolean  := true;
     g_check_jc_clk   : boolean  := false;
     g_check_pd       : boolean  := true;
     g_number_of_bits : positive := 28
@@ -125,7 +125,7 @@ begin  -- architecture rtl
       );
 
   -----------------------------------------------------------------------------
-  -- Phase Wheel Counter
+  -- NCO
   -----------------------------------------------------------------------------
   i_phase_weel_counter_1 : entity work.phase_weel_counter
     generic map (
@@ -133,52 +133,10 @@ begin  -- architecture rtl
       )
     port map (
       clk_i         => s_clk_250,
-      M_i           => s_M,             -- M_i if wanted from user
+      M_i           => M_i,             -- M_i if from user, s_M automatic
       mmcm_locked_i => s_sysclk_locked,
       clk_o         => s_deser_clk
       );
-
-  -- r_edge_detect_1 : entity work.r_edge_detect
-  --   generic map (
-  --     g_clk_rise => "TRUE"
-  --     )
-  --   port map (
-  --     clk_i => s_clk_about_3125,
-  --     sig_i => s_change_freq_en,
-  --     sig_o => s_change_freq_en_re
-  --     );
-
-  -- r_edge_detect_2 : entity work.r_edge_detect
-  --   generic map (
-  --     g_clk_rise => "TRUE"
-  --     )
-  --   port map (
-  --     clk_i => s_clk_about_3125,
-  --     sig_i => s_incr_freq,
-  --     sig_o => s_incr_freq_re
-  --     );
-
-  -- closed_loop_cdc_1 : entity work.closed_loop_cdc
-  --   generic map (
-  --     n_stages => 3
-  --     )
-  --   port map (
-  --     a_clk     => s_clk_about_3125,
-  --     pulse_in  => s_change_freq_en_re,
-  --     b_clk     => s_clk_250,
-  --     pulse_out => s_change_freq_en_nco
-  --     );
-
-  -- closed_loop_cdc_2 : entity work.closed_loop_cdc
-  --   generic map (
-  --     n_stages => 3
-  --     )
-  --   port map (
-  --     a_clk     => s_clk_about_3125,
-  --     pulse_in  => s_incr_freq_re,
-  --     b_clk     => s_clk_250,
-  --     pulse_out => s_incr_freq_nco
-  --     );
 
   frequency_manager_1 : entity work.frequency_manager
     generic map (
@@ -426,14 +384,14 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_DMTD : entity work.DMTD
     generic map (
-      g_threshold => 32
+      g_threshold => 64
       )
     port map (
       ls_clk_i         => s_clk_about_3125,
       hs_fixed_clk_i   => s_clk_625_cdr,
       hs_var_clk_i     => s_cdrclk_jc_2,
       rst_i            => not s_jc_locked,
-      DMTD_en_i        => '0', --s_sysclk_cdr_locked,
+      DMTD_en_i        => s_sysclk_cdr_locked,
       DMTD_locked_o    => s_DMTD_locked,
       incr_freq_o      => s_incr_freq,
       change_freq_en_o => s_change_freq_en
