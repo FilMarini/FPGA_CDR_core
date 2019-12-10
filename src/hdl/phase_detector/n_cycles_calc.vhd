@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-16
--- Last update: 2019-12-02
+-- Last update: 2019-12-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -70,10 +70,10 @@ architecture rtl of n_cycles_calc is
   signal s_evaluate        : std_logic;
 
   attribute mark_debug                      : string;
-  attribute mark_debug of s_output_B_re     : signal is "true";
-  attribute mark_debug of s_output_A_re     : signal is "true";
-  attribute mark_debug of u_n_cycle_counter : signal is "true";
-  attribute mark_debug of s_evaluate        : signal is "true";
+  -- attribute mark_debug of s_output_B_re     : signal is "true";
+  -- attribute mark_debug of s_output_A_re     : signal is "true";
+  -- attribute mark_debug of u_n_cycle_counter : signal is "true";
+  -- attribute mark_debug of s_evaluate        : signal is "true";
 
 begin  -- architecture rtl
 

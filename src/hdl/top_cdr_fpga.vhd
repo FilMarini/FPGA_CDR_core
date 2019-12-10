@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-11-29
+-- Last update: 2019-12-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,9 +28,10 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := false;
+    g_gen_vio        : boolean  := true;
     g_check_jc_clk   : boolean  := false;
-    g_number_of_bits : positive := 28
+    g_number_of_bits : positive := 28;
+    g_check_pd       : boolean  := true
     );
   port (
     sysclk_p_i       : in  std_logic;
@@ -40,6 +41,7 @@ entity top_cdr_fpga is
     cdrclk_n_o       : out std_logic;
     cdrclk_p_i       : in  std_logic;
     cdrclk_n_i       : in  std_logic;
+    clk_to_rec_i     : in  std_logic;
     cdrclk_jc_o      : out std_logic;
     led1_o           : out std_logic;
     led_o            : out std_logic;
@@ -76,6 +78,7 @@ architecture rtl of top_cdr_fpga is
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
   signal s_DMTD_locked       : std_logic;
+  signal s_clk_to_rec        : std_logic;
 
 begin  -- architecture rtl
 
@@ -223,7 +226,7 @@ begin  -- architecture rtl
     generic map (
       g_use_ip    => false,
       g_bandwidth => "LOW",
-      g_last      => false
+      g_last      => true
       )
     port map (
       clk_in  => s_cdrclk,
@@ -232,18 +235,21 @@ begin  -- architecture rtl
       locked  => s_jc_locked
       );
 
-  i_jitter_cleaner_2 : entity work.jitter_cleaner
-    generic map (
-      g_use_ip    => false,
-      g_bandwidth => "HIGH",
-      g_last      => true
-      )
-    port map (
-      clk_in  => s_cdrclk_jc,
-      rst_i   => s_jc_locked_re_df,
-      clk_out => s_cdrclk_jc_2,
-      locked  => s_jc_locked_2
-      );
+  -- i_jitter_cleaner_2 : entity work.jitter_cleaner
+  --   generic map (
+  --     g_use_ip    => false,
+  --     g_bandwidth => "HIGH",
+  --     g_last      => true
+  --     )
+  --   port map (
+  --     clk_in  => s_cdrclk_jc,
+  --     rst_i   => s_jc_locked_re_df,
+  --     clk_out => s_cdrclk_jc_2,
+  --     locked  => s_jc_locked_2
+  --     );
+
+  s_cdrclk_jc_2 <= s_cdrclk_jc;
+  s_jc_locked_2 <= s_jc_locked;
 
   -----------------------------------------------------------------------------
   -- Check Jitter Cleaned Recovered Clock
@@ -321,11 +327,20 @@ begin  -- architecture rtl
   led1_o <= s_jc_locked;
 
   -----------------------------------------------------------------------------
+  -- Data to rec
+  -----------------------------------------------------------------------------
+  i_BUFG : BUFG
+    port map (
+      I => clk_to_rec_i,
+      O => s_clk_to_rec
+      );
+
+  -----------------------------------------------------------------------------
   -- Clk Manager for CDR
   -----------------------------------------------------------------------------
   i_clock_generator_cdr : entity work.clk_wiz_cdr
     port map (
-      clk_in     => s_clk_625,
+      clk_in     => s_cdrclk_jc_2,
       reset      => '0',
       clk_out0   => s_clk_about_3125,
       clk_out1   => s_clk_625_cdr,
@@ -348,7 +363,7 @@ begin  -- architecture rtl
     port map (
       ls_clk_i         => s_clk_about_3125,
       hs_fixed_clk_i   => s_clk_625_cdr,
-      hs_var_clk_i     => s_cdrclk_jc_2,
+      hs_var_clk_i     => s_clk_to_rec,
       rst_i            => not s_jc_locked,
       DMTD_en_i        => vio_DTMD_en,
       DMTD_locked_o    => s_DMTD_locked,
@@ -357,8 +372,15 @@ begin  -- architecture rtl
       );
 
 
-  change_freq_en_o <= s_change_freq_en;
-  incr_freq_o      <= s_incr_freq;
+  GEN_CHECK_PD : if g_check_pd generate
+    change_freq_en_o <= s_change_freq_en;
+    incr_freq_o      <= s_incr_freq;
+  end generate GEN_CHECK_PD;
+
+  GEN_NO_CHECK_PD : if not g_check_pd generate
+    change_freq_en_o <= '0';
+    incr_freq_o      <= '0';
+  end generate GEN_NO_CHECK_PD;
 
 
 end architecture rtl;
