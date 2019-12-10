@@ -1,0 +1,1 @@
+../frequency_detector.vhd

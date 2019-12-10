@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-12-07
+-- Last update: 2019-12-09
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ entity top_cdr_fpga is
   port (
     sysclk_p_i       : in  std_logic;
     sysclk_n_i       : in  std_logic;
-    clk_to_rec_i     : in  std_logic;
+    data_to_rec_i     : in  std_logic;
     -- cdrclk_o  : out std_logic;
     cdrclk_p_o       : out std_logic;
     cdrclk_n_o       : out std_logic;
@@ -86,6 +86,8 @@ architecture rtl of top_cdr_fpga is
   signal s_change_freq_en_re  : std_logic;
   signal s_incr_freq_re       : std_logic;
   signal s_clk_to_rec : std_logic;
+  signal s_clk_3125_data : std_logic;
+  signal s_data_to_rec : std_logic;
 
 begin  -- architecture rtl
 
@@ -359,17 +361,17 @@ begin  -- architecture rtl
   --     I => clk_to_rec_i   -- 1-bit input: Clock input (connect to an IBUF or BUFMR).
   --     );
 
-  s_clk_to_rec <= clk_to_rec_i;
+  s_data_to_rec <= data_to_rec_i;
 
   i_clock_generator_cdr : entity work.clk_wiz_cdr
     generic map (
       g_bandwidth => "LOW"
       )
     port map (
-      clk_in     => s_clk_to_rec,
+      clk_in     => s_cdrclk_jc_2,
       reset      => '0',
       clk_out0   => s_clk_about_3125,
-      clk_out1   => s_clk_625_cdr,
+      clk_out1   => open,
       clk_out2   => open,
       clk_out3   => open,
       clk_out4   => open,
@@ -382,16 +384,15 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- DMTD
   -----------------------------------------------------------------------------
-  i_DMTD : entity work.DMTD
+  i_frequency_detector_1: entity work.frequency_detector
     generic map (
-      g_threshold => 64
-      )
+      g_threshold => 20)
     port map (
       ls_clk_i         => s_clk_about_3125,
-      hs_fixed_clk_i   => s_clk_625_cdr,
+      data_i           => s_data_to_rec,
       hs_var_clk_i     => s_cdrclk_jc_2,
-      rst_i            => not s_jc_locked,
-      DMTD_en_i        => s_sysclk_cdr_locked,
+      rst_i            => not s_jc_locked_2,
+      DMTD_en_i        => vio_DTMD_en,
       DMTD_locked_o    => s_DMTD_locked,
       incr_freq_o      => s_incr_freq,
       change_freq_en_o => s_change_freq_en
