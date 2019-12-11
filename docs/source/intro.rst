@@ -5,8 +5,9 @@ Introduction
 | The Clock and Data Recovery job is a relatively simple one: retrieve a clock with the frequency needed to sample each bit of the incoming data stream.
 | Its design, unfortunately, is not so trivial.
 
-Usually a CDR architecture is similar to the Phase Locked Loop (PLL) model, where the phase of a reference signal is compared to the phase of an adjustable feedback signal, generally provided by a Voltage Controlled Oscillator (VCO). The output of the Phase Detector (PD) is filtered and used to pilot the VCO frequency. When the phase comparison is in steady state, e.g. the phase and frequency of the reference signal is equal to the phase and frequency of the feeedback signal, we say that the PLL is locked. In the case of a CDR, the steady state is reached when the VCO clock frequency match the reference signal's data rate.
+Usually a CDR architecture is similar to the Phase Locked Loop (PLL) model (:numref:`pll_basic`), where the phase of a reference signal is compared to the phase of an adjustable feedback signal, generally provided by a Voltage Controlled Oscillator (VCO). The output of the Phase Detector (PD) is filtered and used to pilot the VCO frequency. When the phase comparison is in steady state, e.g. the phase and frequency of the reference signal is equal to the phase and frequency of the feeedback signal, we say that the PLL is locked. In the case of a CDR, the steady state is reached when the VCO clock frequency match the reference signal's data rate.
 
+.. _pll_basic:
 .. figure:: intro/pll.png
    :scale: 100%
 
