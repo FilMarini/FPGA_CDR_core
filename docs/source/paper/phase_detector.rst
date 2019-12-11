@@ -24,11 +24,12 @@ The frequency difference is then given by:
 
 Practical implementation
 ========================
-| By using two clocks with 50% duty cycle and orthogonal with each-other (:math:`\pi / 2` of phase difference), it is possible to divide the entire 360 degrees clock period into four quandrants.
+| By using two clocks with 50% duty cycle and orthogonal with each-other (:math:`\pi / 2` of phase difference), it is possible to divide the entire 360 degrees clock period into four quandrants, as shown in :numref:`quadrants` .
 | The two phase detector (one for each clock) indicate the quandrants where the data signal transition is located, updating this information at every new data edge.
 
 If the data phase is shifting with respect to the clock edges, than the quadrant that detects the transition will change, in a direction compatible with the phase shifting direction. 
 
+.. _quadrants:
 .. figure:: phase_detector/quadrants.png
    :scale: 50%
    :align: center
@@ -36,8 +37,9 @@ If the data phase is shifting with respect to the clock edges, than the quadrant
    The division of the clock period in four equal qudrants (indicated by the Roman numerals). :math:`I_{CLK}` stands for In-phase Clock, which is the reference, :math:`Q_{CLK}` stands for Quadrature Clock, which idetifies the :math:`+ \pi / 2` (or :math:`- \pi /2`) phase difference  clock. To idetify a quandrant, an Early (E) and Late (L) notation (Clk vs Data) is used. If a data transition is first located in quadrant III and then in quadrant II, the data phase is shifting to the left, which equals that the data transitions are based on a clock faster than the NCO clock.
 
 
-The implementation of such a kind of phase detector is still under evaluation. One possible solution is to use two Alexander type Bang-Bang phase detector, one working with the reference clock, the other with the :math:`\pi / 2` phase offset, to idetify the quadrants, and adjust the NCO frequency at every quadrant transition.
+The implementation of such a kind of phase detector is still under evaluation. One possible solution is to use two Alexander type Bang-Bang phase detector (:numref:`bbpd`), one working with the reference clock, the other with the :math:`\pi / 2` phase offset, to idetify the quadrants, and adjust the NCO frequency at every quadrant transition.
 
+.. _bbpd:
 .. figure:: phase_detector/BBPD.png
    :scale: 70%
    :align: center
