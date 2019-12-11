@@ -3,10 +3,17 @@ Welcome to dds_cdr's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: DDR based CDR contents
+   :caption: RT2020 Abstract Paper
    
-   abstract
-   intro
-   nco
-   phase_detector
+   paper/abstract
+   paper/intro
+   paper/nco
+   paper/phase_detector
+   paper/conclusions
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code Description
+
+   code_explanation/phase_detector
 

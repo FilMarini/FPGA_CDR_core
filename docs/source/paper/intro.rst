@@ -10,6 +10,7 @@ Usually a CDR architecture is similar to the Phase Locked Loop (PLL) model (:num
 .. _pll_basic:
 .. figure:: intro/pll.png
    :scale: 100%
+   :align: center
 
    Basic design of a PLL.
    

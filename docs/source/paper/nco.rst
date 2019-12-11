@@ -15,6 +15,7 @@ Let's imagine now that the vector skips a few (fixed) points for each jump, the 
 .. _phase_wheel:
 .. figure:: nco/phase_wheel.png
    :scale: 100%
+   :align: center
 
    The phase wheel
 
