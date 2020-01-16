@@ -56,8 +56,8 @@ begin  -- architecture behav
   -- waveform generation
   WaveGen_Proc: process
   begin
-    wait for 21 ns;
    while true loop
+    wait for 1 ns;
      data_in <= '1';
      wait for 20 ns;
      data_in <= '1';

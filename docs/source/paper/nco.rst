@@ -1,6 +1,6 @@
-===============================
-Numerical Controlled Oscillator
-===============================
+=================================
+Numerically Controlled Oscillator
+=================================
 
 To generate a waveform, the design of a NCO [1]_ consists of two parts:
 
@@ -14,7 +14,7 @@ Let's imagine now that the vector skips a few (fixed) points for each jump, the 
 
 .. _phase_wheel:
 .. figure:: nco/phase_wheel.png
-   :scale: 100%
+   :width: 50%
    :align: center
 
    The phase wheel

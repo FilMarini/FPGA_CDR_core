@@ -34,3 +34,6 @@ phase_detector_tb.o: phase_detector_tb.vhd
 /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o
 phase_detector.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o
 phase_detector_tb.o:  /usr/local/lib/ghdl/ieee/v93/std_logic_1164.o /usr/local/lib/ghdl/ieee/v93/std_logic_1164_body.o phase_detector.o
+
+clean:
+	rm -rf *.o phase_detector_tb work-obj* *.ghw
