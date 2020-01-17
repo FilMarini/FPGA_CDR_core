@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2019-12-09
+-- Last update: 2020-01-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -363,40 +363,9 @@ begin  -- architecture rtl
 
   s_data_to_rec <= data_to_rec_i;
 
-  i_clock_generator_cdr : entity work.clk_wiz_cdr
-    generic map (
-      g_bandwidth => "LOW"
-      )
-    port map (
-      clk_in     => s_cdrclk_jc_2,
-      reset      => '0',
-      clk_out0   => s_clk_about_3125,
-      clk_out1   => open,
-      clk_out2   => open,
-      clk_out3   => open,
-      clk_out4   => open,
-      locked     => s_sysclk_cdr_locked,
-      psen_p     => '0',
-      psincdec_p => '0',
-      psdone_p   => open
-      );
-
   -----------------------------------------------------------------------------
   -- DMTD
   -----------------------------------------------------------------------------
-  i_frequency_detector_1: entity work.frequency_detector
-    generic map (
-      g_threshold => 20)
-    port map (
-      ls_clk_i         => s_clk_about_3125,
-      data_i           => s_data_to_rec,
-      hs_var_clk_i     => s_cdrclk_jc_2,
-      rst_i            => not s_jc_locked_2,
-      DMTD_en_i        => vio_DTMD_en,
-      DMTD_locked_o    => s_DMTD_locked,
-      incr_freq_o      => s_incr_freq,
-      change_freq_en_o => s_change_freq_en
-      );
 
   GEN_PD_CHECK : if g_check_pd generate
     change_freq_en_o <= s_change_freq_en;

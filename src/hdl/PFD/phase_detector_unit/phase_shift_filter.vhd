@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-22
--- Last update: 2019-12-09
+-- Last update: 2020-01-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,12 +22,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_misc.all;
 
 entity phase_shift_filter is
 
   generic (
-    threshold             : natural := 10;
-    bit_num_time_interval : natural := 8
+    -- threhsold value to decide if actually early or late
+    threshold   : natural := 10;
+    -- 2**(g_num_trans) = number of transition before evaluating
+    g_num_trans : natural := 8
     );
   port (
     sys_clk        : in  std_logic;
@@ -49,14 +52,16 @@ architecture rtl of phase_shift_filter is
                           st2_evaluating
                           );
 
-  signal s_state           : t_filter_state;
-  signal u_time_counter    : unsigned(31 downto 0)         := (others => '0');
-  signal sgd_phase_counter : signed(31 downto 0)           := (others => '0');
-  signal s_time_counter    : std_logic_vector(31 downto 0) := (others => '0');
-  signal s_time_count      : std_logic;
-  signal phase_up_synch    : std_logic_vector(1 downto 0);
-  signal phase_down_synch  : std_logic_vector(1 downto 0);
-  signal phase_counter     : std_logic_vector(31 downto 0);
+  signal s_state              : t_filter_state;
+  signal u_time_counter       : unsigned(31 downto 0)         := (others => '0');
+  signal sgd_phase_counter    : signed(31 downto 0)           := (others => '0');
+  signal s_time_counter       : std_logic_vector(31 downto 0) := (others => '0');
+  signal s_time_count         : std_logic;
+  signal phase_up_synch       : std_logic_vector(1 downto 0);
+  signal phase_down_synch     : std_logic_vector(1 downto 0);
+  signal phase_counter        : std_logic_vector(31 downto 0);
+  signal s_transition_occured : std_logic;
+  signal s_phase_vector : std_logic_vector(1 downto 0);
 
   -- attribute mark_debug : string;
   -- attribute mark_debug of s_time_counter : signal is "true";
@@ -91,7 +96,7 @@ begin  -- architecture rtl
             phase_up     <= '0';
             phase_down   <= '0';
             s_time_count <= '1';
-            if s_time_counter(bit_num_time_interval) = '0' then
+            if s_time_counter(g_num_trans) = '0' then
               if phase_up_synch(1) = '1' and phase_down_synch(1) = '0' then
                 sgd_phase_counter <= sgd_phase_counter + 1;
               elsif phase_up_synch(1) = '0' and phase_down_synch(1) = '1' then
@@ -121,13 +126,18 @@ begin  -- architecture rtl
     end if;
   end process state_proc;
 
+  s_phase_vector <= phase_up_raw & phase_down_raw;
+  s_transition_occured <= or_reduce(s_phase_vector);
+
   p_timeout_counter : process(sys_clk)
   begin
     if rising_edge(sys_clk) then
       if s_time_count = '0' then
         u_time_counter <= (others => '0');
       else
-        u_time_counter <= u_time_counter + 1;
+        if s_transition_occured = '1' then
+          u_time_counter <= u_time_counter + 1;
+        end if;
       end if;
     end if;
   end process p_timeout_counter;

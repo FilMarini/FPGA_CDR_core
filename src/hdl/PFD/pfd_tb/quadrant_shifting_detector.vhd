@@ -1,0 +1,1 @@
+../frequency_detector_unit/quadrant_shifting_detector.vhd
