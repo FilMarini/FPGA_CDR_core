@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-22
--- Last update: 2020-01-17
+-- Last update: 2020-01-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -34,6 +34,7 @@ entity phase_shift_filter is
     );
   port (
     sys_clk        : in  std_logic;
+    rst_i          : in  std_logic;
     en_i           : in  std_logic;
     phase_up_raw   : in  std_logic;
     phase_down_raw : in  std_logic;
@@ -61,7 +62,9 @@ architecture rtl of phase_shift_filter is
   signal phase_down_synch     : std_logic_vector(1 downto 0);
   signal phase_counter        : std_logic_vector(31 downto 0);
   signal s_transition_occured : std_logic;
-  signal s_phase_vector : std_logic_vector(1 downto 0);
+  signal s_phase_vector       : std_logic_vector(1 downto 0);
+  signal s_phase_up           : std_logic;
+  signal s_phase_down         : std_logic;
 
   -- attribute mark_debug : string;
   -- attribute mark_debug of s_time_counter : signal is "true";
@@ -86,15 +89,15 @@ begin  -- architecture rtl
         case s_state is
 
           when st0_idle =>
-            phase_up          <= '0';
-            phase_down        <= '0';
+            s_phase_up        <= '0';
+            s_phase_down      <= '0';
             sgd_phase_counter <= (others => '0');
             s_time_count      <= '0';
             s_state           <= st1_counting;
 
           when st1_counting =>
-            phase_up     <= '0';
-            phase_down   <= '0';
+            s_phase_up   <= '0';
+            s_phase_down <= '0';
             s_time_count <= '1';
             if s_time_counter(g_num_trans) = '0' then
               if phase_up_synch(1) = '1' and phase_down_synch(1) = '0' then
@@ -109,14 +112,14 @@ begin  -- architecture rtl
           when st2_evaluating =>
             s_time_count <= '0';
             if sgd_phase_counter < (- threshold) then
-              phase_down <= '1';
-              phase_up   <= '0';
+              s_phase_down <= '1';
+              s_phase_up   <= '0';
             elsif sgd_phase_counter > threshold then
-              phase_up   <= '1';
-              phase_down <= '0';
+              s_phase_up   <= '1';
+              s_phase_down <= '0';
             else
-              phase_up   <= '0';
-              phase_down <= '0';
+              s_phase_up   <= '0';
+              s_phase_down <= '0';
             end if;
             s_state <= st0_idle;
 
@@ -126,7 +129,7 @@ begin  -- architecture rtl
     end if;
   end process state_proc;
 
-  s_phase_vector <= phase_up_raw & phase_down_raw;
+  s_phase_vector       <= phase_up_raw & phase_down_raw;
   s_transition_occured <= or_reduce(s_phase_vector);
 
   p_timeout_counter : process(sys_clk)
@@ -145,5 +148,28 @@ begin  -- architecture rtl
 
   -- time_counter <= s_time_counter;
   phase_counter <= std_logic_vector(sgd_phase_counter);
+
+  -- pulse stretcher
+  pulse_stretcher_1 : entity work.pulse_stretcher
+    generic map (
+      g_num_of_steps => 2
+      )
+    port map (
+      clk_i => sys_clk,
+      rst_i => rst_i,
+      d_i   => s_phase_up,
+      q_o   => phase_up
+      );
+
+  pulse_stretcher_2 : entity work.pulse_stretcher
+    generic map (
+      g_num_of_steps => 2
+      )
+    port map (
+      clk_i => sys_clk,
+      rst_i => rst_i,
+      d_i   => s_phase_down,
+      q_o   => phase_down
+      );
 
 end architecture rtl;

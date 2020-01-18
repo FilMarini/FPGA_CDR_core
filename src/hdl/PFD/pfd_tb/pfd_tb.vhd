@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-17
+-- Last update: 2020-01-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ begin  -- architecture behav
   -- clock generation
   clk_i  <= not clk_i  after 8 ns;
   clk_q_i <= clk_i after 4 ns;
-  data_i <= not data_i after 15.999 ns;
+  data_i <= not data_i after 16.001 ns;
 
   -- waveform generation
   WaveGen_Proc : process

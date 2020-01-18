@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-17
+-- Last update: 2020-01-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -85,6 +85,7 @@ begin  -- architecture rtl
       )
     port map (
       sys_clk        => clk_i,
+      rst_i          => rst_i,
       en_i           => en_i,
       phase_up_raw   => s_x,
       phase_down_raw => s_y,
@@ -99,6 +100,7 @@ begin  -- architecture rtl
       )
     port map (
       sys_clk        => clk_q_i,
+      rst_i          => rst_i,
       en_i           => en_i,
       phase_up_raw   => s_q_x,
       phase_down_raw => s_q_y,

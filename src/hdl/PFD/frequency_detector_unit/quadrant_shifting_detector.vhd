@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-17
+-- Last update: 2020-01-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -50,7 +50,8 @@ architecture rtl of quadrant_shifter_detector is
   signal s_update_quadrant   : std_logic;
   signal s_shifting          : std_logic;
   signal s_shifting_detected : std_logic;
-
+  signal s_enable : std_logic;
+  signal s_not_locked : std_logic;
 
 begin  -- architecture rtl
 
@@ -69,9 +70,11 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Current quadrant
   -----------------------------------------------------------------------------
-  p_current_quadrant : process (clk_i) is
+  p_current_quadrant: process (clk_i, rst_i) is
   begin  -- process p_current_quadrant
-    if rising_edge(clk_i) then          -- rising clock edge
+    if rst_i = '1' then                 -- asynchronous reset (active high)
+      s_current_quadrant <= (others => '0');
+    elsif rising_edge(clk_i) then       -- rising clock edge
       if s_update_quadrant = '1' then
         s_current_quadrant <= s_quadrant;
       end if;
@@ -201,9 +204,25 @@ begin  -- architecture rtl
     end case;
   end process p_update_output;
 
+  -- set reset ff
+  s_not_locked <= not s_locked;
+
+  set_reset_ffd_1: entity work.set_reset_ffd
+    generic map (
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i   => clk_i,
+      set_i   => s_update_quadrant,
+      reset_i => s_not_locked,
+      q_o     => s_enable);
+
+  -- output control
+  shifting_detected_o <= s_shifting_detected when s_enable = '1' else
+                         '0';
+
   locked_o            <= s_locked;
   shifting_o          <= s_shifting;
-  shifting_detected_o <= s_shifting_detected;
 
 
 
