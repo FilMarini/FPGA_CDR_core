@@ -80,8 +80,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   phase_shift_filter_in_phase : entity work.phase_shift_filter
     generic map (
-      threshold   => 31,
-      g_num_trans => 5
+      threshold   => 64,
+      g_num_trans => 6
       )
     port map (
       sys_clk        => clk_i,
