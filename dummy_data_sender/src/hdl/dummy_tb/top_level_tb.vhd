@@ -16,7 +16,7 @@
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
--- 2020-01-24  1.0      filippo	Created
+-- 2020-01-24  1.0      filippo Created
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -43,11 +43,13 @@ architecture behav of top_level_tb is
 
   -- signals
   signal s_errors : std_logic;
+  signal s_reset  : std_logic;
+  signal s_prbs_cdk_clk : std_logic;
 
 begin  -- architecture behav
 
   -- component instantiation
-  DUT: entity work.top_level
+  DUT : entity work.top_level
     port map (
       clk_i   => clk_i,
       led_o   => led_o,
@@ -58,20 +60,29 @@ begin  -- architecture behav
 
   -- clock generation
   clk_i <= not clk_i after 4 ns;
+  s_prbs_cdk_clk <= not s_prbs_cdk_clk after 16 ns;
 
-  PRBS_ANY_1: entity work.PRBS_ANY
+  p_reset_gen : process is
+  begin  -- process p_reset_gen
+    s_reset <= '1';
+    wait for 10 ns;
+    s_reset <= '0';
+    wait;
+  end process p_reset_gen;
+
+  PRBS_ANY_1 : entity work.PRBS_ANY
     generic map (
       CHK_MODE    => true,
-      INV_PATTERN => false,
-      POLY_LENGHT => 9,
-      POLY_TAP    => 5,
+      INV_PATTERN => true,
+      POLY_LENGHT => 7,
+      POLY_TAP    => 6,
       NBITS       => 1
       )
     port map (
-      RST      => '0',
-      CLK      => clk_i,
+      RST         => s_reset,
+      CLK         => s_prbs_cdk_clk,
       DATA_IN(0)  => coax_o,
-      EN       => '1',
+      EN          => '1',
       DATA_OUT(0) => s_errors
       );
 
