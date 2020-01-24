@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-01-22
+-- Last update: 2020-01-21
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ begin  -- architecture rtl
 
   i_q_clock_gen_1 : entity work.i_q_clock_gen
     generic map (
-      g_bandwidth => "OPTIMIZED",
+      g_bandwidth => "LOW",
       g_last      => true)
     port map (
       clk_in  => s_cdrclk_jc,

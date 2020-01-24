@@ -1,8 +1,8 @@
-ip_cores:
-	$(MAKE) -C src/ip_cores
-
 all: ip_cores
 	vivado -nolog -nojournal -mode batch -source create_bitstream.tcl
+
+ip_cores:
+	$(MAKE) -C src/ip_cores
 
 clean:
 	rm -rf results vivado*.jou vivado*.log usage* .Xil .cache

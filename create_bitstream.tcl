@@ -10,9 +10,11 @@ file mkdir $outputDir
 #read hdl files
 read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
 read_vhdl -library usrDefLib [glob src/hdl/nco/*.vhd]
-read_vhdl -library usrDefLib [glob src/hdl/frequency_detector/*.vhd]
-read_vhdl -library usrDefLib [glob src/hdl/frequency_detector/n_cycle_stuff/*.vhd]
-read_vhdl -library usrDefLib [glob src/hdl/frequency_detector/phase_detector_unit/*.vhd]
+read_vhdl -library usrDefLib [glob src/hdl/pfd/*.vhd]
+read_vhdl -library usrDefLib [glob src/hdl/pfd/frequency_detector_unit/*.vhd]
+read_vhdl -library usrDefLib [glob src/hdl/pfd/phase_detector_unit/*.vhd]
+
+read_vhdl -library extras src/hdl/extras/synchronizing.vhdl
 
 #include pre-synthesized ip_cores
 set_part $partNum

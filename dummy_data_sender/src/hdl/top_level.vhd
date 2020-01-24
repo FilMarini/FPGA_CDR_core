@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-04
--- Last update: 2019-12-04
+-- Last update: 2020-01-24
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -23,72 +23,96 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 library UNISIM;
 use UNISIM.VComponents.all;
+use work.PRBSpack.all;
 
 entity top_level is
   port (
-    clk_i  : in  std_logic;
-    led_o  : out std_logic;
-    led1_o : out std_logic;
-    clk_o  : out std_logic;
-    clk1_o : out std_logic
+    clk_i   : in  std_logic;
+    led_o   : out std_logic;
+    led1_o  : out std_logic;
+    coax_o  : out std_logic;
+    coax1_o : out std_logic
     );
 end entity top_level;
 
 architecture rtl of top_level is
 
-  signal s_clk     : std_logic;
-  signal s_clk_fwd : std_logic_vector(1 downto 0);
-  signal s_locked  : std_logic;
+  signal s_clk    : std_logic;
+  signal s_locked : std_logic;
+  signal s_prbs   : std_logic;
 
 begin  -- architecture rtl
 
-  i_jitter_cleaner_1 : entity work.jitter_cleaner
+  -----------------------------------------------------------------------------
+  -- Clk Manager
+  -----------------------------------------------------------------------------
+  clk_wiz_1 : entity work.clk_wiz
     generic map (
-      g_use_ip    => false,
-      g_bandwidth => "LOW",
-      g_last      => true
+      g_bandwidth => "LOW"
       )
     port map (
-      clk_in  => clk_i,
-      rst_i   => '0',
-      clk_out => s_clk,
-      locked  => s_locked
+      clk_in     => clk_i,             -- 125 MHz
+      reset      => '0',
+      clk_out0   => s_clk,              -- 62.5 MHz
+      clk_out1   => open,
+      clk_out2   => open,
+      clk_out3   => open,
+      clk_out4   => open,
+      locked     => s_locked,
+      psen_p     => '0',
+      psincdec_p => '0',
+      psdone_p   => open
       );
 
-  GEN_OUTPUT : for i in 0 to 1 generate
-    i_ODDR_inst : ODDR
-      generic map(
-        DDR_CLK_EDGE => "OPPOSITE_EDGE",  -- "OPPOSITE_EDGE" or "SAME_EDGE" 
-        INIT         => '0',  -- Initial value for Q port ('1' or '0')
-        SRTYPE       => "ASYNC")        -- Reset Type ("ASYNC" or "SYNC")
-      port map (
-        Q  => s_clk_fwd(i),             -- 1-bit DDR output
-        C  => s_clk,                    -- 1-bit clock input
-        CE => s_locked,              -- 1-bit clock enable input
-        D1 => '1',                      -- 1-bit data input (positive edge)
-        D2 => '0',                      -- 1-bit data input (negative edge)
-        R  => not s_locked,             -- 1-bit reset input
-        S  => '0'                       -- 1-bit set input
-        );
-  end generate GEN_OUTPUT;
+  -----------------------------------------------------------------------------
+  -- PRBS Generator
+  -----------------------------------------------------------------------------
+  I_PRBS_ANY_GEN : entity work.PRBS_ANY
+    generic map(
+      CHK_MODE    => false,
+      INV_PATTERN => false,
+      POLY_LENGHT => 9,
+      POLY_TAP    => 5,
+      NBITS       => 1
+      )
+    port map(
+      RST         => '0',               --s_rst_prbs,
+      CLK         => s_clk,
+      DATA_IN(0)  => '0',               --inject err
+      EN          => s_locked,
+      DATA_OUT(0) => s_prbs
+      );
 
+  -----------------------------------------------------------------------------
+  -- Heart Beat
+  -----------------------------------------------------------------------------
   i_slow_clock_pulse_1 : entity work.slow_clock_pulse
     generic map (
       ref_clk_period_ns      => 16,
       output_pulse_period_ms => 1000,
-      n_pulse_up             => 20_000_000
+      n_pulse_up             => 31_250_000
       )
     port map (
       ref_clk   => s_clk,
       pulse_out => led1_o
       );
 
+  -----------------------------------------------------------------------------
+  -- Output Control
+  -----------------------------------------------------------------------------
+  i_OBUF : OBUF
+    port map (
+      I => s_prbs,
+      O => coax_o
+      );
 
+  i_OBUF_1 : OBUF
+    port map (
+      I => s_prbs,
+      O => coax1_o
+      );
 
-  clk_o  <= s_clk_fwd(0);
-  clk1_o <= s_clk_fwd(1);
-  led_o  <= s_locked;
-
+  led_o <= s_locked;
 
 
 end architecture rtl;

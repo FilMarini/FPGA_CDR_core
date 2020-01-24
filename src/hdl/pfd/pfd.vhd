@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-18
+-- Last update: 2020-01-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -25,8 +25,12 @@ library extras;
 use extras.synchronizing.all;
 
 entity pfd is
+  generic (
+    g_pd_threshold : positive := 128;
+    g_pd_num_trans : positive := 7
+    );
   port (
-    clk_i         : in  std_logic;
+    clk_i_i       : in  std_logic;
     clk_q_i       : in  std_logic;
     rst_i         : in  std_logic;
     en_i          : in  std_logic;
@@ -62,7 +66,7 @@ begin  -- architecture rtl
   phase_detector_in_phase : entity work.phase_detector
     port map (
       data_in => data_i,
-      sys_clk => clk_i,
+      sys_clk => clk_i_i,
       x       => s_x,
       y       => s_y
       );
@@ -80,11 +84,11 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   phase_shift_filter_in_phase : entity work.phase_shift_filter
     generic map (
-      threshold   => 64,
-      g_num_trans => 6
+      threshold   => g_pd_threshold,
+      g_num_trans => g_pd_num_trans
       )
     port map (
-      sys_clk        => clk_i,
+      sys_clk        => clk_i_i,
       rst_i          => rst_i,
       en_i           => en_i,
       phase_up_raw   => s_x,
@@ -95,8 +99,8 @@ begin  -- architecture rtl
 
   phase_shift_filter_quadrature : entity work.phase_shift_filter
     generic map (
-      threshold   => 31,
-      g_num_trans => 5
+      threshold   => g_pd_threshold,
+      g_num_trans => g_pd_num_trans
       )
     port map (
       sys_clk        => clk_q_i,
@@ -117,7 +121,7 @@ begin  -- architecture rtl
       RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      Clock  => clk_i,
+      Clock  => clk_i_i,
       Reset  => rst_i,
       Bit_in => s_up_unsync,
       Sync   => s_up
@@ -129,7 +133,7 @@ begin  -- architecture rtl
       RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      Clock  => clk_i,
+      Clock  => clk_i_i,
       Reset  => rst_i,
       Bit_in => s_down_unsync,
       Sync   => s_down
@@ -141,7 +145,7 @@ begin  -- architecture rtl
       RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      Clock  => clk_i,
+      Clock  => clk_i_i,
       Reset  => rst_i,
       Bit_in => s_q_up_unsync,
       Sync   => s_q_up
@@ -153,7 +157,7 @@ begin  -- architecture rtl
       RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      Clock  => clk_i,
+      Clock  => clk_i_i,
       Reset  => rst_i,
       Bit_in => s_q_down_unsync,
       Sync   => s_q_down
@@ -164,7 +168,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   quadrant_detector_1 : entity work.quadrant_detector
     port map (
-      clk_i          => clk_i,
+      clk_i          => clk_i_i,
       rst_i          => rst_i,
       i_early_i      => s_up,
       i_late_i       => s_down,
@@ -179,13 +183,15 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   quadrant_shifter_detector_1 : entity work.quadrant_shifter_detector
     port map (
-      clk_i               => clk_i,
+      clk_i               => clk_i_i,
       rst_i               => rst_i,
       quadrant_rdy_i      => s_quadrant_rdy,
       quadrant_i          => s_quadrant,
       shifting_detected_o => shifting_en_o,
       shifting_o          => shifting_o,
-      locked_o            => locked_o);
+      locked_o            => locked_o
+      );
+
 
 
 end architecture rtl;
