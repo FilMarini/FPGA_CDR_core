@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-01-22
+-- Last update: 2020-01-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -383,14 +383,32 @@ begin  -- architecture rtl
       rst_i         => s_jc_locked_re_df,
       en_i          => vio_DTMD_en,
       data_i        => s_data_to_rec,
-      locked_o      => s_locked,
+      locked_o      => open,
       shifting_o    => s_shifting,
       shifting_en_o => s_shifting_en
       );
 
+  pfd_manager_1: entity work.pfd_manager
+    generic map (
+      g_bit_num         => 8,
+      g_lock_threshold  => 64,
+      g_slock_threshold => 128
+      )
+    port map (
+      clk_i         => s_clk_i,
+      rst_i         => not s_jc_locked_2,
+      en_i          => '1',
+      en_out_i      => en_out_i,
+      shifting_i    => s_shifting,
+      shifting_en_i => s_shifting_en,
+      locked_o      => s_locked,
+      M_change_en_o => s_M_change_en,
+      M_incr_o      => s_M_incr
+      );
+
   GEN_PD_CHECK : if g_check_pd generate
-    shifting_en_o <= s_shifting_en;
-    shifting_o    <= s_shifting;
+    shifting_en_o <= s_M_change_en;
+    shifting_o    <= s_M_incr;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate

@@ -40,6 +40,7 @@ architecture rtl of top_level is
   signal s_clk    : std_logic;
   signal s_locked : std_logic;
   signal s_prbs   : std_logic;
+  signal s_prbs_rst   : std_logic;
 
 begin  -- architecture rtl
 
@@ -67,16 +68,18 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- PRBS Generator
   -----------------------------------------------------------------------------
+  s_prbs_rst <= not s_locked;
+
   I_PRBS_ANY_GEN : entity work.PRBS_ANY
     generic map(
       CHK_MODE    => false,
-      INV_PATTERN => false,
-      POLY_LENGHT => 9,
-      POLY_TAP    => 5,
+      INV_PATTERN => true,
+      POLY_LENGHT => 7,
+      POLY_TAP    => 6,
       NBITS       => 1
       )
     port map(
-      RST         => '0',               --s_rst_prbs,
+      RST         => s_prbs_rst,               --s_rst_prbs,
       CLK         => s_clk,
       DATA_IN(0)  => '0',               --inject err
       EN          => s_locked,
