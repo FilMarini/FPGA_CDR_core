@@ -43,6 +43,8 @@ architecture rtl of cdr_manager is
                    st2_bbpd_en
                    );
 
+  signal s_state : t_state;
+
 begin  -- architecture rtl
 
   -----------------------------------------------------------------------------

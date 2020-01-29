@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-23
+-- Last update: 2020-01-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -181,16 +181,20 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Quadrant shifting detector
   -----------------------------------------------------------------------------
-  quadrant_shifter_detector_1 : entity work.quadrant_shifter_detector
-    port map (
-      clk_i               => clk_i_i,
-      rst_i               => rst_i,
-      quadrant_rdy_i      => s_quadrant_rdy,
-      quadrant_i          => s_quadrant,
-      shifting_detected_o => shifting_en_o,
-      shifting_o          => shifting_o,
-      locked_o            => locked_o
-      );
+  -- quadrant_shifter_detector_1 : entity work.quadrant_shifter_detector
+  --   port map (
+  --     clk_i               => clk_i_i,
+  --     rst_i               => rst_i,
+  --     quadrant_rdy_i      => s_quadrant_rdy,
+  --     quadrant_i          => s_quadrant,
+  --     shifting_detected_o => shifting_en_o,
+  --     shifting_o          => shifting_o,
+  --     locked_o            => locked_o
+  --     );
+
+  shifting_en_o <= s_quadrant(1);
+  shifting_o <= s_quadrant(0);
+  locked_o <= '1';
 
 
 

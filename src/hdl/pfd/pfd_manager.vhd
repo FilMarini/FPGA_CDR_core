@@ -27,7 +27,7 @@ entity pfd_manager is
 
   generic (
     g_bit_num         : positive := 8;
-    g_lock_threshold  : positive := 64;   -- 25%
+    g_lock_threshold  : positive := 64;  -- 25%
     g_slock_threshold : positive := 128  -- 50%
     );
   port (
@@ -60,8 +60,8 @@ architecture rtl of pfd_manager is
   end record t_fsm_signal;
 
   constant c_fsm_signal : t_fsm_signal := (
-    counting => '0';
-    M_up     => '0';
+    counting => '0',
+    M_up     => '0',
     M_down   => '0'
     );
 
@@ -74,6 +74,7 @@ architecture rtl of pfd_manager is
   signal s_shift_counter       : std_logic_vector(31 downto 0);
   signal u_shift_counter       : unsigned(31 downto 0);
   signal sgd_shift_accumulator : signed(31 downto 0);
+  signal s_locked              : std_logic;
 
 begin  -- architecture rtl
 
@@ -116,10 +117,10 @@ begin  -- architecture rtl
             end if;
           end if;
         --
-        when st3a_M_down =>
+        when st3a_M_up =>
           s_state <= st0_idle;
         --
-        when st3b_M_up =>
+        when st3b_M_down =>
           s_state <= st0_idle;
         --
         when st4_locked =>
@@ -146,13 +147,13 @@ begin  -- architecture rtl
       when st2_evaluate =>
         null;
       --
-      when st3a_M_down =>
-        s_fsm_signal.M_down <= '1';
-        s_locked            <= '0';
-      --
-      when st3b_M_up =>
+      when st3a_M_up =>
         s_fsm_signal.M_up <= '1';
         s_locked          <= '0';
+      --
+      when st3b_M_down =>
+        s_fsm_signal.M_down <= '1';
+        s_locked            <= '0';
       --
       when st4_locked =>
         s_locked <= '1';

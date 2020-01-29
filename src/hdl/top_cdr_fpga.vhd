@@ -88,6 +88,8 @@ architecture rtl of top_cdr_fpga is
   signal s_clk_i : std_logic;
   signal s_clk_q : std_logic;
   signal s_data_pulse : std_logic;
+  signal s_M_change_en : std_logic;
+  signal s_M_incr : std_logic;
 
 begin  -- architecture rtl
 
@@ -351,17 +353,15 @@ begin  -- architecture rtl
   led2_o <= s_locked;
   led3_o <= s_data_pulse;
 
-  slow_clock_pulse_1: entity work.slow_clock_pulse
+  slow_pulse_counter_1: entity work.slow_pulse_counter
     generic map (
-      ref_clk_period_ns      => 32,
-      output_pulse_period_ms => 1000,
-      n_pulse_up             => 15625000)
+      g_num_bit_threshold => 24
+      )
     port map (
-      ref_clk   => s_clk_i,
-      pulse_in  => s_data_to_rec,
-      pulse_out => s_data_pulse
+      clk_i   => s_clk_i,
+      pulse_i => s_data_to_rec,
+      pulse_o => s_data_pulse
       );
-
   -----------------------------------------------------------------------------
   -- Clk Manager for clk to reconstruct to feed the CDR
   -----------------------------------------------------------------------------
@@ -383,32 +383,34 @@ begin  -- architecture rtl
       rst_i         => s_jc_locked_re_df,
       en_i          => vio_DTMD_en,
       data_i        => s_data_to_rec,
-      locked_o      => open,
+      locked_o      => s_locked,
       shifting_o    => s_shifting,
       shifting_en_o => s_shifting_en
       );
 
-  pfd_manager_1: entity work.pfd_manager
-    generic map (
-      g_bit_num         => 8,
-      g_lock_threshold  => 64,
-      g_slock_threshold => 128
-      )
-    port map (
-      clk_i         => s_clk_i,
-      rst_i         => not s_jc_locked_2,
-      en_i          => '1',
-      en_out_i      => en_out_i,
-      shifting_i    => s_shifting,
-      shifting_en_i => s_shifting_en,
-      locked_o      => s_locked,
-      M_change_en_o => s_M_change_en,
-      M_incr_o      => s_M_incr
-      );
+  -- pfd_manager_1: entity work.pfd_manager
+  --   generic map (
+  --     g_bit_num         => 8,
+  --     g_lock_threshold  => 64,
+  --     g_slock_threshold => 128
+  --     )
+  --   port map (
+  --     clk_i         => s_clk_i,
+  --     rst_i         => not s_jc_locked_2,
+  --     en_i          => '1',
+  --     en_out_i      => '1',             -- to change with cdr manager
+  --     shifting_i    => s_shifting,
+  --     shifting_en_i => s_shifting_en,
+  --     locked_o      => s_locked,
+  --     M_change_en_o => s_M_change_en,
+  --     M_incr_o      => s_M_incr
+  --     );
 
   GEN_PD_CHECK : if g_check_pd generate
-    shifting_en_o <= s_M_change_en;
-    shifting_o    <= s_M_incr;
+    -- shifting_en_o <= s_M_change_en;
+    -- shifting_o    <= s_M_incr;
+    shifting_en_o <= s_shifting;
+    shifting_o    <= s_shifting_en;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate
