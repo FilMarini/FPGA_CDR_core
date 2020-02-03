@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-22
--- Last update: 2020-01-18
+-- Last update: 2020-01-30
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,7 +30,9 @@ entity phase_shift_filter is
     -- threhsold value to decide if actually early or late
     threshold   : natural := 10;
     -- 2**(g_num_trans) = number of transition before evaluating
-    g_num_trans : natural := 8
+    g_num_trans : natural := 8;
+    -- mu,ner of clk cycles to strech the output pulses
+    g_steps_to_strech : natural := 3
     );
   port (
     sys_clk        : in  std_logic;
@@ -149,27 +151,29 @@ begin  -- architecture rtl
   -- time_counter <= s_time_counter;
   phase_counter <= std_logic_vector(sgd_phase_counter);
 
+  phase_up <= s_phase_up;
+  phase_down <= s_phase_down;
   -- pulse stretcher
-  pulse_stretcher_1 : entity work.pulse_stretcher
-    generic map (
-      g_num_of_steps => 2
-      )
-    port map (
-      clk_i => sys_clk,
-      rst_i => rst_i,
-      d_i   => s_phase_up,
-      q_o   => phase_up
-      );
+  -- pulse_stretcher_1 : entity work.pulse_stretcher
+  --   generic map (
+  --     g_num_of_steps => g_steps_to_strech
+  --     )
+  --   port map (
+  --     clk_i => sys_clk,
+  --     rst_i => rst_i,
+  --     d_i   => s_phase_up,
+  --     q_o   => phase_up
+  --     );
 
-  pulse_stretcher_2 : entity work.pulse_stretcher
-    generic map (
-      g_num_of_steps => 2
-      )
-    port map (
-      clk_i => sys_clk,
-      rst_i => rst_i,
-      d_i   => s_phase_down,
-      q_o   => phase_down
-      );
+  -- pulse_stretcher_2 : entity work.pulse_stretcher
+  --   generic map (
+  --     g_num_of_steps => g_steps_to_strech
+  --     )
+  --   port map (
+  --     clk_i => sys_clk,
+  --     rst_i => rst_i,
+  --     d_i   => s_phase_down,
+  --     q_o   => phase_down
+  --     );
 
 end architecture rtl;

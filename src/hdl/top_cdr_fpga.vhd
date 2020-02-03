@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-01-29
+-- Last update: 2020-02-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,33 +28,34 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := true;
+    g_gen_vio        : boolean  := false;
     g_check_jc_clk   : boolean  := false;
     g_check_pd       : boolean  := true;
     g_number_of_bits : positive := 28
     );
   port (
-    sysclk_p_i       : in  std_logic;
-    sysclk_n_i       : in  std_logic;
-    data_to_rec_i    : in  std_logic;
+    sysclk_p_i    : in  std_logic;
+    sysclk_n_i    : in  std_logic;
+    data_to_rec_i : in  std_logic;
     -- cdrclk_o  : out std_logic;
-    cdrclk_p_o       : out std_logic;
-    cdrclk_n_o       : out std_logic;
-    cdrclk_p_i       : in  std_logic;
-    cdrclk_n_i       : in  std_logic;
-    cdrclk_jc_o      : out std_logic;
-    led3_o           : out std_logic;
-    led2_o           : out std_logic;
-    led1_o           : out std_logic;
-    led_o            : out std_logic;
+    cdrclk_p_o    : out std_logic;
+    cdrclk_n_o    : out std_logic;
+    cdrclk_p_i    : in  std_logic;
+    cdrclk_n_i    : in  std_logic;
+    cdrclk_jc_o   : out std_logic;
+    led3_o        : out std_logic;
+    led2_o        : out std_logic;
+    led1_o        : out std_logic;
+    led_o         : out std_logic;
     -- debug
-    shifting_o      : out std_logic;
+    shifting_o    : out std_logic;
     shifting_en_o : out std_logic
     );
 end entity top_cdr_fpga;
 
 architecture rtl of top_cdr_fpga is
 
+  -- signal s_gpio              : std_logic;
   signal s_sysclk            : std_logic;
   signal s_clk_250           : std_logic;
   signal s_clk_1000          : std_logic;
@@ -79,17 +80,17 @@ architecture rtl of top_cdr_fpga is
   signal s_shifting_en       : std_logic;
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
-  signal s_locked       : std_logic;
+  signal s_locked            : std_logic;
   signal s_M                 : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal s_incr_freq_re      : std_logic;
   signal s_clk_to_rec        : std_logic;
   signal s_clk_3125_data     : std_logic;
   signal s_data_to_rec       : std_logic;
-  signal s_clk_i : std_logic;
-  signal s_clk_q : std_logic;
-  signal s_data_pulse : std_logic;
-  signal s_M_change_en : std_logic;
-  signal s_M_incr : std_logic;
+  signal s_clk_i             : std_logic;
+  signal s_clk_q             : std_logic;
+  signal s_data_pulse        : std_logic;
+  signal s_M_change_en       : std_logic;
+  signal s_M_incr            : std_logic;
 
 begin  -- architecture rtl
 
@@ -353,7 +354,7 @@ begin  -- architecture rtl
   led2_o <= s_locked;
   led3_o <= s_data_pulse;
 
-  slow_pulse_counter_1: entity work.slow_pulse_counter
+  slow_pulse_counter_1 : entity work.slow_pulse_counter
     generic map (
       g_num_bit_threshold => 24
       )
@@ -377,6 +378,10 @@ begin  -- architecture rtl
   -- DMTD
   -----------------------------------------------------------------------------
   pfd_1 : entity work.pfd
+    generic map (
+      g_pd_threshold => 31,
+      g_pd_num_trans => 5
+      )
     port map (
       clk_i_i       => s_clk_i,
       clk_q_i       => s_clk_q,
@@ -386,6 +391,8 @@ begin  -- architecture rtl
       locked_o      => s_locked,
       shifting_o    => s_shifting,
       shifting_en_o => s_shifting_en
+      --debug
+      -- gpio_o        => s_gpio
       );
 
   -- pfd_manager_1: entity work.pfd_manager
@@ -409,8 +416,8 @@ begin  -- architecture rtl
   GEN_PD_CHECK : if g_check_pd generate
     -- shifting_en_o <= s_M_change_en;
     -- shifting_o    <= s_M_incr;
-    shifting_en_o <= s_shifting;
-    shifting_o    <= s_shifting_en;
+    shifting_en_o <= s_shifting_en;
+    shifting_o    <= s_shifting;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate

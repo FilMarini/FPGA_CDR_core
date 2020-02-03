@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-01-29
+-- Last update: 2020-02-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ use extras.synchronizing.all;
 
 entity pfd is
   generic (
-    g_pd_threshold : positive := 128;
-    g_pd_num_trans : positive := 7
+    g_pd_threshold : positive := 31;
+    g_pd_num_trans : positive := 5
     );
   port (
     clk_i_i       : in  std_logic;
@@ -38,25 +38,31 @@ entity pfd is
     locked_o      : out std_logic;
     shifting_o    : out std_logic;
     shifting_en_o : out std_logic
+   --debug
+   -- gpio_o        : out std_logic
     );
 end entity pfd;
 
 architecture rtl of pfd is
 
-  signal s_x             : std_logic;
-  signal s_y             : std_logic;
-  signal s_q_x           : std_logic;
-  signal s_q_y           : std_logic;
-  signal s_up_unsync     : std_logic;
-  signal s_down_unsync   : std_logic;
-  signal s_q_up_unsync   : std_logic;
-  signal s_q_down_unsync : std_logic;
-  signal s_up            : std_logic;
-  signal s_down          : std_logic;
-  signal s_q_up          : std_logic;
-  signal s_q_down        : std_logic;
-  signal s_quadrant      : std_logic_vector(1 downto 0);
-  signal s_quadrant_rdy  : std_logic;
+  signal s_x                   : std_logic;
+  signal s_y                   : std_logic;
+  signal s_q_x                 : std_logic;
+  signal s_q_y                 : std_logic;
+  signal s_up_unsync           : std_logic;
+  signal s_down_unsync         : std_logic;
+  signal s_q_up_unsync         : std_logic;
+  signal s_q_down_unsync       : std_logic;
+  signal s_up                  : std_logic;
+  signal s_down                : std_logic;
+  signal s_q_up                : std_logic;
+  signal s_q_down              : std_logic;
+  signal s_quadrant            : std_logic_vector(1 downto 0);
+  signal s_quadrant_rdy        : std_logic;
+  signal s_i_ready             : std_logic;
+  signal s_q_ready             : std_logic;
+  signal s_slaves_ready        : std_logic_vector(1 downto 0);
+  signal s_phase_filter_window : std_logic;
 
 begin  -- architecture rtl
 
@@ -82,35 +88,50 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Phase detector filter
   -----------------------------------------------------------------------------
-  phase_shift_filter_in_phase : entity work.phase_shift_filter
+  phase_shift_filter_master_1 : entity work.phase_shift_filter_master
     generic map (
-      threshold   => g_pd_threshold,
-      g_num_trans => g_pd_num_trans
+      g_num_trans  => 9,
+      g_num_slaves => 2
       )
     port map (
-      sys_clk        => clk_i_i,
+      clk_i                 => clk_i_i,
+      rst_i                 => rst_i,
+      en_i                  => en_i,
+      slaves_ready_i        => s_slaves_ready,
+      phase_filter_window_o => s_phase_filter_window
+      );
+
+  phase_shift_filter_slave_1 : entity work.phase_shift_filter_slave
+    generic map (
+      g_steps_to_strech => 4
+      )
+    port map (
+      clk_i          => clk_i_i,
       rst_i          => rst_i,
-      en_i           => en_i,
+      window_i       => s_phase_filter_window,
       phase_up_raw   => s_x,
       phase_down_raw => s_y,
+      ready_o        => s_i_ready,
       phase_up       => s_up_unsync,
       phase_down     => s_down_unsync
       );
 
-  phase_shift_filter_quadrature : entity work.phase_shift_filter
+  phase_shift_filter_slave_2 : entity work.phase_shift_filter_slave
     generic map (
-      threshold   => g_pd_threshold,
-      g_num_trans => g_pd_num_trans
+      g_steps_to_strech => 4
       )
     port map (
-      sys_clk        => clk_q_i,
+      clk_i          => clk_q_i,
       rst_i          => rst_i,
-      en_i           => en_i,
+      window_i       => s_phase_filter_window,
       phase_up_raw   => s_q_x,
       phase_down_raw => s_q_y,
+      ready_o        => s_q_ready,
       phase_up       => s_q_up_unsync,
       phase_down     => s_q_down_unsync
       );
+
+  s_slaves_ready <= s_i_ready & s_q_ready;
 
   -----------------------------------------------------------------------------
   -- Cross domain synchronizer
@@ -192,8 +213,18 @@ begin  -- architecture rtl
   --     locked_o            => locked_o
   --     );
 
-  shifting_en_o <= s_quadrant(1);
-  shifting_o <= s_quadrant(0);
+  -- gpio_o <= '0';
+
+  -- shifting_en_o <= s_quadrant(0);
+  -- shifting_o    <= s_quadrant(1);
+  p_output_control : process (clk_i_i) is
+  begin  -- process p_output_control
+    if rising_edge(clk_i_i) then        -- rising clock edge
+      shifting_en_o <= s_quadrant(0);
+      shifting_o    <= s_quadrant(1);
+    end if;
+  end process p_output_control;
+
   locked_o <= '1';
 
 

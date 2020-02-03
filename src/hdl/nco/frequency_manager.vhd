@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2019-12-07
+-- Last update: 2020-02-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -44,9 +44,9 @@ architecture rtl of frequency_manager is
   signal sgn_M               : signed(g_number_of_bits - 1 downto 0);
 
   attribute mark_debug                        : string;
-  attribute mark_debug of s_change_freq_en_re : signal is "true";
-  attribute mark_debug of s_incr_freq_re      : signal is "true";
-  attribute mark_debug of sgn_M               : signal is "true";
+  -- attribute mark_debug of s_change_freq_en_re : signal is "true";
+  -- attribute mark_debug of s_incr_freq_re      : signal is "true";
+  -- attribute mark_debug of sgn_M               : signal is "true";
 
 begin  -- architecture rtl
 

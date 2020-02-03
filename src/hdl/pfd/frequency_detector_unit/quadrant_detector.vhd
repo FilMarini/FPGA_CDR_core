@@ -6,7 +6,7 @@
 -- Author     : filippo  <filippo@Dell-Precision-3520>
 -- Company    : 
 -- Created    : 2020-01-16
--- Last update: 2020-01-17
+-- Last update: 2020-02-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 
 entity quadrant_detector is
   port (
@@ -46,10 +47,12 @@ architecture rtl of quadrant_detector is
   signal s_state : t_state;
 
   signal s_quadrant_rdy : std_logic;
-  signal s_quadrant : std_logic_vector(1 downto 0);
-
+  signal s_quadrant     : std_logic_vector(1 downto 0);
+  signal s_go_to_idle   : std_logic;
 
 begin  -- architecture rtl
+
+  s_go_to_idle <= or_reduce(std_logic_vector'(i_early_i & i_late_i & q_early_i & q_late_i));
 
   p_update_state : process (clk_i, rst_i) is
   begin  -- process p_update_state
@@ -70,16 +73,24 @@ begin  -- architecture rtl
           end if;
         --
         when st1a_I =>
-          s_state <= st0_idle;
+          if s_go_to_idle = '0' then
+            s_state <= st0_idle;
+          end if;
         --
         when st1b_II =>
-          s_state <= st0_idle;
+          if s_go_to_idle = '0' then
+            s_state <= st0_idle;
+          end if;
         --
         when st1c_III =>
-          s_state <= st0_idle;
+          if s_go_to_idle = '0' then
+            s_state <= st0_idle;
+          end if;
         --
         when st1d_IV =>
-          s_state <= st0_idle;
+          if s_go_to_idle = '0' then
+            s_state <= st0_idle;
+          end if;
         --
         when others =>
           s_state <= st0_idle;
