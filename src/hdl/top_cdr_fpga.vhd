@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-03
+-- Last update: 2020-02-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ end entity top_cdr_fpga;
 
 architecture rtl of top_cdr_fpga is
 
-  -- signal s_gpio              : std_logic;
+  signal s_gpio              : std_logic;
   signal s_sysclk            : std_logic;
   signal s_clk_250           : std_logic;
   signal s_clk_1000          : std_logic;
@@ -319,7 +319,7 @@ begin  -- architecture rtl
 
   G_NOT_CHECK_CLK_AFTER_JC : if not g_check_jc_clk generate
 
-    cdrclk_jc_o <= '0';
+    cdrclk_jc_o <= s_gpio;
 
   end generate G_NOT_CHECK_CLK_AFTER_JC;
 
@@ -390,9 +390,9 @@ begin  -- architecture rtl
       data_i        => s_data_to_rec,
       locked_o      => s_locked,
       shifting_o    => s_shifting,
-      shifting_en_o => s_shifting_en
+      shifting_en_o => s_shifting_en,
       --debug
-      -- gpio_o        => s_gpio
+      gpio_o        => s_gpio
       );
 
   -- pfd_manager_1: entity work.pfd_manager

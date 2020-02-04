@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-02-03
+-- Last update: 2020-02-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -37,9 +37,9 @@ entity pfd is
     data_i        : in  std_logic;
     locked_o      : out std_logic;
     shifting_o    : out std_logic;
-    shifting_en_o : out std_logic
-   --debug
-   -- gpio_o        : out std_logic
+    shifting_en_o : out std_logic;
+    --debug
+    gpio_o        : out std_logic
     );
 end entity pfd;
 
@@ -69,7 +69,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Phase detector
   -----------------------------------------------------------------------------
-  phase_detector_in_phase : entity work.phase_detector
+  i_phase_detector_in_phase : entity work.phase_detector
     port map (
       data_in => data_i,
       sys_clk => clk_i_i,
@@ -77,7 +77,7 @@ begin  -- architecture rtl
       y       => s_y
       );
 
-  phase_detector_quadrature : entity work.phase_detector
+  i_phase_detector_quadrature : entity work.phase_detector
     port map (
       data_in => data_i,
       sys_clk => clk_q_i,
@@ -88,7 +88,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Phase detector filter
   -----------------------------------------------------------------------------
-  phase_shift_filter_master_1 : entity work.phase_shift_filter_master
+  i_phase_shift_filter_master_1 : entity work.phase_shift_filter_master
     generic map (
       g_num_trans  => 9,
       g_num_slaves => 2
@@ -101,7 +101,7 @@ begin  -- architecture rtl
       phase_filter_window_o => s_phase_filter_window
       );
 
-  phase_shift_filter_slave_1 : entity work.phase_shift_filter_slave
+  i_phase_shift_filter_slave_1 : entity work.phase_shift_filter_slave
     generic map (
       g_steps_to_strech => 4
       )
@@ -116,7 +116,7 @@ begin  -- architecture rtl
       phase_down     => s_down_unsync
       );
 
-  phase_shift_filter_slave_2 : entity work.phase_shift_filter_slave
+  i_phase_shift_filter_slave_2 : entity work.phase_shift_filter_slave
     generic map (
       g_steps_to_strech => 4
       )
@@ -136,7 +136,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Cross domain synchronizer
   -----------------------------------------------------------------------------
-  bit_synchronizer_1 : entity extras.bit_synchronizer
+  i_bit_synchronizer_1 : entity extras.bit_synchronizer
     generic map (
       STAGES             => 2,
       RESET_ACTIVE_LEVEL => '1'
@@ -148,7 +148,7 @@ begin  -- architecture rtl
       Sync   => s_up
       );
 
-  bit_synchronizer_2 : entity extras.bit_synchronizer
+  i_bit_synchronizer_2 : entity extras.bit_synchronizer
     generic map (
       STAGES             => 2,
       RESET_ACTIVE_LEVEL => '1'
@@ -160,7 +160,7 @@ begin  -- architecture rtl
       Sync   => s_down
       );
 
-  bit_synchronizer_3 : entity extras.bit_synchronizer
+  i_bit_synchronizer_3 : entity extras.bit_synchronizer
     generic map (
       STAGES             => 2,
       RESET_ACTIVE_LEVEL => '1'
@@ -172,7 +172,7 @@ begin  -- architecture rtl
       Sync   => s_q_up
       );
 
-  bit_synchronizer_4 : entity extras.bit_synchronizer
+  i_bit_synchronizer_4 : entity extras.bit_synchronizer
     generic map (
       STAGES             => 2,
       RESET_ACTIVE_LEVEL => '1'
@@ -187,7 +187,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Quadrant detector
   -----------------------------------------------------------------------------
-  quadrant_detector_1 : entity work.quadrant_detector
+  i_quadrant_detector_1 : entity work.quadrant_detector
     port map (
       clk_i          => clk_i_i,
       rst_i          => rst_i,
@@ -213,15 +213,15 @@ begin  -- architecture rtl
   --     locked_o            => locked_o
   --     );
 
-  -- gpio_o <= '0';
-
-  -- shifting_en_o <= s_quadrant(0);
-  -- shifting_o    <= s_quadrant(1);
+  -----------------------------------------------------------------------------
+  -- Output debug & control
+  -----------------------------------------------------------------------------
   p_output_control : process (clk_i_i) is
   begin  -- process p_output_control
     if rising_edge(clk_i_i) then        -- rising clock edge
       shifting_en_o <= s_quadrant(0);
       shifting_o    <= s_quadrant(1);
+      gpio_o        <= s_quadrant_rdy;
     end if;
   end process p_output_control;
 

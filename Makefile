@@ -16,3 +16,5 @@ dummy_hw:
 dummy_hw_clean:
 	$(MAKE) -C dummy_data_sender clean
 
+clean_vivado:
+	rm vivado* usage_statistics* webtalk*
