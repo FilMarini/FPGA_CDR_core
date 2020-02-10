@@ -54,6 +54,9 @@ architecture rtl of quadrant_shifter_detector is
   signal s_not_locked        : std_logic;
   signal s_quadrant_rdy_re   : std_logic;
 
+  attribute mark_debug : string;
+  attribute mark_debug of s_state : signal is "true";
+
 begin  -- architecture rtl
 
   -----------------------------------------------------------------------------

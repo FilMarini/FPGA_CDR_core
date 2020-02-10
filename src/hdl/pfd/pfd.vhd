@@ -223,14 +223,14 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Output Control
   -----------------------------------------------------------------------------
-  p_output_control : process (clk_i_i) is
-  begin  -- process p_output_control
-    if rising_edge(clk_i_i) then        -- rising clock edge
-      shifting_en_o <= s_shifting_en;
-      shifting_o    <= s_shifting;
-      locked_o      <= s_locked;
-    end if;
-  end process p_output_control;
+  -- p_output_control : process (clk_i_i) is
+  -- begin  -- process p_output_control
+  --   if rising_edge(clk_i_i) then        -- rising clock edge
+  --     shifting_en_o <= s_shifting_en;
+  --     shifting_o    <= s_shifting;
+  --     locked_o      <= s_locked;
+  --   end if;
+  -- end process p_output_control;
 
   -----------------------------------------------------------------------------
   -- Output debug
@@ -253,16 +253,16 @@ begin  -- architecture rtl
   --   end if;
   -- end process p_shifting_control;
 
-  -- p_output_control : process (clk_i_i) is
-  -- begin  -- process p_output_control
-  --   if rising_edge(clk_i_i) then        -- rising clock edge
-  --     shifting_en_o <= s_shifting_en;
-  --     shifting_o    <= s_shifting;
-  --     gpio_o        <= s_locked;
-  --   end if;
-  -- end process p_output_control;
+  p_output_control : process (clk_i_i) is
+  begin  -- process p_output_control
+    if rising_edge(clk_i_i) then        -- rising clock edge
+      shifting_en_o <= s_shifting_en;
+      shifting_o    <= s_shifting;
+      -- gpio_o        <= s_locked;
+    end if;
+  end process p_output_control;
 
-  -- locked_o <= '1';
+  locked_o <= '1';
 
 
 
