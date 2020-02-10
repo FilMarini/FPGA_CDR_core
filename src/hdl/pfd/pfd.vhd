@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-02-04
+-- Last update: 2020-02-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,8 +26,7 @@ use extras.synchronizing.all;
 
 entity pfd is
   generic (
-    g_pd_threshold : positive := 31;
-    g_pd_num_trans : positive := 5
+    g_pd_num_trans : positive := 10
     );
   port (
     clk_i_i       : in  std_logic;
@@ -37,9 +36,9 @@ entity pfd is
     data_i        : in  std_logic;
     locked_o      : out std_logic;
     shifting_o    : out std_logic;
-    shifting_en_o : out std_logic;
+    shifting_en_o : out std_logic
     --debug
-    gpio_o        : out std_logic
+    -- gpio_o        : out std_logic
     );
 end entity pfd;
 
@@ -63,6 +62,12 @@ architecture rtl of pfd is
   signal s_q_ready             : std_logic;
   signal s_slaves_ready        : std_logic_vector(1 downto 0);
   signal s_phase_filter_window : std_logic;
+  signal s_locked              : std_logic;
+  -- debug
+  signal s_pulse_down          : std_logic;
+  signal s_pulse_up            : std_logic;
+  signal s_shifting_en         : std_logic;
+  signal s_shifting            : std_logic;
 
 begin  -- architecture rtl
 
@@ -90,7 +95,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_phase_shift_filter_master_1 : entity work.phase_shift_filter_master
     generic map (
-      g_num_trans  => 9,
+      g_num_trans  => g_pd_num_trans,
       g_num_slaves => 2
       )
     port map (
@@ -103,7 +108,8 @@ begin  -- architecture rtl
 
   i_phase_shift_filter_slave_1 : entity work.phase_shift_filter_slave
     generic map (
-      g_steps_to_strech => 4
+      g_steps_to_strech => 4,
+      g_num_trans_min   => g_pd_num_trans - 2
       )
     port map (
       clk_i          => clk_i_i,
@@ -118,7 +124,8 @@ begin  -- architecture rtl
 
   i_phase_shift_filter_slave_2 : entity work.phase_shift_filter_slave
     generic map (
-      g_steps_to_strech => 4
+      g_steps_to_strech => 4,
+      g_num_trans_min   => g_pd_num_trans - 2
       )
     port map (
       clk_i          => clk_q_i,
@@ -202,30 +209,60 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Quadrant shifting detector
   -----------------------------------------------------------------------------
-  -- quadrant_shifter_detector_1 : entity work.quadrant_shifter_detector
-  --   port map (
-  --     clk_i               => clk_i_i,
-  --     rst_i               => rst_i,
-  --     quadrant_rdy_i      => s_quadrant_rdy,
-  --     quadrant_i          => s_quadrant,
-  --     shifting_detected_o => shifting_en_o,
-  --     shifting_o          => shifting_o,
-  --     locked_o            => locked_o
-  --     );
+  i_quadrant_shifter_detector_1 : entity work.quadrant_shifter_detector
+    port map (
+      clk_i               => clk_i_i,
+      rst_i               => rst_i,
+      quadrant_rdy_i      => s_quadrant_rdy,
+      quadrant_i          => s_quadrant,
+      shifting_detected_o => s_shifting_en,
+      shifting_o          => s_shifting,
+      locked_o            => s_locked
+      );
 
   -----------------------------------------------------------------------------
-  -- Output debug & control
+  -- Output Control
   -----------------------------------------------------------------------------
   p_output_control : process (clk_i_i) is
   begin  -- process p_output_control
     if rising_edge(clk_i_i) then        -- rising clock edge
-      shifting_en_o <= s_quadrant(0);
-      shifting_o    <= s_quadrant(1);
-      gpio_o        <= s_quadrant_rdy;
+      shifting_en_o <= s_shifting_en;
+      shifting_o    <= s_shifting;
+      locked_o      <= s_locked;
     end if;
   end process p_output_control;
 
-  locked_o <= '1';
+  -----------------------------------------------------------------------------
+  -- Output debug
+  -----------------------------------------------------------------------------
+  -- p_shifting_control : process (s_shifting_en, s_shifting) is
+  -- begin  -- process p_shifting_control
+  --   if s_shifting_en = '1' then
+  --     case s_shifting is
+  --       when '1' =>
+  --         s_pulse_up   <= '1';
+  --         s_pulse_down <= '0';
+  --       when '0' =>
+  --         s_pulse_up   <= '0';
+  --         s_pulse_down <= '1';
+  --       when others => null;
+  --     end case;
+  --   else
+  --     s_pulse_up   <= '0';
+  --     s_pulse_down <= '0';
+  --   end if;
+  -- end process p_shifting_control;
+
+  -- p_output_control : process (clk_i_i) is
+  -- begin  -- process p_output_control
+  --   if rising_edge(clk_i_i) then        -- rising clock edge
+  --     shifting_en_o <= s_shifting_en;
+  --     shifting_o    <= s_shifting;
+  --     gpio_o        <= s_locked;
+  --   end if;
+  -- end process p_output_control;
+
+  -- locked_o <= '1';
 
 
 

@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-30
--- Last update: 2020-01-31
+-- Last update: 2020-02-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,7 +30,8 @@ use extras.synchronizing.all;
 entity phase_shift_filter_slave is
   generic (
     -- mu,ner of clk cycles to strech the output pulses
-    g_steps_to_strech : natural := 3
+    g_steps_to_strech : natural  := 3;
+    g_num_trans_min   : positive := 8
     );
   port (
     clk_i          : in  std_logic;
@@ -79,6 +80,9 @@ architecture rtl of phase_shift_filter_slave is
   signal s_phase_down_synch   : std_logic;
   signal s_ready              : std_logic;
   signal s_counting           : std_logic;
+  signal s_trans_ok           : std_logic;
+
+  alias s_trans_to_check : std_logic is sgd_trans_counter(g_num_trans_min);
 
 begin  -- architecture rtl
 
@@ -130,10 +134,14 @@ begin  -- architecture rtl
           end if;
         --
         when st2_evaluate =>
-          if sgd_phase_counter >= sgd_trans_counter then
-            s_state <= st3a_phase_up;
-          elsif sgd_phase_counter <= - (sgd_trans_counter) then
-            s_state <= st3b_phase_down;
+          if s_trans_ok = '1' then
+            if sgd_phase_counter = sgd_trans_counter then
+              s_state <= st3a_phase_up;
+            elsif sgd_phase_counter = - (sgd_trans_counter) then
+              s_state <= st3b_phase_down;
+            else
+              s_state <= st0_idle;
+            end if;
           else
             s_state <= st0_idle;
           end if;
@@ -186,9 +194,9 @@ begin  -- architecture rtl
   s_phase_vector       <= s_phase_up_synch & s_phase_down_synch;
   s_transition_occured <= or_reduce(s_phase_vector);
 
-  p_trans_counter : process (clk_i, s_counting) is
+  p_trans_counter : process (clk_i, s_ready) is
   begin  -- process p_trans_counter
-    if s_ready = '1' then            -- asynchronous reset (active low)
+    if s_ready = '1' then               -- asynchronous reset (active low)
       sgd_trans_counter <= (others => '0');
     elsif rising_edge(clk_i) then       -- rising clock edge
       if s_transition_occured = '1' then
@@ -197,9 +205,9 @@ begin  -- architecture rtl
     end if;
   end process p_trans_counter;
 
-  p_phase_counter : process (clk_i, s_counting) is
+  p_phase_counter : process (clk_i, s_ready) is
   begin  -- process p_phase_counter
-    if s_ready = '1' then            -- asynchronous reset (active low)
+    if s_ready = '1' then               -- asynchronous reset (active low)
       sgd_phase_counter <= (others => '0');
     elsif rising_edge(clk_i) then       -- rising clock edge
       if s_phase_up_synch = '1' and s_phase_down_synch = '0' then
@@ -209,6 +217,20 @@ begin  -- architecture rtl
       end if;
     end if;
   end process p_phase_counter;
+
+  -----------------------------------------------------------------------------
+  -- Check for minimum transition detected
+  -----------------------------------------------------------------------------
+  set_reset_ffd_1 : entity work.set_reset_ffd
+    generic map (
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i   => clk_i,
+      set_i   => s_trans_to_check,
+      reset_i => s_ready,
+      q_o     => s_trans_ok
+      );
 
   -----------------------------------------------------------------------------
   -- Pulse stretcher

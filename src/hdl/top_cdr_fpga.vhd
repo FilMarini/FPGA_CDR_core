@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-04
+-- Last update: 2020-02-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -379,8 +379,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   pfd_1 : entity work.pfd
     generic map (
-      g_pd_threshold => 31,
-      g_pd_num_trans => 5
+      g_pd_num_trans => 10
       )
     port map (
       clk_i_i       => s_clk_i,
@@ -390,9 +389,9 @@ begin  -- architecture rtl
       data_i        => s_data_to_rec,
       locked_o      => s_locked,
       shifting_o    => s_shifting,
-      shifting_en_o => s_shifting_en,
+      shifting_en_o => s_shifting_en
       --debug
-      gpio_o        => s_gpio
+      -- gpio_o        => s_gpio
       );
 
   -- pfd_manager_1: entity work.pfd_manager

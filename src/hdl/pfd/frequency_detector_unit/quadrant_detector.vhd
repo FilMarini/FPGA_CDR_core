@@ -3,20 +3,20 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : quadrant_detector.vhd
--- Author     : filippo  <filippo@Dell-Precision-3520>
--- Company    : 
--- Created    : 2020-01-16
--- Last update: 2020-02-03
+-- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
+-- Company    : University of Padova, INFN Padova
+-- Created    : 2020-02-04
+-- Last update: 2020-02-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: More like a quadrant decoder
+-- Description: detect in which clock quadrant the data changes 
 -------------------------------------------------------------------------------
--- Copyright (c) 2020 
+-- Copyright (c) 2020 University of Padova, INFN Padova
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
--- 2020-01-16  1.0      filippo Created
+-- 2020-02-04  1.0      filippo	Created
 -------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
