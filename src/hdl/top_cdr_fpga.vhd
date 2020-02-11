@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-10
+-- Last update: 2020-02-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -81,6 +81,7 @@ architecture rtl of top_cdr_fpga is
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
   signal s_locked            : std_logic;
+  signal s_pfd_locked        : std_logic;
   signal s_M                 : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal s_incr_freq_re      : std_logic;
   signal s_clk_to_rec        : std_logic;
@@ -91,6 +92,10 @@ architecture rtl of top_cdr_fpga is
   signal s_data_pulse        : std_logic;
   signal s_M_change_en       : std_logic;
   signal s_M_incr            : std_logic;
+
+  attribute mark_debug : string;
+  attribute mark_debug of s_M : signal is "true";
+  attribute mark_debug of s_locked : signal is "true";
 
 begin  -- architecture rtl
 
@@ -138,7 +143,7 @@ begin  -- architecture rtl
       )
     port map (
       clk_i         => s_clk_250,
-      M_i           => M_i,             -- M_i if from user, s_M automatic
+      M_i           => s_M,             -- M_i if from user, s_M automatic
       mmcm_locked_i => s_sysclk_locked,
       clk_o         => s_deser_clk
       );
@@ -150,8 +155,8 @@ begin  -- architecture rtl
     port map (
       clk_i            => s_clk_250,
       rst_i            => not s_sysclk_locked,
-      change_freq_en_i => s_shifting_en,
-      incr_freq_en_i   => s_shifting,
+      change_freq_en_i => s_M_incr,
+      incr_freq_en_i   => s_M_change_en,
       M_o              => s_M
       );
 
@@ -387,41 +392,43 @@ begin  -- architecture rtl
       rst_i         => s_jc_locked_re_df,
       en_i          => vio_DTMD_en,
       data_i        => s_data_to_rec,
-      locked_o      => s_locked,
+      locked_o      => s_pfd_locked,
       shifting_o    => s_shifting,
       shifting_en_o => s_shifting_en
-      --debug
-      -- gpio_o        => s_gpio
+     --debug
+     -- gpio_o        => s_gpio
       );
 
-  -- pfd_manager_1: entity work.pfd_manager
-  --   generic map (
-  --     g_bit_num         => 8,
-  --     g_lock_threshold  => 64,
-  --     g_slock_threshold => 128
-  --     )
-  --   port map (
-  --     clk_i         => s_clk_i,
-  --     rst_i         => not s_jc_locked_2,
-  --     en_i          => '1',
-  --     en_out_i      => '1',             -- to change with cdr manager
-  --     shifting_i    => s_shifting,
-  --     shifting_en_i => s_shifting_en,
-  --     locked_o      => s_locked,
-  --     M_change_en_o => s_M_change_en,
-  --     M_incr_o      => s_M_incr
-  --     );
+  pfd_manager_1 : entity work.pfd_manager
+    generic map (
+      g_bit_num         => 7,
+      g_lock_threshold  => 16,
+      g_slock_threshold => 32
+      )
+    port map (
+      clk_i         => s_clk_i,
+      rst_i         => not s_jc_locked_2,
+      en_i          => '1',
+      en_out_i      => '1',             -- to change with cdr manager
+      shifting_i    => s_shifting,
+      shifting_en_i => s_shifting_en,
+      locked_o      => s_locked,
+      M_change_en_o => s_M_change_en,
+      M_incr_o      => s_M_incr
+      );
 
   GEN_PD_CHECK : if g_check_pd generate
-    -- shifting_en_o <= s_M_change_en;
-    -- shifting_o    <= s_M_incr;
-    shifting_en_o <= s_shifting_en;
-    shifting_o    <= s_shifting;
+    shifting_en_o <= s_M_change_en;
+    shifting_o    <= s_M_incr;
+    -- shifting_en_o <= s_shifting_en;
+    -- shifting_o    <= s_shifting;
+    s_gpio        <= '0';
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate
     shifting_en_o <= '0';
     shifting_o    <= '0';
+    s_gpio        <= '0';
   end generate GEN_NO_PD_CHECK;
 
 end architecture rtl;

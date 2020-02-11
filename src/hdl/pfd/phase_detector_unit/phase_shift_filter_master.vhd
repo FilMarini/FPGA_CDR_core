@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-30
--- Last update: 2020-02-10
+-- Last update: 2020-02-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -44,6 +44,7 @@ architecture rtl of phase_shift_filter_master is
   signal u_window_counter : unsigned(31 downto 0);
   signal s_window_counter : std_logic_vector(31 downto 0);
   signal s_all_ready      : std_logic;
+  signal s_window_rst     : std_logic;
 
   alias s_not_window : std_logic is s_window_counter(g_num_trans);
 
@@ -55,9 +56,11 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Counter
   -----------------------------------------------------------------------------
-  p_window_counter : process (clk_i, rst_i) is
+  s_window_rst <= or_reduce(std_logic_vector'(rst_i & s_all_ready));
+
+  p_window_counter : process (clk_i, s_window_rst) is
   begin  -- process p_window_counter
-    if rst_i = '1' or s_all_ready = '1' then  -- asynchronous reset (active high)
+    if s_window_rst = '1' then          -- asynchronous reset (active high)
       u_window_counter <= (others => '0');
     elsif rising_edge(clk_i) then       -- rising clock edge
       if en_i = '1' then

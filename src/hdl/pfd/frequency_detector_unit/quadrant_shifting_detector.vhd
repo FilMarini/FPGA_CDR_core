@@ -200,13 +200,13 @@ begin  -- architecture rtl
       when st2a_shifting_up =>
         s_locked            <= '1';
         s_update_quadrant   <= '0';
-        s_shifting          <= '1';
+        s_shifting          <= '0';
         s_shifting_detected <= '1';
       --
       when st2b_shifting_down =>
         s_locked            <= '1';
         s_update_quadrant   <= '0';
-        s_shifting          <= '0';
+        s_shifting          <= '1';
         s_shifting_detected <= '1';
       --
       when st3_update_quadrant =>
