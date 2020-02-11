@@ -56,6 +56,8 @@ architecture rtl of pfd_manager is
 
   type t_fsm_signal is record
     idle     : std_logic;
+    set_lock : std_logic;
+    rst_lock : std_logic;
     counting : std_logic;
     M_up     : std_logic;
     M_down   : std_logic;
@@ -63,6 +65,8 @@ architecture rtl of pfd_manager is
 
   constant c_fsm_signal : t_fsm_signal := (
     idle     => '0',
+    set_lock => '0',
+    rst_lock => '0',
     counting => '0',
     M_up     => '0',
     M_down   => '0'
@@ -79,7 +83,7 @@ architecture rtl of pfd_manager is
   signal sgd_shift_accumulator : signed(31 downto 0);
   signal s_locked              : std_logic;
   signal s_idle                : std_logic;
-  signal s_counter_rst : std_logic;
+  signal s_counter_rst         : std_logic;
 
   -- attribute mark_debug                          : string;
   -- attribute mark_debug of s_state               : signal is "true";
@@ -158,15 +162,15 @@ begin  -- architecture rtl
         null;
       --
       when st3a_M_up =>
-        s_fsm_signal.M_up <= '1';
-        s_locked          <= '0';
+        s_fsm_signal.M_up     <= '1';
+        s_fsm_signal.rst_lock <= '1';
       --
       when st3b_M_down =>
-        s_fsm_signal.M_down <= '1';
-        s_locked            <= '0';
+        s_fsm_signal.M_down   <= '1';
+        s_fsm_signal.rst_lock <= '1';
       --
       when st4_locked =>
-        s_locked <= '1';
+        s_fsm_signal.set_lock <= '1';
       --
       when others =>
         null;
@@ -179,6 +183,17 @@ begin  -- architecture rtl
   s_M_up     <= s_fsm_signal.M_up;
   s_counting <= s_fsm_signal.counting;
 
+  set_reset_ffd_1: entity work.set_reset_ffd
+    generic map (
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i   => clk_i,
+      set_i   => s_fsm_signal.set_lock,
+      reset_i => s_fsm_signal.rst_lock,
+      q_o     => s_locked
+      );
+
   -----------------------------------------------------------------------------
   -- Shifting counter and accumulator
   -----------------------------------------------------------------------------
@@ -186,9 +201,9 @@ begin  -- architecture rtl
 
   p_shifting_counter : process (clk_i, s_counter_rst) is
   begin  -- process p_shifting_counter
-    if s_counter_rst = '1' then  -- asynchronous reset (active high)
+    if s_counter_rst = '1' then         -- asynchronous reset (active high)
       u_shift_counter <= (others => '0');
-    elsif rising_edge(clk_i) then        -- rising clock edge
+    elsif rising_edge(clk_i) then       -- rising clock edge
       if shifting_en_i = '1' then
         u_shift_counter <= u_shift_counter + 1;
       end if;
@@ -199,9 +214,9 @@ begin  -- architecture rtl
 
   p_shifting_accumulator : process (clk_i, s_counter_rst) is
   begin  -- process p_shifting_accumulator
-    if s_counter_rst = '1' then  -- asynchronous reset (active high)
+    if s_counter_rst = '1' then         -- asynchronous reset (active high)
       sgd_shift_accumulator <= (others => '0');
-    elsif rising_edge(clk_i) then        -- rising clock edge
+    elsif rising_edge(clk_i) then       -- rising clock edge
       if shifting_en_i = '1' and shifting_i = '1' then
         sgd_shift_accumulator <= sgd_shift_accumulator + 1;
       elsif shifting_en_i = '1' and shifting_i = '0' then

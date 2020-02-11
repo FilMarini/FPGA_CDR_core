@@ -401,9 +401,9 @@ begin  -- architecture rtl
 
   pfd_manager_1 : entity work.pfd_manager
     generic map (
-      g_bit_num         => 7,
-      g_lock_threshold  => 16,
-      g_slock_threshold => 32
+      g_bit_num         => 8,
+      g_lock_threshold  => 128,
+      g_slock_threshold => 250
       )
     port map (
       clk_i         => s_clk_i,
@@ -422,7 +422,7 @@ begin  -- architecture rtl
     shifting_o    <= s_M_incr;
     -- shifting_en_o <= s_shifting_en;
     -- shifting_o    <= s_shifting;
-    s_gpio        <= '0';
+    s_gpio        <= s_locked;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate
