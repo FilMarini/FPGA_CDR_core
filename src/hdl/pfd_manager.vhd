@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-27
--- Last update: 2020-02-11
+-- Last update: 2020-02-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,8 +28,8 @@ entity pfd_manager is
 
   generic (
     g_bit_num         : positive := 7;
-    g_lock_threshold  : positive := 16;  -- 12.5%
-    g_slock_threshold : positive := 32   -- 25%
+    g_lock_threshold  : positive := 8;  -- 6.25%
+    g_slock_threshold : positive := 96  -- 75%
     );
   port (
     clk_i         : in  std_logic;
@@ -183,7 +183,7 @@ begin  -- architecture rtl
   s_M_up     <= s_fsm_signal.M_up;
   s_counting <= s_fsm_signal.counting;
 
-  set_reset_ffd_1: entity work.set_reset_ffd
+  set_reset_ffd_1 : entity work.set_reset_ffd
     generic map (
       g_clk_rise => "TRUE"
       )

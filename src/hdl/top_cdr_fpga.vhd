@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-11
+-- Last update: 2020-02-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -401,9 +401,9 @@ begin  -- architecture rtl
 
   pfd_manager_1 : entity work.pfd_manager
     generic map (
-      g_bit_num         => 8,
-      g_lock_threshold  => 128,
-      g_slock_threshold => 250
+      g_bit_num         => 7,
+      g_lock_threshold  => 8,
+      g_slock_threshold => 96
       )
     port map (
       clk_i         => s_clk_i,
