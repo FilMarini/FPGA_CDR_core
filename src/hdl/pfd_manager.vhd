@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-27
--- Last update: 2020-02-12
+-- Last update: 2020-02-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -27,15 +27,14 @@ use ieee.std_logic_misc.all;
 entity pfd_manager is
 
   generic (
-    g_bit_num         : positive := 7;
-    g_lock_threshold  : positive := 8;  -- 6.25%
-    g_slock_threshold : positive := 96  -- 75%
+    g_bit_num        : positive := 7;
+    g_act_threshold  : positive := 8;   -- 6.25%
+    g_lock_threshold : positive := 96   -- 75%
     );
   port (
     clk_i         : in  std_logic;
     rst_i         : in  std_logic;
     en_i          : in  std_logic;
-    en_out_i      : in  std_logic;
     shifting_i    : in  std_logic;
     shifting_en_i : in  std_logic;
     locked_o      : out std_logic;
@@ -51,44 +50,23 @@ architecture rtl of pfd_manager is
                            st2_evaluate,
                            st3a_M_up,
                            st3b_M_down,
-                           st4_locked
                            );
 
   type t_fsm_signal is record
     idle     : std_logic;
-    set_lock : std_logic;
-    rst_lock : std_logic;
     counting : std_logic;
+    evaluate : std_logic;
     M_up     : std_logic;
     M_down   : std_logic;
   end record t_fsm_signal;
 
   constant c_fsm_signal : t_fsm_signal := (
     idle     => '0',
-    set_lock => '0',
-    rst_lock => '0',
     counting => '0',
+    evaluate => '0',
     M_up     => '0',
     M_down   => '0'
     );
-
-  signal s_fsm_signal          : t_fsm_signal;
-  signal s_state               : t_manager_state;
-  signal s_M_down              : std_logic;
-  signal s_M_up                : std_logic;
-  signal s_M_vec               : std_logic_vector(2 downto 0);
-  signal s_counting            : std_logic;
-  signal s_shift_counter       : std_logic_vector(31 downto 0);
-  signal u_shift_counter       : unsigned(31 downto 0);
-  signal sgd_shift_accumulator : signed(31 downto 0);
-  signal s_locked              : std_logic;
-  signal s_idle                : std_logic;
-  signal s_counter_rst         : std_logic;
-
-  -- attribute mark_debug                          : string;
-  -- attribute mark_debug of s_state               : signal is "true";
-  -- attribute mark_debug of sgd_shift_accumulator : signal is "true";
-  -- attribute mark_debug of s_shift_counter       : signal is "true";
 
 begin  -- architecture rtl
 
@@ -113,31 +91,18 @@ begin  -- architecture rtl
           end if;
         --
         when st2_evaluate =>
-          if s_locked <= '0' then
-            if sgd_shift_accumulator > g_lock_threshold then
-              s_state <= st3a_M_up;
-            elsif sgd_shift_accumulator < (- g_lock_threshold) then
-              s_state <= st3b_M_down;
-            else
-              s_state <= st4_locked;
-            end if;
+          if sgd_shift_accumulator > g_act_threshold then
+            s_state <= st3a_M_up;
+          elsif sgd_shift_accumulator < (- g_act_threshold) then
+            s_state <= st3b_M_down;
           else
-            if sgd_shift_accumulator > g_slock_threshold then
-              s_state <= st3a_M_up;
-            elsif sgd_shift_accumulator < (- g_slock_threshold) then
-              s_state <= st3b_M_down;
-            else
-              s_state <= st4_locked;
-            end if;
+            s_state <= st4_locked;
           end if;
         --
         when st3a_M_up =>
           s_state <= st0_idle;
         --
         when st3b_M_down =>
-          s_state <= st0_idle;
-        --
-        when st4_locked =>
           s_state <= st0_idle;
         --
         when others =>
@@ -159,7 +124,7 @@ begin  -- architecture rtl
         s_fsm_signal.counting <= '1';
       --
       when st2_evaluate =>
-        null;
+        s_fsm_signal.evaluate <= '1';
       --
       when st3a_M_up =>
         s_fsm_signal.M_up     <= '1';
@@ -168,9 +133,6 @@ begin  -- architecture rtl
       when st3b_M_down =>
         s_fsm_signal.M_down   <= '1';
         s_fsm_signal.rst_lock <= '1';
-      --
-      when st4_locked =>
-        s_fsm_signal.set_lock <= '1';
       --
       when others =>
         null;
@@ -182,17 +144,7 @@ begin  -- architecture rtl
   s_M_down   <= s_fsm_signal.M_down;
   s_M_up     <= s_fsm_signal.M_up;
   s_counting <= s_fsm_signal.counting;
-
-  set_reset_ffd_1 : entity work.set_reset_ffd
-    generic map (
-      g_clk_rise => "TRUE"
-      )
-    port map (
-      clk_i   => clk_i,
-      set_i   => s_fsm_signal.set_lock,
-      reset_i => s_fsm_signal.rst_lock,
-      q_o     => s_locked
-      );
+  s_evaluate <= s_fsm_signal.evaluate;
 
   -----------------------------------------------------------------------------
   -- Shifting counter and accumulator
@@ -226,19 +178,34 @@ begin  -- architecture rtl
   end process p_shifting_accumulator;
 
   -----------------------------------------------------------------------------
+  -- Locker
+  -----------------------------------------------------------------------------
+  p_locker: process (clk_i) is
+  begin  -- process p_locker
+    if rising_edge(clk_i) then       -- rising clock edge
+      if s_evaluate = '1' then
+        if abs(sgd_shift_accumulator) > g_lock_threshold then
+          s_locked <= '0';
+        else
+          s_locked <= '1';
+        end if;
+      end if;
+    end if;
+  end process p_locker;
+
+  -----------------------------------------------------------------------------
   -- Output control
   -----------------------------------------------------------------------------
-  s_M_vec <= en_out_i & s_M_up & s_M_down;
+  s_M_vec <= s_M_up & s_M_down;
 
   p_output_control : process (clk_i) is
   begin  -- process p_output_control
     if rising_edge(clk_i) then
-      locked_o <= s_locked;
       case s_M_vec is
-        when "110" =>
+        when "10" =>
           M_change_en_o <= '1';
           M_incr_o      <= '1';
-        when "101" =>
+        when "01" =>
           M_change_en_o <= '1';
           M_incr_o      <= '0';
         when others =>
@@ -247,6 +214,8 @@ begin  -- architecture rtl
       end case;
     end if;
   end process p_output_control;
+
+  locked_o <= s_locked;
 
 
 end architecture rtl;

@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-12
+-- Last update: 2020-02-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -93,8 +93,8 @@ architecture rtl of top_cdr_fpga is
   signal s_M_change_en       : std_logic;
   signal s_M_incr            : std_logic;
 
-  attribute mark_debug : string;
-  attribute mark_debug of s_M : signal is "true";
+  attribute mark_debug             : string;
+  attribute mark_debug of s_M      : signal is "true";
   attribute mark_debug of s_locked : signal is "true";
 
 begin  -- architecture rtl
@@ -401,15 +401,14 @@ begin  -- architecture rtl
 
   pfd_manager_1 : entity work.pfd_manager
     generic map (
-      g_bit_num         => 7,
-      g_lock_threshold  => 8,
-      g_slock_threshold => 96
+      g_bit_num        => 7,
+      g_act_threshold  => 8,
+      g_lock_threshold => 96
       )
     port map (
       clk_i         => s_clk_i,
       rst_i         => not s_jc_locked_2,
       en_i          => '1',
-      en_out_i      => '1',             -- to change with cdr manager
       shifting_i    => s_shifting,
       shifting_en_i => s_shifting_en,
       locked_o      => s_locked,
