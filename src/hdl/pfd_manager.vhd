@@ -27,9 +27,10 @@ use ieee.std_logic_misc.all;
 entity pfd_manager is
 
   generic (
-    g_bit_num        : positive := 7;
-    g_act_threshold  : positive := 8;   -- 6.25%
-    g_lock_threshold : positive := 96   -- 75%
+    g_bit_num         : positive := 7;
+    g_act_threshold   : positive := 96;  -- 75%
+    g_lock_threshold  : positive := 8;   -- 6.25%
+    g_slock_threshold : positive := 112   -- 87.5%
     );
   port (
     clk_i         : in  std_logic;
@@ -49,7 +50,7 @@ architecture rtl of pfd_manager is
                            st1_counting,
                            st2_evaluate,
                            st3a_M_up,
-                           st3b_M_down,
+                           st3b_M_down
                            );
 
   type t_fsm_signal is record
@@ -67,6 +68,22 @@ architecture rtl of pfd_manager is
     M_up     => '0',
     M_down   => '0'
     );
+
+  signal s_state               : t_manager_state;
+  signal s_fsm_signal          : t_fsm_signal;
+  signal s_idle                : std_logic;
+  signal s_M_down              : std_logic;
+  signal s_M_up                : std_logic;
+  signal s_counting            : std_logic;
+  signal s_evaluate            : std_logic;
+  signal s_counter_rst         : std_logic;
+  signal s_lock_set            : std_logic;
+  signal s_lock_rst            : std_logic;
+  signal s_locked              : std_logic;
+  signal u_shift_counter       : unsigned(15 downto 0);
+  signal s_shift_counter       : std_logic_vector(15 downto 0);
+  signal sgd_shift_accumulator : signed(15 downto 0);
+  signal s_M_vec               : std_logic_vector(1 downto 0);
 
 begin  -- architecture rtl
 
@@ -91,12 +108,22 @@ begin  -- architecture rtl
           end if;
         --
         when st2_evaluate =>
-          if sgd_shift_accumulator > g_act_threshold then
-            s_state <= st3a_M_up;
-          elsif sgd_shift_accumulator < (- g_act_threshold) then
-            s_state <= st3b_M_down;
+          if s_locked = '1' then
+            if sgd_shift_accumulator > g_act_threshold then
+              s_state <= st3a_M_up;
+            elsif sgd_shift_accumulator < (- g_act_threshold) then
+              s_state <= st3b_M_down;
+            else
+              s_state <= st0_idle;
+            end if;
           else
-            s_state <= st4_locked;
+            if sgd_shift_accumulator > g_lock_threshold then
+              s_state <= st3a_M_up;
+            elsif sgd_shift_accumulator < (- g_lock_threshold) then
+              s_state <= st3b_M_down;
+            else
+              s_state <= st0_idle;
+            end if;
           end if;
         --
         when st3a_M_up =>
@@ -127,12 +154,10 @@ begin  -- architecture rtl
         s_fsm_signal.evaluate <= '1';
       --
       when st3a_M_up =>
-        s_fsm_signal.M_up     <= '1';
-        s_fsm_signal.rst_lock <= '1';
+        s_fsm_signal.M_up <= '1';
       --
       when st3b_M_down =>
-        s_fsm_signal.M_down   <= '1';
-        s_fsm_signal.rst_lock <= '1';
+        s_fsm_signal.M_down <= '1';
       --
       when others =>
         null;
@@ -180,18 +205,34 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Locker
   -----------------------------------------------------------------------------
-  p_locker: process (clk_i) is
+  p_locker : process (clk_i) is
   begin  -- process p_locker
-    if rising_edge(clk_i) then       -- rising clock edge
+    if rising_edge(clk_i) then          -- rising clock edge
       if s_evaluate = '1' then
-        if abs(sgd_shift_accumulator) > g_lock_threshold then
-          s_locked <= '0';
+        if abs(sgd_shift_accumulator) < g_lock_threshold then
+          s_lock_set <= '1';
         else
-          s_locked <= '1';
+          s_lock_set <= '0';
+        end if;
+        if abs(sgd_shift_accumulator) > g_slock_threshold then
+          s_lock_rst <= '1';
+        else
+          s_lock_rst <= '0';
         end if;
       end if;
     end if;
   end process p_locker;
+
+  set_reset_ffd_1 : entity work.set_reset_ffd
+    generic map (
+      g_clk_rise => "TRUE"
+      )
+    port map (
+      clk_i   => clk_i,
+      set_i   => s_lock_set,
+      reset_i => s_lock_rst,
+      q_o     => s_locked
+      );
 
   -----------------------------------------------------------------------------
   -- Output control

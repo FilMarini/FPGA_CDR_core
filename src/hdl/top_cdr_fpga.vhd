@@ -157,6 +157,7 @@ begin  -- architecture rtl
       rst_i            => not s_sysclk_locked,
       change_freq_en_i => s_M_incr,
       incr_freq_en_i   => s_M_change_en,
+      M_start_i        => x"4000000",
       M_o              => s_M
       );
 
@@ -401,9 +402,10 @@ begin  -- architecture rtl
 
   pfd_manager_1 : entity work.pfd_manager
     generic map (
-      g_bit_num        => 7,
-      g_act_threshold  => 8,
-      g_lock_threshold => 96
+      g_bit_num         => 7,
+      g_act_threshold   => 56,
+      g_lock_threshold  => 8,
+      g_slock_threshold => 112
       )
     port map (
       clk_i         => s_clk_i,
