@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2020-02-13
+-- Last update: 2020-02-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
+library extras;
+use extras.synchronizing.all;
 
 entity frequency_manager is
   generic (
@@ -55,26 +58,28 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Rising edge detectors
   -----------------------------------------------------------------------------
-  i_double_flop_1 : entity work.double_flop
+  bit_synchronizer_1: entity extras.bit_synchronizer
     generic map (
-      g_width    => 1,
-      g_clk_rise => "TRUE"
+      STAGES             => 2,
+      RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      clk_i    => clk_i,
-      sig_i(0) => change_freq_en_i,
-      sig_o(0) => s_change_freq_en_df
+      Clock  => clk_i,
+      Reset  => rst_i,
+      Bit_in => change_freq_en_i,
+      Sync   => s_change_freq_en_df
       );
 
-  i_double_flop_2 : entity work.double_flop
+  bit_synchronizer_2: entity extras.bit_synchronizer
     generic map (
-      g_width    => 1,
-      g_clk_rise => "TRUE"
+      STAGES             => 2,
+      RESET_ACTIVE_LEVEL => '1'
       )
     port map (
-      clk_i    => clk_i,
-      sig_i(0) => incr_freq_en_i,
-      sig_o(0) => s_incr_freq_en_df
+      Clock  => clk_i,
+      Reset  => rst_i,
+      Bit_in => incr_freq_en_i,
+      Sync   => s_incr_freq_en_df
       );
 
   r_edge_detect_1 : entity work.r_edge_detect

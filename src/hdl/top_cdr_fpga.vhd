@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-13
+-- Last update: 2020-02-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -92,10 +92,12 @@ architecture rtl of top_cdr_fpga is
   signal s_data_pulse        : std_logic;
   signal s_M_change_en       : std_logic;
   signal s_M_incr            : std_logic;
+  signal s_sysclk_locked_rst : std_logic;
+  signal s_jc_locked_rst     : std_logic;
 
-  attribute mark_debug             : string;
-  attribute mark_debug of s_M      : signal is "true";
-  attribute mark_debug of s_locked : signal is "true";
+  -- attribute mark_debug             : string;
+  -- attribute mark_debug of s_M      : signal is "true";
+  -- attribute mark_debug of s_locked : signal is "true";
 
 begin  -- architecture rtl
 
@@ -148,16 +150,18 @@ begin  -- architecture rtl
       clk_o         => s_deser_clk
       );
 
+  s_sysclk_locked_rst <= not s_sysclk_locked;
+
   frequency_manager_1 : entity work.frequency_manager
     generic map (
       g_number_of_bits => g_number_of_bits
       )
     port map (
       clk_i            => s_clk_250,
-      rst_i            => not s_sysclk_locked,
-      change_freq_en_i => s_M_incr,
-      incr_freq_en_i   => s_M_change_en,
-      M_start_i        => x"4000000",
+      rst_i            => s_sysclk_locked_rst,
+      change_freq_en_i => s_M_change_en,
+      incr_freq_en_i   => s_M_incr,
+      M_start_i        => x"4000200",
       M_o              => s_M
       );
 
@@ -383,6 +387,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- DMTD
   -----------------------------------------------------------------------------
+  s_jc_locked_rst <= not s_jc_locked_2;
+
   pfd_1 : entity work.pfd
     generic map (
       g_pd_num_trans => 10
@@ -390,7 +396,7 @@ begin  -- architecture rtl
     port map (
       clk_i_i       => s_clk_i,
       clk_q_i       => s_clk_q,
-      rst_i         => s_jc_locked_re_df,
+      rst_i         => s_jc_locked_rst,
       en_i          => vio_DTMD_en,
       data_i        => s_data_to_rec,
       locked_o      => s_pfd_locked,
@@ -409,7 +415,7 @@ begin  -- architecture rtl
       )
     port map (
       clk_i         => s_clk_i,
-      rst_i         => not s_jc_locked_2,
+      rst_i         => s_jc_locked_rst,
       en_i          => '1',
       shifting_i    => s_shifting,
       shifting_en_i => s_shifting_en,
