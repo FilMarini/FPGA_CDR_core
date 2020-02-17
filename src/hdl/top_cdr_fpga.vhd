@@ -274,16 +274,21 @@ begin  -- architecture rtl
       locked  => s_jc_locked
       );
 
-  i_q_clock_gen_1 : entity work.i_q_clock_gen
+  i_i_q_clock_gen_1: entity work.i_q_clock_gen
     generic map (
       g_bandwidth => "OPTIMIZED",
-      g_last      => true)
+      g_last      => true
+      )
     port map (
-      clk_in  => s_cdrclk_jc,
-      rst_i   => s_jc_locked_re_df,
-      clk_i_o => s_clk_i,
-      clk_q_o => s_clk_q,
-      locked  => s_jc_locked_2
+      clk_in       => s_cdrclk_jc,
+      rst_i        => s_jc_locked_re_df,
+      clk_i_o      => s_clk_i,
+      clk_q_o      => s_clk_q,
+      clk_cdr_o    => s_clk_cdr,
+      locked       => s_jc_locked_2,
+      psen_p_i     => s_psen_p,
+      psincdec_p_i => s_psincdec_p,
+      psdone_p_o   => s_psdone_p
       );
 
   -- s_cdrclk_jc_2 <= s_cdrclk_jc;
@@ -387,7 +392,7 @@ begin  -- architecture rtl
   s_data_to_rec <= data_to_rec_i;
 
   -----------------------------------------------------------------------------
-  -- DMTD
+  -- Phase and Frequency Detector
   -----------------------------------------------------------------------------
   s_jc_locked_rst <= not s_jc_locked_2;
 
@@ -426,6 +431,29 @@ begin  -- architecture rtl
       M_change_en_o => s_M_change_en,
       M_incr_o      => s_M_incr
       );
+
+  -----------------------------------------------------------------------------
+  -- Phase alignment
+  -----------------------------------------------------------------------------
+  phase_detector_unit_1: entity work.phase_detector_unit -- manca l' enable!!
+    generic map (
+      resource_type => "MMCME"
+      )
+    port map (
+      clk              => s_clk_i,
+      clk_to_follow    => s_clk_cdr,
+      data_in_p        => s_data_to_rec,
+      psen_p           => s_psen_p,
+      psincdec_p       => s_psincdec_p,
+      psdone_p         => s_psdone_p,
+      -- debug
+      phase_up_raw_o   => open,
+      phase_down_raw_o => open
+      );
+
+  -----------------------------------------------------------------------------
+  -- Output Control
+  -----------------------------------------------------------------------------
 
   GEN_PD_CHECK : if g_check_pd generate
     shifting_en_o <= s_M_change_en;
