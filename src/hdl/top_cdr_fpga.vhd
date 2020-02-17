@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-15
+-- Last update: 2020-02-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -94,6 +94,7 @@ architecture rtl of top_cdr_fpga is
   signal s_M_incr            : std_logic;
   signal s_sysclk_locked_rst : std_logic;
   signal s_jc_locked_rst     : std_logic;
+  signal s_M_ctrl            : std_logic;
 
   -- attribute mark_debug             : string;
   -- attribute mark_debug of s_M      : signal is "true";
@@ -159,8 +160,9 @@ begin  -- architecture rtl
     port map (
       clk_i            => s_clk_250,
       rst_i            => s_sysclk_locked_rst,
+      ctrl_i           => s_M_ctrl,
       change_freq_en_i => s_M_change_en,
-      incr_freq_en_i   => s_M_incr,
+      incr_freq_i      => s_M_incr,
       M_start_i        => x"4000200",
       M_o              => s_M
       );
@@ -420,6 +422,7 @@ begin  -- architecture rtl
       shifting_i    => s_shifting,
       shifting_en_i => s_shifting_en,
       locked_o      => s_locked,
+      M_ctrl_o      => s_M_ctrl,
       M_change_en_o => s_M_change_en,
       M_incr_o      => s_M_incr
       );

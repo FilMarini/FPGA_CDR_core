@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-27
--- Last update: 2020-02-13
+-- Last update: 2020-02-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,13 +24,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
+library extras;
+use extras.synchronizing.all;
+
 entity pfd_manager is
 
   generic (
     g_bit_num         : positive := 7;
     g_act_threshold   : positive := 96;  -- 75%
     g_lock_threshold  : positive := 8;   -- 6.25%
-    g_slock_threshold : positive := 112   -- 87.5%
+    g_slock_threshold : positive := 112  -- 87.5%
     );
   port (
     clk_i         : in  std_logic;
@@ -39,6 +42,7 @@ entity pfd_manager is
     shifting_i    : in  std_logic;
     shifting_en_i : in  std_logic;
     locked_o      : out std_logic;
+    M_ctrl_o      : out std_logic;
     M_change_en_o : out std_logic;
     M_incr_o      : out std_logic
     );
@@ -69,21 +73,27 @@ architecture rtl of pfd_manager is
     M_down   => '0'
     );
 
-  signal s_state               : t_manager_state;
-  signal s_fsm_signal          : t_fsm_signal;
-  signal s_idle                : std_logic;
-  signal s_M_down              : std_logic;
-  signal s_M_up                : std_logic;
-  signal s_counting            : std_logic;
-  signal s_evaluate            : std_logic;
-  signal s_counter_rst         : std_logic;
-  signal s_lock_set            : std_logic;
-  signal s_lock_rst            : std_logic;
-  signal s_locked              : std_logic;
-  signal u_shift_counter       : unsigned(15 downto 0);
-  signal s_shift_counter       : std_logic_vector(15 downto 0);
-  signal sgd_shift_accumulator : signed(15 downto 0);
-  signal s_M_vec               : std_logic_vector(1 downto 0);
+  signal s_state                 : t_manager_state;
+  signal s_fsm_signal            : t_fsm_signal;
+  signal s_idle                  : std_logic;
+  signal s_counting              : std_logic;
+  signal s_evaluate              : std_logic;
+  signal s_counter_rst           : std_logic;
+  signal s_lock_set              : std_logic;
+  signal s_lock_rst              : std_logic;
+  signal s_locked                : std_logic;
+  signal u_shift_counter         : unsigned(15 downto 0);
+  signal s_shift_counter         : std_logic_vector(15 downto 0);
+  signal sgd_shift_accumulator   : signed(15 downto 0);
+  signal s_M_vec                 : std_logic_vector(1 downto 0);
+  signal s_M_change_en           : std_logic;
+  signal s_M_change_en_stretched : std_logic;
+  signal s_M_incr                : std_logic;
+  signal s_M_incr_stretched      : std_logic;
+  signal s_M_ctrl                : std_logic;
+
+  alias s_M_up   : std_logic is s_M_vec(1);
+  alias s_M_down : std_logic is s_M_vec(0);
 
 begin  -- architecture rtl
 
@@ -237,26 +247,61 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Output control
   -----------------------------------------------------------------------------
-  s_M_vec <= s_M_up & s_M_down;
-
   p_output_control : process (clk_i) is
   begin  -- process p_output_control
     if rising_edge(clk_i) then
       case s_M_vec is
         when "10" =>
-          M_change_en_o <= '1';
-          M_incr_o      <= '1';
+          s_M_change_en <= '1';
+          s_M_incr      <= '1';
         when "01" =>
-          M_change_en_o <= '1';
-          M_incr_o      <= '0';
+          s_M_change_en <= '1';
+          s_M_incr      <= '0';
         when others =>
-          M_change_en_o <= '0';
-          M_incr_o      <= '0';
+          s_M_change_en <= '0';
+          s_M_incr      <= '0';
       end case;
     end if;
   end process p_output_control;
 
+  i_pulse_stretcher_1 : entity work.pulse_stretcher
+    generic map (
+      g_num_of_steps => 2
+      )
+    port map (
+      clk_i => clk_i,
+      rst_i => rst_i,
+      d_i   => s_M_change_en,
+      q_o   => s_M_change_en_stretched
+      );
+
+  i_pulse_stretcher_2 : entity work.pulse_stretcher
+    generic map (
+      g_num_of_steps => 3
+      )
+    port map (
+      clk_i => clk_i,
+      rst_i => rst_i,
+      d_i   => s_M_incr,
+      q_o   => s_M_incr_stretched
+      );
+
+  i_bit_synchronizer_1 : entity extras.bit_synchronizer
+    generic map (
+      STAGES             => 2,
+      RESET_ACTIVE_LEVEL => '1'
+      )
+    port map (
+      Clock  => clk_i,
+      Reset  => rst_i,
+      Bit_in => s_M_change_en,
+      Sync   => s_M_ctrl
+      );
+
   locked_o <= s_locked;
+  M_ctrl_o <= s_M_ctrl;
+  M_change_en_o <= s_M_change_en_stretched;
+  M_incr_o <= s_M_incr_stretched;
 
 
 end architecture rtl;
