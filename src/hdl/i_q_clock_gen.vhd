@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2020-02-17
+-- Last update: 2020-02-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -44,12 +44,13 @@ end entity i_q_clock_gen;
 
 architecture rtl of i_q_clock_gen is
 
-  signal out_clk_fb   : std_logic;
-  signal in_clk_fb    : std_logic;
-  signal s_clk_i_bufg : std_logic;
-  signal s_clk_q_bufg : std_logic;
+  signal out_clk_fb     : std_logic;
+  signal in_clk_fb      : std_logic;
+  signal s_clk_i_bufg   : std_logic;
+  signal s_clk_i        : std_logic;
+  signal s_clk_q_bufg   : std_logic;
   signal s_clk_cdr_bufg : std_logic;
-  signal s_locked     : std_logic;
+  signal s_locked       : std_logic;
 
   component clk_wiz_0
     port
@@ -124,7 +125,7 @@ begin  -- architecture rtl
       CLKOUT0B     => open,             -- 1-bit output: Inverted CLKOUT0
       CLKOUT1      => s_clk_q_bufg,     -- 1-bit output: CLKOUT1
       CLKOUT1B     => open,             -- 1-bit output: Inverted CLKOUT1
-      CLKOUT2      => s_clk_cdr_bufg,             -- 1-bit output: CLKOUT2
+      CLKOUT2      => s_clk_cdr_bufg,   -- 1-bit output: CLKOUT2
       CLKOUT2B     => open,             -- 1-bit output: Inverted CLKOUT2
       CLKOUT3      => open,             -- 1-bit output: CLKOUT3
       CLKOUT3B     => open,             -- 1-bit output: Inverted CLKOUT3
@@ -135,7 +136,7 @@ begin  -- architecture rtl
       DO           => open,             -- 16-bit output: DRP data
       DRDY         => open,             -- 1-bit output: DRP ready
       -- Dynamic Phase Shift Ports: 1-bit (each) output: Ports used for dynamic phase shifting of the outputs
-      PSDONE       => psdone_p_o,             -- 1-bit output: Phase shift done
+      PSDONE       => psdone_p_o,       -- 1-bit output: Phase shift done
       -- Feedback Clocks: 1-bit (each) output: Clock feedback ports
       CLKFBOUT     => out_clk_fb,       -- 1-bit output: Feedback clock
       CLKFBOUTB    => open,             -- 1-bit output: Inverted CLKFBOUT
@@ -157,8 +158,8 @@ begin  -- architecture rtl
       DI           => (others => '0'),  -- 16-bit input: DRP data
       DWE          => '0',              -- 1-bit input: DRP write enable
       -- Dynamic Phase Shift Ports: 1-bit (each) input: Ports used for dynamic phase shifting of the outputs
-      PSCLK        => s_clk_i,              -- 1-bit input: Phase shift clock
-      PSEN         => psen_p_i,              -- 1-bit input: Phase shift enable
+      PSCLK        => s_clk_i,          -- 1-bit input: Phase shift clock
+      PSEN         => psen_p_i,         -- 1-bit input: Phase shift enable
       PSINCDEC     => psincdec_p_i,  -- 1-bit input: Phase shift increment/decrement
       -- Feedback Clocks: 1-bit (each) input: Clock feedback ports
       CLKFBIN      => out_clk_fb        -- 1-bit input: Feedback clock
@@ -187,14 +188,14 @@ begin  -- architecture rtl
 
     i_BUFG_cdr_clk : BUFG
       port map (
-        O => clk_cdr_o,                   -- 1-bit output: Clock output
-        I => s_clk_cdr_bufg               -- 1-bit input: Clock input
+        O => clk_cdr_o,                 -- 1-bit output: Clock output
+        I => s_clk_cdr_bufg             -- 1-bit input: Clock input
         );
   end generate GEN_BUFG;
 
   GEN_NO_BUFG : if not g_last generate
-    clk_i_o <= s_clk_i_bufg;
-    clk_q_o <= s_clk_q_bufg;
+    clk_i_o   <= s_clk_i_bufg;
+    clk_q_o   <= s_clk_q_bufg;
     clk_cdr_o <= s_clk_cdr_bufg;
   end generate GEN_NO_BUFG;
 

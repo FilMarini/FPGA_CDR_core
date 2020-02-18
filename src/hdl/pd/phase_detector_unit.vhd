@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-22
--- Last update: 2019-08-28
+-- Last update: 2020-02-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ entity phase_detector_unit is
     clk              : in  std_logic;
     clk_to_follow    : in  std_logic;
     data_in_p        : in  std_logic;
+    enable_i         : in  std_logic;
     psen_p           : out std_logic;
     psincdec_p       : out std_logic;
     psdone_p         : in  std_logic;
@@ -57,18 +58,19 @@ architecture rtl of phase_detector_unit is
 
 begin  -- architecture rtl
 
-  phase_detector_1 : entity work.phase_detector
+  i_phase_detector_1 : entity work.phase_detector_w_en
     port map (
-      data_in => data_in_p,
-      sys_clk => clk_to_follow,
-      x       => phase_up_raw,
-      y       => phase_down_raw
+      data_in  => data_in_p,
+      sys_clk  => clk_to_follow,
+      enable_i => enable_i,
+      x        => phase_up_raw,
+      y        => phase_down_raw
       );
 
-  phase_shift_filter_1 : entity work.phase_shift_filter
+  i_phase_shift_filter_1 : entity work.phase_shift_filter
     generic map (
-      threshold             => 10,
-      bit_num_time_interval => 7
+      threshold          => 20,
+      bit_num_trans_time => 6
       )
     port map (
       sys_clk        => clk,
@@ -81,13 +83,13 @@ begin  -- architecture rtl
      -- phase_counter  => phase_counter
       );
 
-  ps_controller_1 : entity work.ps_controller
+  i_ps_controller_1 : entity work.ps_controller
     generic map (
       resource_type => resource_type
       )
     port map (
       clk        => clk,
-      phase_up   => phase_up, 
+      phase_up   => phase_up,
       phase_down => phase_down,
       psclk      => open,
       psen       => psen_p,

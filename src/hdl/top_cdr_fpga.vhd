@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-17
+-- Last update: 2020-02-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,8 +29,8 @@ use UNISIM.vcomponents.all;
 entity top_cdr_fpga is
   generic (
     g_gen_vio        : boolean  := false;
-    g_check_jc_clk   : boolean  := false;
-    g_check_pd       : boolean  := true;
+    g_check_jc_clk   : boolean  := true;
+    g_check_pd       : boolean  := false;
     g_number_of_bits : positive := 28
     );
   port (
@@ -89,12 +89,16 @@ architecture rtl of top_cdr_fpga is
   signal s_data_to_rec       : std_logic;
   signal s_clk_i             : std_logic;
   signal s_clk_q             : std_logic;
+  signal s_clk_cdr           : std_logic;
   signal s_data_pulse        : std_logic;
   signal s_M_change_en       : std_logic;
   signal s_M_incr            : std_logic;
   signal s_sysclk_locked_rst : std_logic;
   signal s_jc_locked_rst     : std_logic;
   signal s_M_ctrl            : std_logic;
+  signal s_psen_p            : std_logic;
+  signal s_psincdec_p        : std_logic;
+  signal s_psdone_p          : std_logic;
 
   -- attribute mark_debug             : string;
   -- attribute mark_debug of s_M      : signal is "true";
@@ -274,7 +278,7 @@ begin  -- architecture rtl
       locked  => s_jc_locked
       );
 
-  i_i_q_clock_gen_1: entity work.i_q_clock_gen
+  i_i_q_clock_gen_1 : entity work.i_q_clock_gen
     generic map (
       g_bandwidth => "OPTIMIZED",
       g_last      => true
@@ -311,7 +315,7 @@ begin  -- architecture rtl
         SRTYPE       => "SYNC")         -- Reset Type ("ASYNC" or "SYNC")
       port map (
         Q  => s_cdrclk_jc_fwd,          -- 1-bit DDR output
-        C  => s_clk_i,                  -- 1-bit clock input
+        C  => s_clk_cdr,                -- 1-bit clock input
         CE => s_jc_locked,              -- 1-bit clock enable input
         D1 => '1',                      -- 1-bit data input (positive edge)
         D2 => '0',                      -- 1-bit data input (negative edge)
@@ -435,7 +439,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Phase alignment
   -----------------------------------------------------------------------------
-  phase_detector_unit_1: entity work.phase_detector_unit -- manca l' enable!!
+  phase_detector_unit_1 : entity work.phase_detector_unit
     generic map (
       resource_type => "MMCME"
       )
@@ -443,6 +447,7 @@ begin  -- architecture rtl
       clk              => s_clk_i,
       clk_to_follow    => s_clk_cdr,
       data_in_p        => s_data_to_rec,
+      enable_i         => s_locked,
       psen_p           => s_psen_p,
       psincdec_p       => s_psincdec_p,
       psdone_p         => s_psdone_p,
@@ -460,7 +465,7 @@ begin  -- architecture rtl
     shifting_o    <= s_M_incr;
     -- shifting_en_o <= s_shifting_en;
     -- shifting_o    <= s_shifting;
-    s_gpio        <= s_locked;
+    s_gpio        <= s_psdone_p;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate

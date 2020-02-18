@@ -2,11 +2,11 @@
 -- Title      : bang bang phase detector
 -- Project    : 
 -------------------------------------------------------------------------------
--- File       : phase_detector.vhdl
+-- File       : phase_detector_w_en.vhdl
 -- Author     : Antonio Bergnoli  <a.bergnoli@gmail.com>
 -- Company    : 
 -- Created    : 2016-01-03
--- Last update: 2019-08-28
+-- Last update: 2020-02-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,31 +22,37 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library extras;
+use extras.synchronizing.all;
+
 -------------------------------------------------------------------------------
 
-entity phase_detector is
+entity phase_detector_w_en is
 
-  port (data_in : in  std_logic;
-        sys_clk : in  std_logic;
-        x       : out std_logic;
-        y       : out std_logic
+  port (data_in  : in  std_logic;
+        sys_clk  : in  std_logic;
+        enable_i : in  std_logic;
+        x        : out std_logic;
+        y        : out std_logic
         );
 
-end entity phase_detector;
+end entity phase_detector_w_en;
 
 -------------------------------------------------------------------------------
 
-architecture str of phase_detector is
+architecture str of phase_detector_w_en is
 
   -----------------------------------------------------------------------------
   -- Internal signal declarations
   -----------------------------------------------------------------------------
   -- signal positive_q : std_logic_vector(2 downto 0);
-  signal positive_q : std_logic_vector(4 downto 0);
-  signal negative_q : std_logic;
-  signal T          : std_logic;
-  signal E          : std_logic;
-  signal te_vector  : std_logic_vector(1 downto 0);
+  signal positive_q  : std_logic_vector(4 downto 0);
+  signal negative_q  : std_logic;
+  signal T           : std_logic;
+  signal E           : std_logic;
+  signal te_vector   : std_logic_vector(1 downto 0);
+  signal s_enable_df : std_logic;
+  signal s_x, s_y    : std_logic;
 
   -- attribute mark_debug      : string;
   -- attribute mark_debug of T : signal is "true";
@@ -63,6 +69,17 @@ begin  -- architecture str
   -----------------------------------------------------------------------------
   -- Component instantiations
   -----------------------------------------------------------------------------
+  bit_synchronizer_1 : entity extras.bit_synchronizer
+    generic map (
+      STAGES             => 2,
+      RESET_ACTIVE_LEVEL => '1'
+      )
+    port map (
+      Clock  => sys_clk,
+      Reset  => '0',
+      Bit_in => enable_i,
+      Sync   => s_enable_df
+      );
 
   -- purpose: main process implementing the sequential sturcture
   -- type   : sequential
@@ -118,20 +135,34 @@ begin  -- architecture str
     if rising_edge(sys_clk) then        -- rising clock edge
       case transition_state is
         when idle =>
-          x <= '0';
-          y <= '0';
+          s_x <= '0';
+          s_y <= '0';
         when up =>
-          x <= '1';
-          y <= '0';
+          s_x <= '1';
+          s_y <= '0';
         when down =>
-          x <= '0';
-          y <= '1';
+          s_x <= '0';
+          s_y <= '1';
         when others =>
-          x <= '0';
-          y <= '0';
+          s_x <= '0';
+          s_y <= '0';
       end case;
     end if;
   end process transition_state_proc;
+
+  p_output_enable: process (s_enable_df, s_x, s_y) is
+  begin  -- process p_output_enable
+    case s_enable_df is
+      when '1' =>
+        x <= s_x;
+        y <= s_y;
+      when '0' =>
+        x <= '0';
+        y <= '0';
+      when others =>
+        null;
+    end case;
+  end process p_output_enable;
 
 end architecture str;
 

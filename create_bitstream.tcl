@@ -11,6 +11,7 @@ file mkdir $outputDir
 read_vhdl -library usrDefLib [glob src/hdl/*.vhd]
 read_vhdl -library usrDefLib [glob src/hdl/nco/*.vhd]
 read_vhdl -library usrDefLib [glob src/hdl/pfd/*.vhd]
+read_vhdl -library usrDefLib [glob src/hdl/pd/*.vhd]
 read_vhdl -library usrDefLib [glob src/hdl/pfd/frequency_detector_unit/*.vhd]
 read_vhdl -library usrDefLib [glob src/hdl/pfd/phase_detector_unit/*.vhd]
 
