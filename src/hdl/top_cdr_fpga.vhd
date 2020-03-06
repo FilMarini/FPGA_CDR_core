@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-02-18
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ begin  -- architecture rtl
       ctrl_i           => s_M_ctrl,
       change_freq_en_i => s_M_change_en,
       incr_freq_i      => s_M_incr,
-      M_start_i        => x"4000200",
+      M_start_i        => x"4000000",
       M_o              => s_M
       );
 
@@ -209,17 +209,17 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- LED Counter
   -----------------------------------------------------------------------------
-  i_led_counter_1 : entity work.led_counter
-    generic map (
-      g_bit_to_pulse   => 25,
-      g_number_of_bits => g_number_of_bits
-      )
-    port map (
-      clk_i             => s_clk_250,
-      mmcm_locked_i     => s_sysclk_locked,
-      partial_ser_clk_i => s_deser_clk(0),
-      led_o             => led_o
-      );
+  -- i_led_counter_1 : entity work.led_counter
+  --   generic map (
+  --     g_bit_to_pulse   => 25,
+  --     g_number_of_bits => g_number_of_bits
+  --     )
+  --   port map (
+  --     clk_i             => s_clk_250,
+  --     mmcm_locked_i     => s_sysclk_locked,
+  --     partial_ser_clk_i => s_deser_clk(0),
+  --     led_o             => led_o
+  --     );
 
   -----------------------------------------------------------------------------
   -- VIO Generation
@@ -237,7 +237,7 @@ begin  -- architecture rtl
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i         <= x"4000001";
+    M_i         <= x"4000010";
     vio_DTMD_en <= '1';
 
   end generate G_FIXED_M;
@@ -293,6 +293,9 @@ begin  -- architecture rtl
       psen_p_i     => s_psen_p,
       psincdec_p_i => s_psincdec_p,
       psdone_p_o   => s_psdone_p
+      -- psen_p_i     => '0',
+      -- psincdec_p_i => '0',
+      -- psdone_p_o   => open
       );
 
   -- s_cdrclk_jc_2 <= s_cdrclk_jc;
@@ -371,6 +374,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- LED Control
   -----------------------------------------------------------------------------
+  led_o  <= s_jc_locked;
   led1_o <= s_jc_locked_2;
   led2_o <= s_locked;
   led3_o <= s_data_pulse;
@@ -402,7 +406,7 @@ begin  -- architecture rtl
 
   pfd_1 : entity work.pfd
     generic map (
-      g_pd_num_trans => 10
+      g_pd_num_trans => 8
       )
     port map (
       clk_i_i       => s_clk_i,
@@ -461,11 +465,17 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
 
   GEN_PD_CHECK : if g_check_pd generate
-    shifting_en_o <= s_M_change_en;
-    shifting_o    <= s_M_incr;
-    -- shifting_en_o <= s_shifting_en;
-    -- shifting_o    <= s_shifting;
-    s_gpio        <= s_psdone_p;
+    p_sample_output : process (s_clk_i) is
+    begin  -- process p_sample_output
+      if rising_edge(s_clk_i) then      -- rising clock edge
+        shifting_en_o <= s_M_change_en;
+        shifting_o    <= s_M_incr;
+        -- shifting_en_o <= s_shifting_en;
+        -- shifting_o    <= s_shifting;
+        s_gpio        <= s_locked;
+      -- s_gpio        <= '0';
+      end if;
+    end process p_sample_output;
   end generate GEN_PD_CHECK;
 
   GEN_NO_PD_CHECK : if not g_check_pd generate

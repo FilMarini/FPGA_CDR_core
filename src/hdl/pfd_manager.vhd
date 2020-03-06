@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-27
--- Last update: 2020-02-17
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -91,9 +91,15 @@ architecture rtl of pfd_manager is
   signal s_M_incr                : std_logic;
   signal s_M_incr_stretched      : std_logic;
   signal s_M_ctrl                : std_logic;
+  signal s_M_ctrl_df             : std_logic;
 
   alias s_M_up   : std_logic is s_M_vec(1);
   alias s_M_down : std_logic is s_M_vec(0);
+
+  attribute mark_debug                          : string;
+  attribute mark_debug of s_state               : signal is "true";
+  attribute mark_debug of s_shift_counter       : signal is "true";
+  attribute mark_debug of sgd_shift_accumulator : signal is "true";
 
 begin  -- architecture rtl
 
@@ -266,7 +272,7 @@ begin  -- architecture rtl
 
   i_pulse_stretcher_1 : entity work.pulse_stretcher
     generic map (
-      g_num_of_steps => 2
+      g_num_of_steps => 5
       )
     port map (
       clk_i => clk_i,
@@ -277,13 +283,24 @@ begin  -- architecture rtl
 
   i_pulse_stretcher_2 : entity work.pulse_stretcher
     generic map (
-      g_num_of_steps => 3
+      g_num_of_steps => 5
       )
     port map (
       clk_i => clk_i,
       rst_i => rst_i,
       d_i   => s_M_incr,
       q_o   => s_M_incr_stretched
+      );
+
+  i_pulse_stretcher_3 : entity work.pulse_stretcher
+    generic map (
+      g_num_of_steps => 3
+      )
+    port map (
+      clk_i => clk_i,
+      rst_i => rst_i,
+      d_i   => s_M_change_en,
+      q_o   => s_M_ctrl
       );
 
   i_bit_synchronizer_1 : entity extras.bit_synchronizer
@@ -294,14 +311,14 @@ begin  -- architecture rtl
     port map (
       Clock  => clk_i,
       Reset  => rst_i,
-      Bit_in => s_M_change_en,
-      Sync   => s_M_ctrl
+      Bit_in => s_M_ctrl,
+      Sync   => s_M_ctrl_df
       );
 
-  locked_o <= s_locked;
-  M_ctrl_o <= s_M_ctrl;
+  locked_o      <= s_locked;
+  M_ctrl_o      <= s_M_ctrl_df;
   M_change_en_o <= s_M_change_en_stretched;
-  M_incr_o <= s_M_incr_stretched;
+  M_incr_o      <= s_M_incr_stretched;
 
 
 end architecture rtl;

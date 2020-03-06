@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-30
--- Last update: 2020-02-10
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -85,9 +85,9 @@ architecture rtl of phase_shift_filter_slave is
   alias s_trans_to_check : std_logic is sgd_trans_counter(g_num_trans_min);
 
   attribute mark_debug : string;
-  attribute mark_debug of s_state : signal is "true";
-  attribute mark_debug of sgd_trans_counter : signal is "true";
-  attribute mark_debug of sgd_phase_counter : signal is "true";
+  -- attribute mark_debug of s_state : signal is "true";
+  -- attribute mark_debug of sgd_trans_counter : signal is "true";
+  -- attribute mark_debug of sgd_phase_counter : signal is "true";
 
 begin  -- architecture rtl
 

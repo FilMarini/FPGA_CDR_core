@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2019-11-29
+-- Last update: 2020-03-05
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -64,10 +64,10 @@ begin  -- architecture rtl
     MMCME2_ADV_inst : MMCME2_ADV
       generic map (
         BANDWIDTH            => g_bandwidth,  -- Jitter programming (OPTIMIZED, HIGH, LOW)
-        CLKFBOUT_MULT_F      => 16.0,  -- Multiply value for all CLKOUT (2.000-64.000).
+        CLKFBOUT_MULT_F      => 4.0,  -- Multiply value for all CLKOUT (2.000-64.000).
         CLKFBOUT_PHASE       => 0.0,  -- Phase offset in degrees of CLKFB (-360.000-360.000).
         -- CLKIN_PERIOD: Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
-        CLKIN1_PERIOD        => 16.0,
+        CLKIN1_PERIOD        => 4.0,
         CLKIN2_PERIOD        => 0.0,
         -- CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for CLKOUT (1-128)
         CLKOUT1_DIVIDE       => 1,
@@ -76,7 +76,7 @@ begin  -- architecture rtl
         CLKOUT4_DIVIDE       => 1,
         CLKOUT5_DIVIDE       => 1,
         CLKOUT6_DIVIDE       => 1,
-        CLKOUT0_DIVIDE_F     => 16.0,  -- Divide amount for CLKOUT0 (1.000-128.000).
+        CLKOUT0_DIVIDE_F     => 4.0,  -- Divide amount for CLKOUT0 (1.000-128.000).
         -- CLKOUT0_DUTY_CYCLE - CLKOUT6_DUTY_CYCLE: Duty cycle for CLKOUT outputs (0.01-0.99).
         CLKOUT0_DUTY_CYCLE   => 0.5,
         CLKOUT1_DUTY_CYCLE   => 0.5,

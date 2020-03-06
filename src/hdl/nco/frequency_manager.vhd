@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2020-02-17
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,14 +46,15 @@ architecture rtl of frequency_manager is
   signal s_change_freq_en_df : std_logic;
   signal s_incr_freq_df      : std_logic;
   signal sgn_M               : signed(g_number_of_bits - 1 downto 0);
+  signal s_M                 : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal sgn_M_start         : signed(g_number_of_bits - 1 downto 0);
   signal s_ctrl              : std_logic;
   signal s_ctrl_df           : std_logic;
 
-  attribute mark_debug : string;
+  attribute mark_debug        : string;
   -- attribute mark_debug of s_change_freq_en_re : signal is "true";
   -- attribute mark_debug of s_incr_freq_re      : signal is "true";
-  -- attribute mark_debug of sgn_M               : signal is "true";
+  attribute mark_debug of s_M : signal is "true";
 
 begin  -- architecture rtl
 
@@ -130,6 +131,13 @@ begin  -- architecture rtl
       end if;
     end if;
   end process p_freq_manager;
+
+  p_sample_M : process (clk_i) is
+  begin  -- process p_sample_M
+    if rising_edge(clk_i) then          -- rising clock edge
+      s_M <= std_logic_vector(sgn_M);
+    end if;
+  end process p_sample_M;
 
   M_o <= std_logic_vector(sgn_M);
 

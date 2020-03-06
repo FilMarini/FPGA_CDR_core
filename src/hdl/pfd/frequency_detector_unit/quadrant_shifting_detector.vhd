@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-02-10
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ architecture rtl of quadrant_shifter_detector is
   signal s_quadrant_rdy_re   : std_logic;
 
   attribute mark_debug : string;
-  attribute mark_debug of s_state : signal is "true";
+  -- attribute mark_debug of s_state : signal is "true";
 
 begin  -- architecture rtl
 
