@@ -4,8 +4,8 @@ all: ip_cores
 ip_cores:
 	$(MAKE) -C src/ip_cores
 
-clean:
-	rm -rf results vivado*.jou vivado*.log usage* .Xil .cache
+clean: clean_vivado
+	rm -rf results .Xil .cache
 
 ip_cores_clean: clean
 	$(MAKE) -C src/ip_cores clean
