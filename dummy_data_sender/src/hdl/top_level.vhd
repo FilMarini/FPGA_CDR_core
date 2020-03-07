@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-04
--- Last update: 2020-01-24
+-- Last update: 2020-03-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -37,10 +37,10 @@ end entity top_level;
 
 architecture rtl of top_level is
 
-  signal s_clk    : std_logic;
-  signal s_locked : std_logic;
-  signal s_prbs   : std_logic;
-  signal s_prbs_rst   : std_logic;
+  signal s_clk      : std_logic;
+  signal s_locked   : std_logic;
+  signal s_prbs     : std_logic;
+  signal s_prbs_rst : std_logic;
 
 begin  -- architecture rtl
 
@@ -52,10 +52,10 @@ begin  -- architecture rtl
       g_bandwidth => "LOW"
       )
     port map (
-      clk_in     => clk_i,             -- 125 MHz
+      clk_in     => clk_i,              -- 125 MHz
       reset      => '0',
-      clk_out0   => s_clk,              -- 62.5 MHz
-      clk_out1   => open,
+      clk_out0   => open,               -- 31.125 MHz
+      clk_out1   => s_clk,              -- 250 MHz
       clk_out2   => open,
       clk_out3   => open,
       clk_out4   => open,
@@ -79,7 +79,7 @@ begin  -- architecture rtl
       NBITS       => 1
       )
     port map(
-      RST         => s_prbs_rst,               --s_rst_prbs,
+      RST         => s_prbs_rst,        --s_rst_prbs,
       CLK         => s_clk,
       DATA_IN(0)  => '0',               --inject err
       EN          => s_locked,

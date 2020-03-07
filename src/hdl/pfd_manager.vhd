@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-27
--- Last update: 2020-03-06
+-- Last update: 2020-03-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -42,6 +42,7 @@ entity pfd_manager is
     shifting_i    : in  std_logic;
     shifting_en_i : in  std_logic;
     locked_o      : out std_logic;
+    lock_ctrl_o   : out std_logic;
     M_ctrl_o      : out std_logic;
     M_change_en_o : out std_logic;
     M_incr_o      : out std_logic
@@ -319,6 +320,7 @@ begin  -- architecture rtl
   M_ctrl_o      <= s_M_ctrl_df;
   M_change_en_o <= s_M_change_en_stretched;
   M_incr_o      <= s_M_incr_stretched;
+  lock_ctrl_o   <= s_evaluate;
 
 
 end architecture rtl;

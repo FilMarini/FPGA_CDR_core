@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-03-06
+-- Last update: 2020-03-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -81,6 +81,8 @@ architecture rtl of top_cdr_fpga is
   signal s_cdrclk_jc_2       : std_logic;
   signal s_jc_locked_2       : std_logic;
   signal s_locked            : std_logic;
+  signal s_locked_raw        : std_logic;
+  signal s_lock_ctrl         : std_logic;
   signal s_pfd_locked        : std_logic;
   signal s_M                 : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal s_incr_freq_re      : std_logic;
@@ -293,9 +295,9 @@ begin  -- architecture rtl
       psen_p_i     => s_psen_p,
       psincdec_p_i => s_psincdec_p,
       psdone_p_o   => s_psdone_p
-      -- psen_p_i     => '0',
-      -- psincdec_p_i => '0',
-      -- psdone_p_o   => open
+     -- psen_p_i     => '0',
+     -- psincdec_p_i => '0',
+     -- psdone_p_o   => open
       );
 
   -- s_cdrclk_jc_2 <= s_cdrclk_jc;
@@ -414,7 +416,7 @@ begin  -- architecture rtl
       rst_i         => s_jc_locked_rst,
       en_i          => vio_DTMD_en,
       data_i        => s_data_to_rec,
-      locked_o      => s_pfd_locked,
+      locked_o      => open,
       shifting_o    => s_shifting,
       shifting_en_o => s_shifting_en
      --debug
@@ -434,10 +436,25 @@ begin  -- architecture rtl
       en_i          => '1',
       shifting_i    => s_shifting,
       shifting_en_i => s_shifting_en,
-      locked_o      => s_locked,
+      locked_o      => s_locked_raw,
+      lock_ctrl_o   => s_lock_ctrl,
       M_ctrl_o      => s_M_ctrl,
       M_change_en_o => s_M_change_en,
       M_incr_o      => s_M_incr
+      );
+
+  -----------------------------------------------------------------------------
+  -- Lock Manager
+  -----------------------------------------------------------------------------
+  lock_manager_1: entity work.lock_manager
+    generic map (
+      g_threshold_bit => 7
+      )
+    port map (
+      clk_i       => s_clk_i,
+      lock_ctrl_i => s_lock_ctrl,
+      lock_raw_i  => s_locked_raw,
+      lock_o      => s_locked
       );
 
   -----------------------------------------------------------------------------
@@ -460,6 +477,8 @@ begin  -- architecture rtl
       phase_down_raw_o => open
       );
 
+  -- s_locked <= '0';
+
   -----------------------------------------------------------------------------
   -- Output Control
   -----------------------------------------------------------------------------
@@ -470,9 +489,9 @@ begin  -- architecture rtl
       if rising_edge(s_clk_i) then      -- rising clock edge
         shifting_en_o <= s_M_change_en;
         shifting_o    <= s_M_incr;
-        -- shifting_en_o <= s_shifting_en;
-        -- shifting_o    <= s_shifting;
         s_gpio        <= s_locked;
+      -- shifting_en_o <= s_shifting_en;
+      -- shifting_o    <= s_shifting;
       -- s_gpio        <= '0';
       end if;
     end process p_sample_output;

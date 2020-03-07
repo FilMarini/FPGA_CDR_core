@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : University of Padova, INFN Padova
 -- Created    : 2020-01-30
--- Last update: 2020-03-06
+-- Last update: 2020-03-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -71,6 +71,7 @@ architecture rtl of phase_shift_filter_slave is
   signal s_fsm_signal         : t_fsm_signal;
   signal s_state              : t_filter_state;
   signal sgd_trans_counter    : signed(31 downto 0) := (others => '0');
+  signal sgd_threshold        : signed(31 downto 0) := (others => '0');
   signal sgd_phase_counter    : signed(31 downto 0) := (others => '0');
   signal s_transition_occured : std_logic;
   signal s_phase_vector       : std_logic_vector(1 downto 0);
@@ -140,9 +141,9 @@ begin  -- architecture rtl
         --
         when st2_evaluate =>
           if s_trans_ok = '1' then
-            if sgd_phase_counter = sgd_trans_counter then
+            if sgd_phase_counter > sgd_threshold then
               s_state <= st3a_phase_up;
-            elsif sgd_phase_counter = - (sgd_trans_counter) then
+            elsif sgd_phase_counter < (- sgd_threshold) then
               s_state <= st3b_phase_down;
             else
               s_state <= st0_idle;
@@ -209,6 +210,8 @@ begin  -- architecture rtl
       end if;
     end if;
   end process p_trans_counter;
+
+  sgd_threshold <= shift_right(sgd_trans_counter, 1);
 
   p_phase_counter : process (clk_i, s_ready) is
   begin  -- process p_phase_counter

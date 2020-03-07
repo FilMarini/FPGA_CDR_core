@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini  <filippo.marini@pd.infn.it>
 -- Company    : 
 -- Created    : 2020-01-17
--- Last update: 2020-02-10
+-- Last update: 2020-03-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ begin  -- architecture rtl
   i_phase_shift_filter_slave_1 : entity work.phase_shift_filter_slave
     generic map (
       g_steps_to_strech => 4,
-      g_num_trans_min   => g_pd_num_trans - 2
+      g_num_trans_min   => g_pd_num_trans - 3
       )
     port map (
       clk_i          => clk_i_i,
@@ -125,7 +125,7 @@ begin  -- architecture rtl
   i_phase_shift_filter_slave_2 : entity work.phase_shift_filter_slave
     generic map (
       g_steps_to_strech => 4,
-      g_num_trans_min   => g_pd_num_trans - 2
+      g_num_trans_min   => g_pd_num_trans - 3
       )
     port map (
       clk_i          => clk_q_i,
@@ -223,14 +223,16 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Output Control
   -----------------------------------------------------------------------------
-  -- p_output_control : process (clk_i_i) is
-  -- begin  -- process p_output_control
-  --   if rising_edge(clk_i_i) then        -- rising clock edge
-  --     shifting_en_o <= s_shifting_en;
-  --     shifting_o    <= s_shifting;
-  --     locked_o      <= s_locked;
-  --   end if;
-  -- end process p_output_control;
+  p_output_control : process (clk_i_i) is
+  begin  -- process p_output_control
+    if rising_edge(clk_i_i) then        -- rising clock edge
+      shifting_en_o <= s_shifting_en;
+      shifting_o    <= s_shifting;
+      -- gpio_o        <= s_locked;
+    end if;
+  end process p_output_control;
+
+  locked_o <= '1';
 
   -----------------------------------------------------------------------------
   -- Output debug
@@ -253,16 +255,6 @@ begin  -- architecture rtl
   --   end if;
   -- end process p_shifting_control;
 
-  p_output_control : process (clk_i_i) is
-  begin  -- process p_output_control
-    if rising_edge(clk_i_i) then        -- rising clock edge
-      shifting_en_o <= s_shifting_en;
-      shifting_o    <= s_shifting;
-      -- gpio_o        <= s_locked;
-    end if;
-  end process p_output_control;
-
-  locked_o <= '1';
 
 
 
