@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-03-07
+-- Last update: 2020-03-09
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,6 +22,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library extras;
+use extras.synchronizing.all;
+
 library UNISIM;
 use UNISIM.vcomponents.all;
 
@@ -29,7 +32,7 @@ use UNISIM.vcomponents.all;
 entity top_cdr_fpga is
   generic (
     g_gen_vio        : boolean  := false;
-    g_check_jc_clk   : boolean  := true;
+    g_check_jc_clk   : boolean  := false;
     g_check_pd       : boolean  := false;
     g_number_of_bits : positive := 28
     );
@@ -101,8 +104,14 @@ architecture rtl of top_cdr_fpga is
   signal s_psen_p            : std_logic;
   signal s_psincdec_p        : std_logic;
   signal s_psdone_p          : std_logic;
+  signal s_clk_sample : std_logic;
+  signal s_data : std_logic;
+  signal s_error : std_logic;
+  signal s_error_pulse : std_logic;
+  signal s_prbs_counter : std_logic_vector(7 downto 0);
 
-  -- attribute mark_debug             : string;
+  attribute mark_debug             : string;
+  attribute mark_debug of s_prbs_counter : signal is "true";
   -- attribute mark_debug of s_M      : signal is "true";
   -- attribute mark_debug of s_locked : signal is "true";
 
@@ -291,6 +300,7 @@ begin  -- architecture rtl
       clk_i_o      => s_clk_i,
       clk_q_o      => s_clk_q,
       clk_cdr_o    => s_clk_cdr,
+      clk_sample_o => s_clk_sample,
       locked       => s_jc_locked_2,
       psen_p_i     => s_psen_p,
       psincdec_p_i => s_psincdec_p,
@@ -399,7 +409,16 @@ begin  -- architecture rtl
   --     I => clk_to_rec_i   -- 1-bit input: Clock input (connect to an IBUF or BUFMR).
   --     );
 
-  s_data_to_rec <= data_to_rec_i;
+  -- s_data_to_rec <= data_to_rec_i;
+
+  IBUF_inst : IBUF
+   generic map (
+      IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+      IOSTANDARD => "DEFAULT")
+   port map (
+      O => s_data_to_rec,     -- Buffer output
+      I => data_to_rec_i      -- Buffer input (connect directly to top-level port)
+   );
 
   -----------------------------------------------------------------------------
   -- Phase and Frequency Detector
@@ -427,7 +446,7 @@ begin  -- architecture rtl
     generic map (
       g_bit_num         => 7,
       g_act_threshold   => 56,
-      g_lock_threshold  => 8,
+      g_lock_threshold  => 16,
       g_slock_threshold => 112
       )
     port map (
@@ -482,14 +501,13 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Output Control
   -----------------------------------------------------------------------------
-
   GEN_PD_CHECK : if g_check_pd generate
-    p_sample_output : process (s_clk_i) is
+    p_sample_output : process (s_clk_sample) is
     begin  -- process p_sample_output
-      if rising_edge(s_clk_i) then      -- rising clock edge
-        shifting_en_o <= s_M_change_en;
-        shifting_o    <= s_M_incr;
-        s_gpio        <= s_locked;
+      if rising_edge(s_clk_sample) then      -- rising clock edge
+        shifting_en_o <= s_data;
+        shifting_o    <= '0';
+        s_gpio        <= '0';
       -- shifting_en_o <= s_shifting_en;
       -- shifting_o    <= s_shifting;
       -- s_gpio        <= '0';
@@ -502,5 +520,55 @@ begin  -- architecture rtl
     shifting_o    <= '0';
     s_gpio        <= '0';
   end generate GEN_NO_PD_CHECK;
+
+  -----------------------------------------------------------------------------
+  -- PRBS checker
+  -----------------------------------------------------------------------------
+  bit_synchronizer_1: entity extras.bit_synchronizer
+    generic map (
+      STAGES             => 2,
+      RESET_ACTIVE_LEVEL => '1'
+      )
+    port map (
+      Clock  => s_clk_sample,
+      Reset  => '0',
+      Bit_in => s_data_to_rec,
+      Sync   => s_data
+      );
+
+  PRBS_ANY_1 : entity work.PRBS_ANY
+    generic map (
+      CHK_MODE    => true,
+      INV_PATTERN => true,
+      POLY_LENGHT => 7,
+      POLY_TAP    => 6,
+      NBITS       => 1
+      )
+    port map (
+      RST         => s_jc_locked_rst,
+      CLK         => s_clk_sample,
+      DATA_IN(0)  => s_data,
+      EN          => '1',
+      DATA_OUT(0) => s_error
+      );
+
+  prbs_counter_1: entity work.prbs_counter
+    port map (
+      clk_i     => s_clk_sample,
+      rst_i     => s_jc_locked_rst,
+      err_i     => s_error,
+      locked_i  => s_locked,
+      counter_o => s_prbs_counter
+      );
+
+  -- slow_pulse_counter_2 : entity work.slow_pulse_counter
+  --   generic map (
+  --     g_num_bit_threshold => 20
+  --     )
+  --   port map (
+  --     clk_i   => s_clk_sample,
+  --     pulse_i => s_error,
+  --     pulse_o => s_error_pulse
+  --     );
 
 end architecture rtl;

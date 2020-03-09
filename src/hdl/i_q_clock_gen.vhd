@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2020-03-05
+-- Last update: 2020-03-09
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -35,6 +35,7 @@ entity i_q_clock_gen is
     clk_i_o      : out std_logic;
     clk_q_o      : out std_logic;
     clk_cdr_o    : out std_logic;
+    clk_sample_o : out std_logic;
     locked       : out std_logic;
     psen_p_i     : in  std_logic;
     psincdec_p_i : in  std_logic;
@@ -50,6 +51,7 @@ architecture rtl of i_q_clock_gen is
   signal s_clk_i        : std_logic;
   signal s_clk_q_bufg   : std_logic;
   signal s_clk_cdr_bufg : std_logic;
+  signal s_clk_sample_bufg : std_logic;
   signal s_locked       : std_logic;
 
   component clk_wiz_0
@@ -77,7 +79,7 @@ begin  -- architecture rtl
       -- CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for CLKOUT (1-128)
       CLKOUT1_DIVIDE       => 4,
       CLKOUT2_DIVIDE       => 4,
-      CLKOUT3_DIVIDE       => 1,
+      CLKOUT3_DIVIDE       => 4,
       CLKOUT4_DIVIDE       => 1,
       CLKOUT5_DIVIDE       => 1,
       CLKOUT6_DIVIDE       => 1,
@@ -94,7 +96,7 @@ begin  -- architecture rtl
       CLKOUT0_PHASE        => 0.0,
       CLKOUT1_PHASE        => 90.0,
       CLKOUT2_PHASE        => 0.0,
-      CLKOUT3_PHASE        => 0.0,
+      CLKOUT3_PHASE        => 90.0,
       CLKOUT4_PHASE        => 0.0,
       CLKOUT5_PHASE        => 0.0,
       CLKOUT6_PHASE        => 0.0,
@@ -114,7 +116,7 @@ begin  -- architecture rtl
       CLKOUT0_USE_FINE_PS  => false,
       CLKOUT1_USE_FINE_PS  => false,
       CLKOUT2_USE_FINE_PS  => true,
-      CLKOUT3_USE_FINE_PS  => false,
+      CLKOUT3_USE_FINE_PS  => true,
       CLKOUT4_USE_FINE_PS  => false,
       CLKOUT5_USE_FINE_PS  => false,
       CLKOUT6_USE_FINE_PS  => false
@@ -127,7 +129,7 @@ begin  -- architecture rtl
       CLKOUT1B     => open,             -- 1-bit output: Inverted CLKOUT1
       CLKOUT2      => s_clk_cdr_bufg,   -- 1-bit output: CLKOUT2
       CLKOUT2B     => open,             -- 1-bit output: Inverted CLKOUT2
-      CLKOUT3      => open,             -- 1-bit output: CLKOUT3
+      CLKOUT3      => s_clk_sample_bufg,    -- 1-bit output: CLKOUT3
       CLKOUT3B     => open,             -- 1-bit output: Inverted CLKOUT3
       CLKOUT4      => open,             -- 1-bit output: CLKOUT4
       CLKOUT5      => open,             -- 1-bit output: CLKOUT5
@@ -191,12 +193,19 @@ begin  -- architecture rtl
         O => clk_cdr_o,                 -- 1-bit output: Clock output
         I => s_clk_cdr_bufg             -- 1-bit input: Clock input
         );
+
+    i_BUFG_sample_clk : BUFG
+      port map (
+        O => clk_sample_o,              -- 1-bit output: Clock output
+        I => s_clk_sample_bufg          -- 1-bit input: Clock input
+        );
   end generate GEN_BUFG;
 
   GEN_NO_BUFG : if not g_last generate
-    clk_i_o   <= s_clk_i_bufg;
-    clk_q_o   <= s_clk_q_bufg;
-    clk_cdr_o <= s_clk_cdr_bufg;
+    clk_i_o      <= s_clk_i_bufg;
+    clk_q_o      <= s_clk_q_bufg;
+    clk_cdr_o    <= s_clk_cdr_bufg;
+    clk_sample_o <= s_clk_sample_bufg;
   end generate GEN_NO_BUFG;
 
   locked <= s_locked;
