@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-04
--- Last update: 2020-04-23
+-- Last update: 2020-05-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,19 +26,16 @@ use UNISIM.VComponents.all;
 use work.PRBSpack.all;
 
 entity top_level is
-  generic (
-    g_cat5_loop : boolean := false
-    );
   port (
     clk_i              : in  std_logic;
     led_o              : out std_logic;
     led1_o             : out std_logic;
     prbs_to_cat5_p_o   : out std_logic;
-    prbs_to_cat5_n_o   : out std_logic;
-    prbs_from_cat5_p_i : in  std_logic;
-    prbs_from_cat5_n_i : in  std_logic;
-    coax_o             : out std_logic;
-    coax1_o            : out std_logic
+    prbs_to_cat5_n_o   : out std_logic
+    -- prbs_from_cat5_p_i : in  std_logic;
+    -- prbs_from_cat5_n_i : in  std_logic;
+    -- coax_o             : out std_logic;
+    -- coax1_o            : out std_logic
     );
 end entity top_level;
 
@@ -113,16 +110,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Output Control to CAT5E (if present)
   -----------------------------------------------------------------------------
-  GEN_NO_LOOP : if not g_cat5_loop generate
-    s_prbs_to_cat5 <= '0';
-    s_prbs_to_cdr  <= s_clean_prbs;
-  end generate GEN_NO_LOOP;
-
-  GEN_LOOP : if g_cat5_loop generate
-    s_prbs_to_cat5 <= s_clean_prbs;
-    s_prbs_to_cdr  <= s_prbs_from_cat5;
-  end generate GEN_LOOP;
-
+  s_prbs_to_cat5 <= s_clean_prbs;
+  
   i_OBUFDS_to_cat5 : OBUFDS
     generic map (
       IOSTANDARD => "DEFAULT",          -- Specify the output I/O standard
@@ -133,32 +122,9 @@ begin  -- architecture rtl
       OB => prbs_to_cat5_n_o
       );
 
-  i_IBUFDS_from_cat5 : IBUFDS
-    generic map (
-      DIFF_TERM    => false,
-      IBUF_LOW_PWR => true,
-      IOSTANDARD   => "DEFAULT")
-    port map (
-      O  => s_prbs_from_cat5,
-      I  => prbs_from_cat5_p_i,
-      IB => prbs_from_cat5_n_i
-      );
-
   -----------------------------------------------------------------------------
   -- Output Control to CDR
   -----------------------------------------------------------------------------
-  i_OBUF : OBUF
-    port map (
-      I => s_prbs_to_cdr,
-      O => coax_o
-      );
-
-  i_OBUF_1 : OBUF
-    port map (
-      I => s_prbs_to_cdr,
-      O => coax1_o
-      );
-
   led_o <= s_locked;
 
 
