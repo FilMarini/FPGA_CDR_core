@@ -20,6 +20,8 @@
 -------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
+library UNISIM;
+use UNISIM.VComponents.all;
 
 entity top_level is
   port (
