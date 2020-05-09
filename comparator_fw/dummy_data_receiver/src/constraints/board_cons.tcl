@@ -7,3 +7,7 @@ set_property IOSTANDARD LVCMOS25  [get_ports coax1_o]
 set_property PACKAGE_PIN D18 [get_ports coax1_o]
 set_property IOSTANDARD LVCMOS25  [get_ports coax_o]
 set_property PACKAGE_PIN D17 [get_ports coax_o]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets s_clk]
+
+
