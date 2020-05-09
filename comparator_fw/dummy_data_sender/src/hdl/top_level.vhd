@@ -106,7 +106,7 @@ begin  -- architecture rtl
         CE => '1',              -- 1-bit clock enable input
         D1 => '1',                      -- 1-bit data input (positive edge)
         D2 => '0',                      -- 1-bit data input (negative edge)
-        R  => s_prbs_reset,             -- 1-bit reset input
+        R  => s_prbs_rst,             -- 1-bit reset input
         S  => '0'                       -- 1-bit set input
         );
 
