@@ -55,7 +55,7 @@ begin  -- architecture rtl
       IB => prbs_from_cat5_n_i
       );
 
-  i_IBUFDS_from_cat5 : IBUFDS
+  i_IBUFDS_clk_from_cat5 : IBUFDS
     generic map (
       DIFF_TERM    => false,
       IBUF_LOW_PWR => true,
