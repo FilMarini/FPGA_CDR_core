@@ -38,8 +38,31 @@ architecture rtl of top_level is
 
   signal s_prbs : std_logic;
   signal s_clk : std_logic;
+  signal s_clk1 : std_logic;
+  signal s_locked : std_logic;
 
 begin  -- architecture rtl
+
+  -----------------------------------------------------------------------------
+  -- MMCM for clock
+  -----------------------------------------------------------------------------
+  clk_wiz_1 : entity work.clk_wiz
+    generic map (
+      g_bandwidth => "LOW"
+      )
+    port map (
+      clk_in     => s_clk,              -- 125 MHz
+      reset      => '0',
+      clk_out0   => s_clk1,               -- 31.125 MHz
+      clk_out1   => open,              -- 250 MHz
+      clk_out2   => open,
+      clk_out3   => open,
+      clk_out4   => open,
+      locked     => s_locked,
+      psen_p     => '0',
+      psincdec_p => '0',
+      psdone_p   => open
+      );
 
   -----------------------------------------------------------------------------
   -- PRBS and clk receiver from cat5
@@ -77,7 +100,7 @@ begin  -- architecture rtl
 
   i_OBUF_1 : OBUF
     port map (
-      I => s_clk,
+      I => s_clk1,
       O => coax1_o
       );
 
