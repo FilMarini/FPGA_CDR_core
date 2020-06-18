@@ -6,7 +6,7 @@
 -- Author     : filippo  <filippo@Dell-Precision-3520>
 -- Company    : 
 -- Created    : 2020-05-06
--- Last update: 2020-05-06
+-- Last update: 2020-06-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -61,12 +61,21 @@ begin  -- architecture rtl
       O => coax_o
       );
 
-  i_OBUF_1 : OBUF
-    port map (
-      I => s_prbs,
-      O => coax1_o
-      );
+  -- i_OBUF_1 : OBUF
+  --   port map (
+  --     I => s_prbs,
+  --     O => coax1_o
+  --     );
 
+  i_OBUF1 : OBUF
+   generic map (
+      DRIVE => 12,
+      IOSTANDARD => "DEFAULT",
+      SLEW => "SLOW")
+   port map (
+      O => coax1_o,     -- Buffer output (connect directly to top-level port)
+      I => s_prbs      -- Buffer input 
+   );
 
 
 end architecture rtl;
