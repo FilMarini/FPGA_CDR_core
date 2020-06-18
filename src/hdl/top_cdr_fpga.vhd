@@ -45,7 +45,8 @@ entity top_cdr_fpga is
     cdrclk_n_o    : out std_logic;
     cdrclk_p_i    : in  std_logic;
     cdrclk_n_i    : in  std_logic;
-    cdrclk_jc_o   : out std_logic;
+    cdrclk_jc_p_o   : out std_logic;
+    cdrclk_jc_n_o   : out std_logic;
     led3_o        : out std_logic;
     led2_o        : out std_logic;
     led1_o        : out std_logic;
@@ -341,21 +342,39 @@ begin  -- architecture rtl
     -----------------------------------------------------------------------------
     -- Output buffer
     -----------------------------------------------------------------------------
-    OBUF_inst : OBUF
-      generic map (
-        DRIVE      => 12,
-        IOSTANDARD => "DEFAULT",
-        SLEW       => "SLOW")
-      port map (
-        O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
-        I => s_cdrclk_jc_fwd            -- Buffer input 
-        );
+    -- OBUF_inst : OBUF
+    --   generic map (
+    --     DRIVE      => 12,
+    --     IOSTANDARD => "DEFAULT",
+    --     SLEW       => "SLOW")
+    --   port map (
+    --     O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
+    --     I => s_cdrclk_jc_fwd            -- Buffer input 
+    --     );
+   OBUFDS_inst : OBUFDS
+   generic map (
+      IOSTANDARD => "DEFAULT", -- Specify the output I/O standard
+      SLEW => "SLOW")          -- Specify the output slew rate
+   port map (
+      O => cdrclk_jc_p_o,     -- Diff_p output (connect directly to top-level port)
+      OB => cdrclk_jc_n_o,   -- Diff_n output (connect directly to top-level port)
+      I => s_cdrclk_jc_fwd      -- Buffer input 
+   );
 
   end generate G_CHECK_CLK_AFTER_JC;
 
   G_NOT_CHECK_CLK_AFTER_JC : if not g_check_jc_clk generate
 
-    cdrclk_jc_o <= s_gpio;
+    -- cdrclk_jc_o <= s_gpio;
+   OBUFDS_inst : OBUFDS
+   generic map (
+      IOSTANDARD => "DEFAULT", -- Specify the output I/O standard
+      SLEW => "SLOW")          -- Specify the output slew rate
+   port map (
+      O => cdrclk_jc_p_o,     -- Diff_p output (connect directly to top-level port)
+      OB => cdrclk_jc_n_o,   -- Diff_n output (connect directly to top-level port)
+      I => '0'      -- Buffer input 
+   );
 
   end generate G_NOT_CHECK_CLK_AFTER_JC;
 

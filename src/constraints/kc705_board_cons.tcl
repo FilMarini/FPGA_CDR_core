@@ -27,8 +27,10 @@ set_property PACKAGE_PIN Y23 [get_ports cdrclk_p_o]
 set_property IOSTANDARD LVDS_25 [get_ports cdrclk_p_i]
 set_property PACKAGE_PIN L25 [get_ports cdrclk_p_i]
 
-set_property IOSTANDARD LVCMOS25 [get_ports cdrclk_jc_o]
-set_property PACKAGE_PIN AB29 [get_ports cdrclk_jc_o]
+#set_property IOSTANDARD LVCMOS25 [get_ports cdrclk_jc_o]
+#set_property PACKAGE_PIN AB29 [get_ports cdrclk_jc_o]
+set_property IOSTANDARD LVDS_25 [get_ports cdrclk_jc_p_o]
+set_property PACKAGE_PIN AB29 [get_ports cdrclk_jc_p_o]
 
 set_property PACKAGE_PIN AD12 [get_ports sysclk_p_i]
 set_property IOSTANDARD LVDS [get_ports sysclk_p_i]

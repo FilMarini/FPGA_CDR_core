@@ -28,7 +28,8 @@ entity top_level is
     prbs_from_cat5_p_i : in  std_logic;
     prbs_from_cat5_n_i : in  std_logic;
     coax_o             : out std_logic;
-    coax1_o            : out std_logic
+    coax1_p_o          : out std_logic;
+    coax1_n_o          : out std_logic
     );
 end entity top_level;
 
@@ -67,15 +68,23 @@ begin  -- architecture rtl
   --     O => coax1_o
   --     );
 
-  i_OBUF1 : OBUF
+  -- i_OBUF1 : OBUF
+  --  generic map (
+  --     DRIVE => 12,
+  --     IOSTANDARD => "DEFAULT",
+  --     SLEW => "SLOW")
+  --  port map (
+  --     O => coax1_o,     -- Buffer output (connect directly to top-level port)
+  --     I => s_prbs      -- Buffer input 
+  --  );
+   OBUFDS_inst : OBUFDS
    generic map (
-      DRIVE => 12,
-      IOSTANDARD => "DEFAULT",
-      SLEW => "SLOW")
+      IOSTANDARD => "DEFAULT", -- Specify the output I/O standard
+      SLEW => "SLOW")          -- Specify the output slew rate
    port map (
-      O => coax1_o,     -- Buffer output (connect directly to top-level port)
+      O => coax1_p_o,     -- Diff_p output (connect directly to top-level port)
+      OB => coax1_n_o,   -- Diff_n output (connect directly to top-level port)
       I => s_prbs      -- Buffer input 
    );
-
 
 end architecture rtl;
