@@ -1,5 +1,5 @@
-Welcome to dds_cdr's documentation!
-===================================
+Welcome to the user guide of NCO based CDR!
+===========================================
 
 .. toctree::
    :maxdepth: 2
@@ -11,3 +11,9 @@ Welcome to dds_cdr's documentation!
    rt2020_abstract_paper/phase_detector
    rt2020_abstract_paper/conclusions
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Code Documentation
+
+   code_doc/top_level
+   code_doc/frequency_generation
