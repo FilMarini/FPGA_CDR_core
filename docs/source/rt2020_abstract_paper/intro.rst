@@ -21,6 +21,6 @@ Essentially, breaking down the design, for a fully functional CDR, a controlled 
 
 This paper has the intent to show a possible implementation of a CDR.
 .. adopting the FPGA technology, in particular the target is a Xilinx Kintex 7 (XC7K325T--2FFG900C), which presents a good balance between performances and cost.
-In particular the target is a Xilinx Kintex 7 (XC7K325T-2FFG900C).
+In particular the target is a Xilinx Kintex 7 (XC7K325T-2FFG900C). The design is intended to work with a range of data rates that allows the use of the high range (HR) general purpose I/O pin of the FPGA over the dedicated tranceivers, resulting in a reduced power consumption and a more straightforward design.
 
 .. To generate an arbitrary frequency clock signal, a Numerically Controlled Oscillator (NCO) is designed. NCOs are digital signal generators which are able to provide discrete-time-and-values waveforms, with user-defined frequency. To control and compare the frequency of the NCO clock to the reference data stream, a few options are currently being evaluated, and will be presented in the dedicated section.

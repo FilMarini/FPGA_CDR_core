@@ -10,7 +10,7 @@ Denoting with :math:`f_d` the data frequency and with :math:`f_{VCO}` the clock 
 
 :math:`f_d = (\phi_d(t_1) - \phi_d(t_0)) / (t_1 - t_0)`
 
-:math:`f_{VCO} = (\phi_VCO(t_1) - \phi_VCO(t_0)) / (t_1 - t_0)` 
+:math:`f_{VCO} = (\phi_{VCO}(t_1) - \phi_{VCO}(t_0)) / (t_1 - t_0)` 
 
 | where :math:`\phi_d(t)` and :math:`\phi_{VCO}(t)` represents the data and clock phase respectively at the time :math:`t`.
 | Let's keep in mind that the time :math:`t_1` and :math:`t_0` are given by the NCO clock, as the only time based signal.
@@ -27,9 +27,15 @@ Practical implementation
 | By using two clocks with 50% duty cycle and orthogonal with each-other (:math:`\pi / 2` of phase difference), it is possible to divide the entire 360 degrees clock period into four quandrants, as shown in :numref:`quadrants` .
 | The two phase detector (one for each clock) indicate the quandrants where the data signal transition is located, updating this information at every new data edge.
 
-If the data phase is shifting with respect to the clock edges, than the quadrant that detects the transition will change, in a direction compatible with the phase shifting direction. 
+If the data phase is shifting with respect to the clock edges, than the clock quadrant that detects the data transition will increase or decrease, accordingly to the phase shifting direction. 
 
-The implementation of such a kind of phase detector is still under evaluation. One possible solution is to use two Alexander type Bang-Bang phase detectors (:numref:`bbpd`), and adjust the NCO frequency at every quadrant transition.
+In the implemented design, the frequency detection capability relies on the use of two clock signals, with 50% duty cycle and orthoghonal with each-other. These two signals allows the division of a clock period into four quadrants (see :numref:`quadrants`).
+
+To identify the quadrant of the data edges, informations by two Alexander-type phase detectors (:numref:`bbpd`) are registered and processed. Further processing is needed to determine whether the data edges are drifting up or down in the clock quandrants (due to higher or lower clock frequency) to consistenly adjust the NCO frequency. These frequency change requests to the NCO are constantly monitored in order to control CDR locked flag.
+
+Informations on the phase and frequency detection techniques whose this design is based from, can be found here [2]_.
+
+.. The implementation of such a kind of phase detector is still under evaluation. One possible solution is to use two Alexander type Bang-Bang phase detectors (:numref:`bbpd`), and adjust the NCO frequency at every quadrant transition.
 
 .. _quadrants:
 .. figure:: phase_detector/quadrants.png
@@ -46,3 +52,5 @@ The implementation of such a kind of phase detector is still under evaluation. O
    :align: center
 
    The bang-bang PD compares the negative edge of the clock with the data transition, and the present data bit with the previous data bit. Using 4 flip flops the resulting info is contemporarily available for one entire clock period. The output T is active when a data transition is detected, the output E is active when the clock has been found early.
+
+.. [2] https://en.wikibooks.org/wiki/Clock_and_Data_Recovery
