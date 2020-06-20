@@ -54,7 +54,9 @@ Quadrant Detector
 
 The *quadrant_detector* module detects in which clock quadrant the data has its edges. To do so, it processes the informations passed on by the *phase_shift_filter_slave* modules.
 
-To understand how the quadrants are identified, please refer to fig. ??
+The quadrant information is ten used by the *quadrant_shifting_detector* module in order to monitor the shifting of the data edges quadrant to dictate whether the clock frequency is faster or slower than the data rate.
+
+To understand how the quadrants are identified, please refer to :numref:`quad`
 
 .. _quad:
 .. figure:: quadrant_thing/quadrants.png
@@ -81,3 +83,9 @@ The concept behind how the modules work is not really difficult. Please look at 
    Block diagram for the quadrant_shifting_detector
 
 To avoid any mis-shifting-detection going from the idle state to the next states, the *quadrant_shifting_detector* module presents a set-reset flip-flop which enables the shifting identification only when at least one quadrant was already identified.
+
+The *locked_o* port of the *quadrant_shifter_detector* module can be though as a primordial CDR lock flag, but in the code this is actually not used and the locked flag comes from the *lock_manager* module.
+
+
+Frequency Detector Manager
+##########################
