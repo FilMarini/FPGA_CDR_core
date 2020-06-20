@@ -17,3 +17,4 @@ Welcome to the user guide of NCO based CDR!
 
    code_doc/top_level
    code_doc/frequency_generation
+   code_doc/frequency_detector

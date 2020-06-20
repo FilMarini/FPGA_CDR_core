@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-06-18
+-- Last update: 2020-06-19
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ begin  -- architecture rtl
 
   s_sysclk_locked_rst <= not s_sysclk_locked;
 
-  frequency_manager_1 : entity work.frequency_manager
+  i_frequency_manager_1 : entity work.frequency_manager
     generic map (
       g_number_of_bits => g_number_of_bits
       )
@@ -410,7 +410,7 @@ begin  -- architecture rtl
   led2_o <= s_locked;
   led3_o <= s_data_pulse;
 
-  slow_pulse_counter_1 : entity work.slow_pulse_counter
+  i_slow_pulse_counter_1 : entity work.slow_pulse_counter
     generic map (
       g_num_bit_threshold => 24
       )
@@ -444,7 +444,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   s_jc_locked_rst <= not s_jc_locked_2;
 
-  pfd_1 : entity work.pfd
+  i_pfd_1 : entity work.pfd
     generic map (
       g_pd_num_trans => 8
       )
@@ -461,7 +461,7 @@ begin  -- architecture rtl
      -- gpio_o        => s_gpio
       );
 
-  pfd_manager_1 : entity work.pfd_manager
+  i_pfd_manager_1 : entity work.pfd_manager
     generic map (
       g_bit_num         => 7,
       g_act_threshold   => 56,
@@ -484,7 +484,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Lock Manager
   -----------------------------------------------------------------------------
-  lock_manager_1: entity work.lock_manager
+  i_lock_manager_1: entity work.lock_manager
     generic map (
       g_threshold_bit => 7
       )
@@ -498,7 +498,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Phase alignment
   -----------------------------------------------------------------------------
-  phase_detector_unit_1 : entity work.phase_detector_unit
+  i_phase_detector_unit_1 : entity work.phase_detector_unit
     generic map (
       resource_type => "MMCME"
       )
@@ -571,7 +571,7 @@ begin  -- architecture rtl
       DATA_OUT(0) => s_error
       );
 
-  prbs_counter_1: entity work.prbs_counter
+  i_prbs_counter_1: entity work.prbs_counter
     port map (
       clk_i     => s_clk_sample,
       rst_i     => s_jc_locked_rst,
