@@ -19,7 +19,7 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = u'dds_cdr'
+project = u'nco_cdr'
 copyright = u'2019, Filippo Marini'
 author = u'Filippo Marini'
 
@@ -103,7 +103,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'dds_cdrdoc'
+htmlhelp_basename = 'nco_cdrdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -130,7 +130,7 @@ latex_elements = {'extraclassoptions': 'openany,oneside'
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'dds_cdr.tex', u'dds\\_cdr Documentation',
+    (master_doc, 'nco_cdr.tex', u'nco\\_cdr Documentation',
      u'Filippo Marini', 'manual'),
 ]
 
@@ -140,7 +140,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'dds_cdr', u'dds_cdr Documentation',
+    (master_doc, 'nco_cdr', u'nco_cdr Documentation',
      [author], 1)
 ]
 
@@ -151,8 +151,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'dds_cdr', u'dds_cdr Documentation',
-     author, 'dds_cdr', 'One line description of project.',
+    (master_doc, 'nco_cdr', u'nco_cdr Documentation',
+     author, 'nco_cdr', 'One line description of project.',
      'Miscellaneous'),
 ]
 
