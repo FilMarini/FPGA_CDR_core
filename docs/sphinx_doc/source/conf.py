@@ -141,7 +141,7 @@ latex_elements = {'extraclassoptions': 'openany,oneside'
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'nco_cdr.tex', u'nco\\_cdr Documentation',
+    (master_doc, 'nco_based_cdr.tex', u'NCO based CDR Documentation',
      u'Filippo Marini', 'manual'),
 ]
 
