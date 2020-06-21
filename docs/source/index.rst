@@ -21,4 +21,5 @@ Welcome to the user guide of NCO based CDR!
    code_doc/phase_and_frequency_detector
    code_doc/phase_and_frequency_detector_manager
    code_doc/phase_aligner
+   code_doc/test_benches_file
    
