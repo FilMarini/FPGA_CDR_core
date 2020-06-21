@@ -16,5 +16,9 @@ Welcome to the user guide of NCO based CDR!
    :caption: Code Documentation
 
    code_doc/top_level
-   code_doc/frequency_generation
-   code_doc/frequency_detector
+   code_doc/numerically_controlled_oscillator
+   code_doc/frequency_manager
+   code_doc/phase_and_frequency_detector
+   code_doc/phase_and_frequency_detector_manager
+   code_doc/phase_aligner
+   

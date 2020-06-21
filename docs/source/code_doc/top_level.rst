@@ -2,9 +2,18 @@
 Top level
 *********
 
+file: *top_cdr_fpga.vhd*
+
 The file *top_cdr_fpga.vhd* is the top level file for the CDR project.
 
-For an easier code comprehension it is recommended to have the CDR paper on the side.
+For an easier code comprehension it is recommended to have the CDR documentation and code on the side.
+
+.. _top:
+.. figure:: top_level/block.png
+   :width: 70%
+   :align: center
+
+   Block level for the CDR proposed project
 
 The generic and ports used by the CDR design are:
 

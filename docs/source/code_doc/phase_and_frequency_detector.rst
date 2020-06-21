@@ -1,6 +1,8 @@
-*******************
-Frequency Detection
-*******************
+****************************
+Phase and Frequency Detector
+****************************
+
+Instance: *i_pfd_1*, file: *pfd.vhd*
 
 In this section we are going to analyze the vhd files used to compare the NCO clock frequency with the data rate.
 
@@ -22,6 +24,9 @@ The filtered Early/Late signals are monitoried by the *quadrant_detector* module
 
 Phase Shift Filter
 ##################
+
+Instance: *i_phase_shift_filter_slave_1, i_phase_shift_filter_slave_2*, file: *phase_shift_filter_slave.vhd*
+Instance: *i_phase_shift_filter_master_1*, file: *phase_shift_filter_master.vhd*
 
 The *phase_shift_filter_master/slave* are components used to filter the raw up/down data-to-clock phase by the phase detectors in order to get rid of possible errors caused by jitter and bad sampling due to flip-flop setup/hold violations.
 
@@ -51,6 +56,9 @@ In order fo the slaves to take a decision, a minimum of data edges must be prese
 
 Quadrant Detector
 #################
+
+Instance: *i_quadrant_detector_1*, file: *quadrant_detector.vhd*
+Instance: *i_quadrant_shifter_detector_1*, file: *quadrant_shifting_detector.vhd*
 
 The *quadrant_detector* module detects in which clock quadrant the data has its edges. To do so, it processes the informations passed on by the *phase_shift_filter_slave* modules.
 
@@ -85,7 +93,3 @@ The concept behind how the modules work is not really difficult. Please look at 
 To avoid any mis-shifting-detection going from the idle state to the next states, the *quadrant_shifting_detector* module presents a set-reset flip-flop which enables the shifting identification only when at least one quadrant was already identified.
 
 The *locked_o* port of the *quadrant_shifter_detector* module can be though as a primordial CDR lock flag, but in the code this is actually not used and the locked flag comes from the *lock_manager* module.
-
-
-Frequency Detector Manager
-##########################
