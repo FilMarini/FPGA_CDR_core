@@ -19,7 +19,7 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = u'nco_cdr'
+project = u'NCO based CDR'
 copyright = u'2019, Filippo Marini'
 author = u'Filippo Marini'
 
@@ -83,6 +83,17 @@ html_theme = "sphinx_rtd_theme"
 # documentation.
 #
 # html_theme_options = {}
+
+# Override default css to get a larger width for ReadTheDoc build
+"""
+html_context = {
+    'css_files': [
+        'https://media.readthedocs.org/css/sphinx_rtd_theme.css',
+        'https://media.readthedocs.org/css/readthedocs-doc-embed.css',
+        '_static/theme_overrides.css',
+    ],
+}
+"""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
