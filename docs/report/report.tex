@@ -1,4 +1,4 @@
-\documentclass[12pt]{extarticle}
+\documentclass[11pt]{article}
 % Some packages I commonly use.
 \usepackage[english]{babel} \usepackage{graphicx} \usepackage{framed}
 \usepackage[normalem]{ulem} \usepackage{amsmath} \usepackage{amsthm}
@@ -11,6 +11,9 @@ in]{geometry} \usepackage{hyperref} \usepackage{xcolor} \usepackage{rotating}
 % \usepackage{subcaption} \usepackage[sc]{caption}
 \usepackage{float} \usepackage{soul} % testo barrato
 \usepackage{enumitem}
+
+\usepackage{palatino}
+
 
 % A bunch of definitions that make my life easier
 \newlist{SubItemList}{itemize}{1} \setlist[SubItemList]{label={$-$}}
@@ -153,27 +156,11 @@ tiles and a SerDes I/O tile. \bigbreak Some of the specifications are:
 \item Dynamic CDR locked flag
 \item Latency for CDR locking to data: several seconds
 \item Selectable reference frequencies
-\item Clock and data recovery capability not affected after 100 meters of CAT5e
-  cable
-\item Input ports:
+\item Clock recovered with PseudoRandom Binary Sequence (PRBS)-7 at 250 Mbps (4
+  ns period) data after 100 meters of CAT5e cable (See Sec. ??):
   \begin{itemize}
-  \item System clock: board system clock (\textit{i.e.}, Clock from on-board
-    crystal)
-  \item incoming data streaming to decode
-  \item Input from recovered clock external loopback (see Sec. ??)
-  \end{itemize}
-\item Ouput ports:
-  \begin{itemize}
-  \item Output for recovered clock external loopback (see Sec. ??)
-  \item Recovered clock
-  \end{itemize}
-\item Debug interface ports and generics:
-  \begin{itemize}
-  \item Frequency change requests report (forwarded to the NCO from the phase
-    and frequency detector)
-  \item Possibility to use Xilinx VIO to set recovered clock frequency
-  \item several LED reporting the locking status of MMCMs, CDR locking status
-    and presence of data stream.
+  \item $\text{Bit Error Rate (BER)} < 10^{-12}$ with 95\% Confidence Level (CL)
+  \item PRBS eye width: around 3 ns
   \end{itemize}
 \end{itemize}
 
@@ -349,8 +336,181 @@ PFD design unit is in the NCO's clock domain, while the \textit{Frequency
   Manager}, as well as the NCO itself, are synchronized with the
 system clock.\\
 To comply with the CDC boundary crossing, a control signal is sent together with
-the request, to avoid erroneous sampling [cite!!]. A timing diagram is
-shown in fig. ??.
+the request, to avoid erroneous sampling [cite!!]. A timing diagram is shown in
+fig. ??.
+
+\subsection{Phase Aligner}
+The \textit{Phase Aligner} module is needed to eliminate any residual drifting
+of the data respect to the clock as well as provide a deterministic phase
+relationship, necessary to make sure the sampling is performed in the middle of
+the eye pattern, which is the optimal sampling point.\\
+Once the PFD is locked, this dynamic phase adjustment is performed by an
+Alexander-type Bang-Bang phase detector operating directly on the MMCM,
+generating an extra clock signal phase aligned to the data. This is made
+possible thanks to the phase shifting capability of Xilinx 7 Series MMCME2\_ADV
+tile.
+
+\section{Implementing the Core}
+\subsection{Generics}
+The top-level entity \textit{top\_cdr\_fpga} has the following generics:
+\begin{itemize}
+\item \textit{g\_gen\_vio}: if set 'true', the recovered clock frequency is
+  controlled by the user through the Xilinx LogiCORE\texttrademark~IP Virtual
+  Input/Output (VIO) Core.
+\item \textit{g\_check\_jc\_clk}: when 'true', the recovered clock is forwarded
+  to its output port through an Output DDR (ODDR) primitive. When 'false', the
+  recovered clock dedicated output pin is set to '0'.
+\item \textit{g\_check\_pd}: mainly used for debug purposes, this generic gives
+  the user the possibility to use two extra ouput pin connected to any top level
+  signal, set by the user in the code. If 'false', those output pin are kept at
+  '0'.
+\item \textit{g\_number\_of\_bits}: positive number which sets the length of the
+  phase accumulator (a.k.a. number of phase-wheel points), in bits. The total
+  number of points will therefore be $2^{\text{\textit{g\_number\_of\_bits}}}$.
+\end{itemize}
+
+\subsection{Ports}
+The top-level entity \textit{top\_cdr\_fpga} has the following ports: \bigbreak
+Input ports:
+\begin{itemize}
+\item \textit{sysclk\_p\_i, sysclk\_n\_i}: Differential system clock.
+\item \textit{data\_to\_rec\_i}: Incoming data stream to decode through the
+  recovered clock.
+\item \textit{cdrclk\_p\_i, cdrclk\_n\_i}: Differential NCO output clock from
+  the external loopback
+\end{itemize}
+
+Output ports:
+\begin{itemize}
+\item \textit{cdrclk\_p\_o, cdrclk\_n\_o}: Differential NCO output port for the
+  external loopback. Output from the SerDes.
+\item \textit{cdrclk\_jc\_p\_o, cdrclk\_jc\_n\_o}: If activate from the generic,
+  differential recovered clock. Otherwise, the port is tied at '0'.
+\item \textit{led\_o}: lock indication from the jitter cleaner MMCM after the
+  loopback.
+\item \textit{led1\_o}: lock indication from the main MMCM after the loopback.
+\item \textit{led2\_o}: lock indication of the CDR core.
+\item \textit{led3\_o}: when pulsing, the core is detecting a data stream from
+  the \textit{data\_to\_rec\_i} port.
+\end{itemize}
+
+\subsection{Core Generation Notes}
+
+\subsubsection{KC705 Example Design Bitstream generation}
+The generation of the bitstream for the example design of the core targeting the
+KC705 is made through a Tcl script for Xilinx Vivado 2018.3 . Together with the
+core, a 'Makefile' is provided. This will automatically
+generate the VIO core as well as the complete bitstream.\\
+Two more firmware are provided: as explained in the test setup dedicated section
+(Sec. ??) the example design need an incoming data stream. The folders named
+\textit{dummy\_data\_sender} and \textit{dummy\_data\_receiver} provide the
+firmware able to generate a PRBS-7 data stream and redirect it to two output
+ports (Oscilloscope and CDR implementation board in the tests). Since the boards
+used for the implementation of these firmware are custom, the user may need to
+adapt the pin constraints file to their choise of board.
+
+\subsubsection{MMCM's Voltage Controlled Oscillator Frequency}
+The two MMCMs encountered by the NCO output clock after the loopback (first one
+being the jitter cleaner while the second one being the main phase-controlling
+clock manager) must have their internal Voltage Controlled Oscillator (VCO)
+inside a well defined range, depending on the FPGA model used. The user needs to
+be careful that the VCO frequency stays inside that range while the CDR is
+working. Some generics on the two MMCMs instantiation may need to change to
+comply with the data rate expected.
+
+\subsubsection{Changing the 'g\_number\_of\_bits' Generic}
+While some applications may find useful to change the 'g\_number\_of\_bits'
+generic in order to increase the frequency resolution, some attention should be
+placed in doing so. The output frequency need to be re-calculated using
+equation~\ref{eq:f_out}, adjusting the number of bits $N$. The change will also
+affect the \textit{frequency\_manager} module as well as the VIO (if used).
+
+\subsubsection{Changing the 'pfd\_manager' thresholds}
+The exact numbers used for the different thresholds set on the
+\textit{pfd\_manager} generics instantiation represents the values that returned
+the best behaviour from the CDR. It is possible that those numbers are not the
+optimal choice when the environment changes (\textit{e.g.}, different data rate,
+different data encoding, different physical medium for data transmission ...).\\
+The main effect of unwanted behaviour is instability of the 'CDR locked' status.
+If this is the observed scenario after implementation, these thresholds may need
+to be adjusted.
+
+\section{Simulation}
+The CDR core source files comes with several test benches to test the behaviour
+of different modules. The simulation files are arranged to be compiled and run
+using the GHDL tool (testd with GHDL v0.37-dev, llvm version) but are compatible
+with any other VHDL simulator (\textit{e.g.}, Vivado simualator).\\
+If using GHDL, to compile the simulation run the 'make' command and then run the
+executabl with GHDL. No automatic tests are predisposed, the user should define
+a simulation stop time and dump the wave file.
+
+\subsection{Phase Detector}
+The test is useful to understand the behaviour of the Alexander-type Bang-Bang
+phase detector by providing a 'random' digital sequence to the module.\bigbreak
+Path: \textit{src/hdl/pfd/phase\_detector\_unit/phase\_detector\_tb}
+
+\subsection{Phase and Frequency Detector}
+This test bench allows the user to monitor all the modules and sub-modules of
+the \textit{phase\_and\_frequency\_detector} entity. This includes the 'Phase
+detector unit' and the 'Frequency detector unit'. By providing a data stream
+featuring a slightly faster data rate compared to the two input clocks (which
+are supposed to derive from the NCO module) the user can observe how the PFD is
+able to detect the data rate-clock frequency mismatch and report it.\bigbreak
+Path: \textit{src/hdl/pfd/pfd\_tb}
+
+\subsection{Lock Manager}
+The first report of a CDR locked status is supplied by the \textit{pfd\_manager}
+to the \textit{locker\_manager} module in order to for the final CDR lock status
+flag to be delivered.\\
+The test bench allows to check the monitoring mechanism of the
+\textit{locker\_manager} module. \bigbreak Path:
+\textit{src/hdl/lock\_manager\_tb}
+
+\section{CDR Test}
+As stated in Sec. ??, the CDR is foreseen to work with data rates of 125 Mbps.
+Despite this, the proposed CDR core has the potential to sustain higher rates,
+therefore the data rate empoyed for testing is 250 Mbps, to which corresponds a
+recovered clock freqency of 250 MHz (4 ns of clock period).
+
+\subsection{Test Setup}
+To test the CDR core performances and capabilities, a PRBS-7 sequence after 100
+m of CAT5e Foiled Twisted Pair (FTP) cable is attempted to be recovered. The
+data sequence is generated by a JUNO Front-End electronics custom board FPGA, a
+Xilinx Kintex-7, and directed to the CAT5e cable after passing through a
+differential cable buffer. After 100 m of cable it reaches a second board where
+a cable equalizer chip recovers the data sequence. By entering the Xilinx
+Kintex-7 FPGA on this second board, the data is forwaded to two output ports: an
+MMCX connector connected to the Xilinx KC705 evaluation board hosting the CDR
+core and a differential GPIO pin connected to the oscilloscope through a
+differential probe. \\
+The KC705 exploits the FPGA Mezanine Card (FMC) connector through an FMC
+interconnection board to input the PRBS sequence and output the recovered clock,
+which is used to trigger the oscilloscope. Together with the CDR core, the KC705
+FPGA hosts a PRBS checker module to monitor any error in the recovered sequence.
+A block design of the setup is visible in Fig. ??.
+
+\subsection{Test Results}
+The desig is evaluated by
+\begin{itemize}
+\item Analyzing the eye pattern of the PRBS digital signal after 100m of CAT5e
+  cable by triggering the oscilloscope with the CDR recovered clock and setting
+  an infinite persistance.
+\item Derive the transmission BER monitoring the PRBS error counter module.
+\end{itemize}
+
+\subsubsection{Eye Pattern}
+The measured eye diagram after the cable transmission is visible on fig. ??.\\
+Thanks to the cable driver buffer and cable equalizer the data is trasmitted and
+recovered efficiently, and the vertical opening of the eye has been minimally
+impacted by the cable trip. The main issue induced by the cable that could potentially have an impact
+on the clock recovery capability of the CDR core, is jitter. This is visible in
+the horizontal eye opening of the eye, which is a combination of data and
+recovered clock jitter. The width of the eye measured by the oscilloscope is
+about 3 ns, guaranteeing a good tolerance for correct data sampling.
+
+\subsubsection{BER}
+
+
 
 
 
