@@ -12,8 +12,8 @@ in]{geometry} \usepackage{hyperref} \usepackage{xcolor} \usepackage{rotating}
 \usepackage{float} \usepackage{soul} % testo barrato
 \usepackage{enumitem}
 
-\usepackage{palatino}
-
+\usepackage{palatino} \usepackage[font={footnotesize}]{caption}
+\usepackage{wrapfig}
 
 % A bunch of definitions that make my life easier
 \newlist{SubItemList}{itemize}{1} \setlist[SubItemList]{label={$-$}}
@@ -94,6 +94,9 @@ $1$: Universita' degli Studi di Padova, INFN Padova. \textit{filippo.marini@pd.i
 $2$: INFN Padova. \textit{marco.bellato@pd.infn.it}\\
 \newpage
 
+\tableofcontents
+
+\newpage
 \section{Introduction}
 The capability to extract timing informations out of a serial data stream to
 decode the incoming informations has become a very common requirement. To sample
@@ -118,11 +121,12 @@ shifting on the relative phase between the clock and the data.
 
 \subsection{Possible Application}
 The design finds a possible application in the context of the Jiangmen Neutrino
-Observatory [note!!] (JUNO), a 20 kton liquid scintillator detector neutrino
-physics experiment where the charge information of the incident neutrinos will
-be retrieved by 18'000 20-inches PhotoMultipliers Tubes (PMT) surrounding the
-central detector. The proposed CDR would be part of the timing and trigger
-system of the Front-End/Back-End electronics, which
+Observatory (JUNO)~\cite{ref:neutrino_physics}, a 20 kton liquid scintillator
+detector neutrino physics experiment where the charge information of the
+incident neutrinos will be retrieved by 18'000 20-inches PhotoMultipliers Tubes
+(PMT) surrounding the central detector~\cite{ref:juno_cdr}. The proposed CDR
+would be part of the timing and trigger system~\cite{ref:synchronization} of the
+Front-End~\cite{ref:readout_electronics}/Back-End electronics, which
 features a custom synchronous link protocol.\\
 JUNO employs this link with a star topology, where the hub, consisting of a
 Back-End Card (BEC), connects to 48 Front-End card, the so-called Global Control
@@ -157,7 +161,8 @@ tiles and a SerDes I/O tile. \bigbreak Some of the specifications are:
 \item Latency for CDR locking to data: several seconds
 \item Selectable reference frequencies
 \item Clock recovered with PseudoRandom Binary Sequence (PRBS)-7 at 250 Mbps (4
-  ns period) data after 100 meters of CAT5e cable (See Sec. ??):
+  ns period) data after 100 meters of CAT5e cable (See
+  Sec.~\ref{sec:test_results}):
   \begin{itemize}
   \item $\text{Bit Error Rate (BER)} < 10^{-12}$ with 95\% Confidence Level (CL)
   \item PRBS eye width: around 3 ns
@@ -166,7 +171,7 @@ tiles and a SerDes I/O tile. \bigbreak Some of the specifications are:
 
 \section{Architecture}
 \subsection{Overview}
-The block diagram of the core is given in Figure~\ref{fig:cdr_overview}.
+The block diagram of the core is given in Fig.~\ref{fig:cdr_overview}.
 
 \begin{figure}[H]
   \centerline{\includegraphics[width=0.5\linewidth]{images/block}}
@@ -188,13 +193,13 @@ The PLL's VCO is substitued in the core's design by a Numerically Controlled
 Oscillator (NCO) which is used to create a frequency controlled clock. The
 frequency comparator's job is carried out by a Phase and Frequency Detector
 (PFD) monitoring the NCO's clock frequency to match it with the data rate, and a
-Phase Aligner (PA) that, together with the Xilinx 7 Series MMCME2\_ADV tile
-[cite!!], dynamically adjusts residual clock drifting and have a deterministic
-phase
+Phase Aligner (PA) that, together with the Xilinx 7 Series MMCME2\_ADV
+tile~\cite{ref:mmcm}, dynamically adjusts residual clock drifting and have a
+deterministic phase
 relationship with the incoming data stream.\\
 
 \subsection{Numerically Controlled Oscillator}
-To generate a controlled frequency clock signal, an NCO is employed by the core.
+To generate a controlled frequency clock signal, an NCO~\cite{ref:nco} is employed by the core.
 Its design consist of two parts:
 \begin{itemize}
 \item A Phase Accumulator (PACC), which is basically a counter incremented by a
@@ -203,14 +208,19 @@ Its design consist of two parts:
   a pseudo-Look-Up Table (LUT)
 \end{itemize}
 To understand the NCO operation, we can think of a vector rotating around a
-phase-circle (Figure ??). To each point of this phase-wheel corresponds a
-defined value. One revolution of the vector around the phase-wheel, at costant
-speed, results in one complete cycle of the output wave. The PACC counter value
-corresponds to the points around the phase-wheel, while the pseudo-LUT assign a
-specific value to each point. The PACC output value is increased every system
-clock cycle, by a specific amount, the \textit{jump size} (\textit{M} in the
-picture). The jump size, together with the number of points
-in the wheel, defines the output wave's frequency.\\
+phase-circle (Fig.~\ref{fig:phase_wheel}). To each point of this phase-wheel
+corresponds a defined value. One revolution of the vector around the
+phase-wheel, at costant speed, results in one complete cycle of the output wave.
+The PACC counter value corresponds to the points around the phase-wheel, while
+the pseudo-LUT assign a specific value to each point. The PACC output value is
+increased every system clock cycle, by a specific amount, the \textit{jump size}
+(\textit{M} in the picture). The jump size, together with the number of points
+in the wheel, defines the output wave's frequency.
+\begin{figure}[h]
+  \centerline{\includegraphics[width=0.4\linewidth]{images/phase_wheel}}
+  \caption{The phase-wheel.}
+  \label{fig:phase_wheel}
+\end{figure}
 The correlation between the jump size, the reference clock and the output
 waveform frequency is
 \begin{equation}
@@ -255,13 +265,13 @@ span the gap between the phase-points landed by the vector of the first
 phase-wheel. After the pseudo-LUT will give value to the phase-points of the
 different
 wheels, the results are serialized by a SerDes.\\
-To clarify, fig. ?? presents an example where two phase-wheels are being
-generated. For graphical reason, the output will be
+To clarify, Fig.~\ref{fig:nco_horizontal} presents an example where two
+phase-wheels are being generated. For graphical reason, the output will be
 represented as a sine waveform instead of a digital 50\% duty cycle clock.\\
 The reference clock has a frequency of 250 MHz, therefore every phase-wheel
 evaluates a phase-point every 4 ns (Note that the green and blue points are
 computed at the same time) and applying eq.~\ref{eq:f_out}, the resulted
-waveform's frequency is 62.5 MHz.\\
+waveform's frequency is 62.5 MHz ($PW = 2, M = 2$).\\
 To compute the offset in phase-points between each wheel, we refer to the
 following equation:
 \begin{equation}
@@ -270,32 +280,37 @@ following equation:
 \end{equation}
 where $PW$ is the number of phase-wheels generated and $M$ is the jump size
 (Note that $M$ must be equal or greater than $PW$. If the result is fractional,
-$\text{\textit{offset}}$ is approximated to the closest integer).\\
+$\text{\textit{offset}}$ is approximated to the closest integer).
+\begin{figure}[h]
+  \centerline{\includegraphics[width=0.9\linewidth]{images/nco_horizontal}}
+  \caption{Ecample of the phase-wheel parallelization technique.}
+  \label{fig:nco_horizontal}
+\end{figure}
 By employing 8 phase-wheels in the CDR core's design with a system clock of 250
 MHz, the phase resolution goes from 4 ns to 500 ps. The serialization of the 8
 digital bits generated by the pseudo-LUT is carried out by the OSERDESE2 I/O
-Kintex 7 tile. Since the OSERDESE2 output must be connected to an I/O Block
-(IOB) only, a loopback in and out of the FPGA is a precondition to be foreseen
-when designing the Printed Circuit
+Kintex 7 tile~\cite{ref:serdes}. Since the OSERDESE2 output must be connected to
+an I/O Block (IOB) only, a loopback in and out of the FPGA is a precondition to
+be foreseen when designing the Printed Circuit
 Board (PCB) hosting the FPGA.\\
 
 \subsection{Phase and Frequency Detector}
 To match the NCO clock frequency with the data rate, a \textit{Phase and
-  Frequency Detector} (PFD) is employed by the core.\\
+  Frequency Detector} (PFD)~\cite{ref:cdr} is employed by the core.\\
 The PFD frequency detection capability relies on the use of two clock signals,
 whose frequency is given by the NCO, with 50\% duty cycle and orthogonal with
 each other ($\pi/2$ phase difference). The rising ad falling edges of these two
 signals allos the division of the entire 360 degrees of the clock period into
-four quadrants, as shown in Fig. ??. If the data edges drift up or down these 4
-quadrants, the NCO frequency does not
+four quadrants, as shown in Fig.~\ref{fig:quadrants}. If the data edges drift up
+or down these 4 quadrants, the NCO frequency does not
 match the data rate, and needs to be adjusted.\\
 The first stage for the data-edges quadrant identification is carried out by the
 \textit{Phase Detector Unit} which features a couple of Alexander-type Bang-Bang
-phase detectors connected to the two orthogonal clock waves. Their outputs
-consists in early/late pulses (early means that the data has its edge in the
-positive half of the clock signal, late correspond to the data edge in the
-negative half) which are then passed, after a filtering stage based off an
-early/late counter, to the \textit{Frequency Detector Unit}. In here two
+phase detectors~\cite{ref:bbpd} connected to the two orthogonal clock waves.
+Their outputs consists in early/late pulses (early means that the data has its
+edge in the positive half of the clock signal, late correspond to the data edge
+in the negative half) which are then passed, after a filtering stage based off
+an early/late counter, to the \textit{Frequency Detector Unit}. In here two
 modules, the \textit{Quadrant Detector} and the \textit{Quadrant Shifting
   Detector} are able to
 \begin{itemize}
@@ -309,6 +324,58 @@ modules, the \textit{Quadrant Detector} and the \textit{Quadrant Shifting
 When the decision is taken, a \textit{shifting} flag is issued, reporting to the
 \textit{Phase and Frequency Detector Manager} in which direction the data edges
 are 'climbing' the clock quadrants. !!! Figure tutte o solo PFD?? !!!
+% \begin{figure}[h]
+%   \centerline{\includegraphics[width=0.4\linewidth]{images/quadrants}}
+%   \caption{Two synchronous clocks with 50\% duty cycle, $I_{CLK}$ (In-phase
+%   Clock) and $Q_{CLK}$ (Quadrature Clock), divide the period T in four
+%   quadrants identified by their positive and negative transitions.
+%   $Q_{\textit{CLK}}$ leads $I_{\textit{CLK}}$ by 90 degrees. Thanks to the
+%   Early/Late ($E$/$L$) identification by the Phase Detector Unit, it is
+%   possible to identify where the \textit{DATA} transitions reside, the fourth
+%   quadrant in the example.}
+%   \label{fig:quadrants}
+% \end{figure}
+\begin{figure}[h]
+  \centering
+  \begin{minipage}[t]{.4\textwidth}
+    \centering \includegraphics[width=.9\linewidth]{images/quadrants}
+    \captionof{figure}{Quadrants definition based on the Early/Late (E/L)
+      identification by the Phase Detector Unit. $I_{CLK}$ and $Q_{CLK}$ are two
+      synchronous and orthogonal clocks with 50\% duty cycle.}
+    \label{fig:quadrants}
+  \end{minipage}%
+  \hspace{0.5cm}
+  \begin{minipage}[t]{.4\textwidth}
+    \centering \includegraphics[width=.9\linewidth]{images/blocks/PFD}
+    \captionof{figure}{Block diagram of the Phase and Frequency Detector Unit.
+      The \textit{shifting\_enable} and \textit{up/down\_shifting} signals
+      identify whether the data edge is shifting up (1,1 respectively) or down
+      (1,0 respectively) the four quadrants defined by the two clocks in
+      quadrature \textit{clk\_i} and \textit{clk\_q}. }
+    \label{fig:PFD}
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \begin{minipage}[t]{.4\textwidth}
+    \centering \includegraphics[width=1.0\linewidth]{images/blocks/PDU}
+    \captionof{figure}{Block diagram for the Phase Detector unit design. $\cdot$
+      the \textit{ready} signals are used by the \textit{Phase Detector Filter
+        Master} to start the filtering window $\cdot$ the window length is given
+      by $2^{g\_num\_trans}$, while the minimum number of transitions is
+      $2^{g\_num\_trans\_min}$}
+    \label{fig:PDU}
+  \end{minipage}%
+  \hspace{0.5cm}
+  \begin{minipage}[t]{.4\textwidth}
+    \centering \includegraphics[width=1.0\linewidth]{images/blocks/FDU}
+    \captionof{figure}{Block diagram for the Frequency Detector unit design.
+      $\cdot$ the \textit{quadrant\_rdy} flag indicates that a new quadrant
+      evaluation is ready.}
+    \label{fig:FDU}
+  \end{minipage}
+\end{figure}
 
 \subsection{Phase and Frequency Detector Manager}
 Since it is impossible for the clock frequency to perfectly equal the data rate,
@@ -336,8 +403,13 @@ PFD design unit is in the NCO's clock domain, while the \textit{Frequency
   Manager}, as well as the NCO itself, are synchronized with the
 system clock.\\
 To comply with the CDC boundary crossing, a control signal is sent together with
-the request, to avoid erroneous sampling [cite!!]. A timing diagram is shown in
-fig. ??.
+the requests, to avoid erroneous sampling~\cite{ref:cdc}. A timing diagram is
+shown in Fig.~\ref{fig:wavedrom}.
+\begin{figure}[htbp]
+  \centerline{\includegraphics[width=.6\linewidth]{images/wavedrom}}
+  \caption{Timing diagram for the PFD frequency shifting requests}
+  \label{fig:wavedrom}
+\end{figure}
 
 \subsection{Phase Aligner}
 The \textit{Phase Aligner} module is needed to eliminate any residual drifting
@@ -425,7 +497,7 @@ placed in doing so. The output frequency need to be re-calculated using
 equation~\ref{eq:f_out}, adjusting the number of bits $N$. The change will also
 affect the \textit{frequency\_manager} module as well as the VIO (if used).
 
-\subsubsection{Changing the 'pfd\_manager' thresholds}
+\subsubsection{Changing the 'pfd\_manager' Thresholds}
 The exact numbers used for the different thresholds set on the
 \textit{pfd\_manager} generics instantiation represents the values that returned
 the best behaviour from the CDR. It is possible that those numbers are not the
@@ -438,10 +510,11 @@ to be adjusted.
 \section{Simulation}
 The CDR core source files comes with several test benches to test the behaviour
 of different modules. The simulation files are arranged to be compiled and run
-using the GHDL tool (testd with GHDL v0.37-dev, llvm version) but are compatible
+using the GHDL tool~\cite{ref:ghdl} (testd with GHDL v0.37-dev, llvm version)
+but are compatible
 with any other VHDL simulator (\textit{e.g.}, Vivado simualator).\\
 If using GHDL, to compile the simulation run the 'make' command and then run the
-executabl with GHDL. No automatic tests are predisposed, the user should define
+executable with GHDL. No automatic tests are predisposed, the user should define
 a simulation stop time and dump the wave file.
 
 \subsection{Phase Detector}
@@ -473,6 +546,13 @@ therefore the data rate empoyed for testing is 250 Mbps, to which corresponds a
 recovered clock freqency of 250 MHz (4 ns of clock period).
 
 \subsection{Test Setup}
+\begin{wrapfigure}{l}{0.45\textwidth}
+  \begin{center}
+    \includegraphics[width=0.9\linewidth]{images/block_setup}
+    \caption{Block diagram for the CDR testing setup}
+    \label{fig:block_setup}
+  \end{center}
+\end{wrapfigure}
 To test the CDR core performances and capabilities, a PRBS-7 sequence after 100
 m of CAT5e Foiled Twisted Pair (FTP) cable is attempted to be recovered. The
 data sequence is generated by a JUNO Front-End electronics custom board FPGA, a
@@ -486,11 +566,21 @@ differential probe. \\
 The KC705 exploits the FPGA Mezanine Card (FMC) connector through an FMC
 interconnection board to input the PRBS sequence and output the recovered clock,
 which is used to trigger the oscilloscope. Together with the CDR core, the KC705
-FPGA hosts a PRBS checker module to monitor any error in the recovered sequence.
-A block design of the setup is visible in Fig. ??.
+FPGA hosts a PRBS checker module to monitor any error in the recovered
+sequence~\cite{ref:prbs}. A block design of the setup is visible in
+Fig.~\ref{fig:block_setup}, the physical setup is shown in
+Fig.~\ref{fig:setup_v2_numerato}.
+\begin{figure}[h]
+  \centerline{\includegraphics[width=0.7\linewidth]{images/setup_v2_numerato}}
+  \caption{Picture of the CDR testing setup. $\cdot$ 1: GCU version 1.0 $\cdot$
+    2: RJ45 connector $\cdot$ 3: 100m CAT5e FTP cable $\cdot$ 4: GCU version 2.2
+    $\cdot$ 5: RJ45 soldering pads $\cdot$ 6: MMCX connectors $\cdot$ 7:
+    Differential probe $\cdot$ 8: Xilinx KC705 evaluation board $\cdot$ 9: FMC
+    interconnection board}
+  \label{fig:setup_v2_numerato}
+\end{figure}
 
-\subsection{Test Results}
-The desig is evaluated by
+\subsection{Test Results} \label{sec:test_results} The desig is evaluated by
 \begin{itemize}
 \item Analyzing the eye pattern of the PRBS digital signal after 100m of CAT5e
   cable by triggering the oscilloscope with the CDR recovered clock and setting
@@ -499,18 +589,82 @@ The desig is evaluated by
 \end{itemize}
 
 \subsubsection{Eye Pattern}
-The measured eye diagram after the cable transmission is visible on fig. ??.\\
+The measured eye diagram after the cable transmission is visible on Fig.~\ref{fig:eye}.\\
 Thanks to the cable driver buffer and cable equalizer the data is trasmitted and
 recovered efficiently, and the vertical opening of the eye has been minimally
-impacted by the cable trip. The main issue induced by the cable that could potentially have an impact
-on the clock recovery capability of the CDR core, is jitter. This is visible in
-the horizontal eye opening of the eye, which is a combination of data and
-recovered clock jitter. The width of the eye measured by the oscilloscope is
-about 3 ns, guaranteeing a good tolerance for correct data sampling.
+impacted by the cable trip. The main issue induced by the cable that could
+potentially have an impact on the clock recovery capability of the CDR core, is
+jitter. This is visible in the horizontal eye opening of the eye, which is a
+combination of data and recovered clock jitter. The width of the eye measured by
+the oscilloscope is about 3 ns, guaranteeing a good tolerance for correct data
+sampling.
 
 \subsubsection{BER}
+To calculate the BER, which is equal to the number of incorrectly received bits
+divided by the total number of bits sent, the PRBS error detection capability is
+exploited. The KC705 FPGA is equipped, alongside the CDR core, with a PRBS error
+counter module, which the user is able to monitor via the Xilinx
+LogiCORE\texttrademark~IP Integrated Logic Analyzer (ILA).\\
+By fixing the BER value at $10^{-12}$ (standard for data transmission over fiber
+optics and Ethernet channels) and the CL threshold at 95\%, the reqeuired number
+of bits to be decoded without the occurence of any error is about $3 *
+10^{12}$~\cite{ref:ber}, corresponding to 200 minutes of error-free data
+transmission at 250
+Mbps.\\
+The test ran for 200 minutes wit zero errors counted, allowing to reject the
+possibility of a BER higher the $10^{-12}$ with a CL of 95\%.
+\begin{figure}[H]
+  \centerline{\includegraphics[width=0.6\linewidth]{images/eye_width}}
+  \caption{Eye diagram of the PRBS data at 250 Mbps after 100 m of CAT5e cable}
+  \label{fig:eye}
+\end{figure}
 
+\section{Conclusion}
+An FPGA implementation of a fully digital CDR is presented in this report. The
+core has been successfully tested against a data rate of 250 Mbps over 100m of
+CAT5e FTP cable. The example design accompanying the core targets a Xilinx
+Kintex-7 FPGA on a KC705 evaluation board, but it is easily portable to other
+FPGAs equipped with a SerDes and a dynamic phase shifting capable clock
+management tile.
 
+\begin{thebibliography}{0}
+\bibitem{ref:neutrino_physics}F.P. An \textit{et al.}. \textit{Neutrino Physics
+    with JUNO}. J. Phys. G43 2016 030401. {\tt arXiv:1507.05613}
+\bibitem{ref:juno_cdr}T. Adam \textit{et al.}. \textit{JUNO Conceptual Design
+    Report}. {\tt arXiv:1508.07166}
+\bibitem{ref:synchronization}D. Pedretti \textit{et al.}. \textit{Nanoseconds
+    Timing System Based on IEEE 1588 FPGA Implementation}. IEEE Trans. Nucl.
+  Sci. 66 2019 1151. {\tt arXiv:1806.04586v2}
+\bibitem{ref:readout_electronics}M. Bellato \textit{et al.}. \textit{Embedded
+    Readout Electronics R\&D for the Large PMTs in the JUNO Experiment}. { \tt
+    arXiv:2003.08339}
+\bibitem{ref:mmcm}Xilinx. \textit{7 Series FPGAs Clocking Resources User Guide
+    (UG472)}
+  \url{http://www.xilinx.com/support/documentation/user_guides/ug472_7Series_Clocking.pdf}
+\bibitem{ref:nco}Eva Murphy and Colm Slattery. \textit{Ask The Application
+    Engineer—33: All About Direct Digital Synthesis}. Analog Dialogue vol.38.
+  2004.
+  \url{https://www.analog.com/en/analog-dialogue/articles/all-about-direct-digital-synthesis.html}
+\bibitem{ref:serdes}Xilinx. \textit{7 Series FPGAs SelectIO Resources User Guide
+    (UG471)}
+  \url{https://www.xilinx.com/support/documentation/user_guides/ug471_7Series_SelectIO.pdf}
+\bibitem{ref:cdr}Clock and Data Recovery.
+  \url{https://en.wikibooks.org/wiki/Clock_and_Data_Recovery}
+\bibitem{ref:bbpd}J.D.H. Alexander. \textit{Clock Recovery from Random Binary
+    Signals}. vol. 11. pp. 541 - 542. October 1975 in Electronics Letters.
+  Institution of Electrical Engineers.
+\bibitem{ref:cdc}Clifford E. Cummings. \textit{Clock Domain Crossing (CDC)
+    Design \& Verification Techniques Using SystemVerilog}. SNUG Boston 2008.
+  Rev. 1.0
+\bibitem{ref:ghdl} \url{http://ghdl.free.fr/}
+\bibitem{ref:prbs}Xilinx Application Note, \textit{XAPP884 (v1.0)}. January 10.
+  2011.
+  \url{https://www.xilinx.com/support/documentation/application_notes/xapp884_PRBS_GeneratorChecker.pdf}
+\bibitem{ref:ber}Dragan Mitić, Aleksandar Lebl and Zarko Markov.
+  \textit{Calculating the required number of bits in the function of confidence
+    level and error probability estimation}. Serbian Journal of Electrical
+  Engineering. 9. 361-375. 2012. 10.2298/SJEE1203361M.
+\end{thebibliography}
 
 
 
