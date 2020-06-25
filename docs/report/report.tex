@@ -14,6 +14,7 @@ in]{geometry} \usepackage{hyperref} \usepackage{xcolor} \usepackage{rotating}
 
 \usepackage{palatino} \usepackage[font={footnotesize}]{caption}
 \usepackage{wrapfig}
+% \usepackage{moreverb}
 
 % A bunch of definitions that make my life easier
 \newlist{SubItemList}{itemize}{1} \setlist[SubItemList]{label={$-$}}
@@ -116,16 +117,16 @@ Phase Detector (PD) to match the clock frequency with the data rate. NCOs are
 often coupled with a Digital to Analog Converter (DAC) to create Direct Digital
 Synthesizers (DDS), which are able to produce analog waveforms of any desired
 frequency. In the presented case, the NCO generates a digital clock signal of an
-arbitrary frequence, while the PD manages this frequency by intercepting any
+arbitrary frequency, while the PD manages this frequency by intercepting any
 shifting on the relative phase between the clock and the data.
 
-\subsection{Possible Application}
-The design finds a possible application in the context of the Jiangmen Neutrino
-Observatory (JUNO)~\cite{ref:neutrino_physics}, a 20 kton liquid scintillator
-detector neutrino physics experiment where the charge information of the
-incident neutrinos will be retrieved by 18'000 20-inches PhotoMultipliers Tubes
-(PMT) surrounding the central detector~\cite{ref:juno_cdr}. The proposed CDR
-would be part of the timing and trigger system~\cite{ref:synchronization} of the
+\subsection{Possible Application} \label{sec:possible_applications} The design
+finds a possible application in the context of the Jiangmen Neutrino Observatory
+(JUNO)~\cite{ref:neutrino_physics}, a 20 kton liquid scintillator detector
+neutrino physics experiment where the charge information of the incident
+neutrinos will be retrieved by 18'000 20-inches PhotoMultipliers Tubes (PMT)
+surrounding the central detector~\cite{ref:juno_cdr}. The proposed CDR would be
+part of the timing and trigger system~\cite{ref:synchronization} of the
 Front-End~\cite{ref:readout_electronics}/Back-End electronics, which
 features a custom synchronous link protocol.\\
 JUNO employs this link with a star topology, where the hub, consisting of a
@@ -184,10 +185,10 @@ The block diagram of the core is given in Fig.~\ref{fig:cdr_overview}.
 The CDR mechanism is similar to the usual PLL architecture, where the phase of a
 reference signal is compared to the phase of an adjustable feedback signal,
 generally provided by a controlled oscillator, like a Voltage Controlled
-Oscillator (VCO). When the phase comparison is in steady state, e.g. the phase
-and frequency of the reference signal is equal to the phase and frequency of the
-feedback signal, we say that the PLL is locked. In the case of a CDR, the steady
-state is reached when the VCO clock frequency
+Oscillator (VCO). When the phase comparison is in steady state, \textit{i.e.},
+the phase and frequency of the reference signal is equal to the phase and
+frequency of the feedback signal, we say that the PLL is locked. In the case of
+a CDR, the steady state is reached when the VCO clock frequency
 matches the reference signal's data rate.\\
 The PLL's VCO is substitued in the core's design by a Numerically Controlled
 Oscillator (NCO) which is used to create a frequency controlled clock. The
@@ -199,8 +200,8 @@ deterministic phase
 relationship with the incoming data stream.\\
 
 \subsection{Numerically Controlled Oscillator}
-To generate a controlled frequency clock signal, an NCO~\cite{ref:nco} is employed by the core.
-Its design consist of two parts:
+To generate a controlled frequency clock signal, an NCO~\cite{ref:nco} is
+employed by the core. Its design consist of two parts:
 \begin{itemize}
 \item A Phase Accumulator (PACC), which is basically a counter incremented by a
   reference clock.
@@ -215,7 +216,8 @@ The PACC counter value corresponds to the points around the phase-wheel, while
 the pseudo-LUT assign a specific value to each point. The PACC output value is
 increased every system clock cycle, by a specific amount, the \textit{jump size}
 (\textit{M} in the picture). The jump size, together with the number of points
-in the wheel, defines the output wave's frequency.
+in the wheel and the system clock frequency, defines the output wave's
+frequency.
 \begin{figure}[h]
   \centerline{\includegraphics[width=0.4\linewidth]{images/phase_wheel}}
   \caption{The phase-wheel.}
@@ -242,8 +244,8 @@ However, this desig presents a limitation on the phase resolution: since the
 output signal is digital, the time domain is discrete and it corresponds to the
 system clock period. This implies the the positive (and negative) fraction of
 the output clock signal can only be a multiple of this time domain resolution,
-making the output frequency only \underline{on average} determined by the jump
-size of the accumulator. Also, the maximum obtainable output clock frequency
+making the output frequency only \textbf{on average} determined by the jump size
+of the accumulator. Also, the maximum obtainable output clock frequency
 employing this architecture is half of the system clock, which makes it hard to
 reach a frequency of 250 MHz, needed for data rates of 250 Mbps.\\
 In the next chapter, a way to increase the phase resolution is illustrated. This
@@ -270,20 +272,21 @@ phase-wheels are being generated. For graphical reason, the output will be
 represented as a sine waveform instead of a digital 50\% duty cycle clock.\\
 The reference clock has a frequency of 250 MHz, therefore every phase-wheel
 evaluates a phase-point every 4 ns (Note that the green and blue points are
-computed at the same time) and applying eq.~\ref{eq:f_out}, the resulted
-waveform's frequency is 62.5 MHz ($PW = 2, M = 2$).\\
+computed at the same time) and applying Eq.~\ref{eq:f_out}, the resulted
+waveform's frequency is 62.5 MHz.\\
 To compute the offset in phase-points between each wheel, we refer to the
 following equation:
 \begin{equation}
   \text{\textit{offset}} = \frac{M}{PW}
   \label{eq:offset}
 \end{equation}
-where $PW$ is the number of phase-wheels generated and $M$ is the jump size
-(Note that $M$ must be equal or greater than $PW$. If the result is fractional,
-$\text{\textit{offset}}$ is approximated to the closest integer).
+where $PW$ is the number of phase-wheels generated and $M$ is the jump size ($PW
+= 2, M = 2$ in the example). Note that $M$ must be equal or greater than $PW$.
+If the result is fractional, $\text{\textit{offset}}$ is approximated to the
+closest integer.
 \begin{figure}[h]
   \centerline{\includegraphics[width=0.9\linewidth]{images/nco_horizontal}}
-  \caption{Ecample of the phase-wheel parallelization technique.}
+  \caption{Example of the phase-wheel parallelization technique.}
   \label{fig:nco_horizontal}
 \end{figure}
 By employing 8 phase-wheels in the CDR core's design with a system clock of 250
@@ -300,7 +303,7 @@ To match the NCO clock frequency with the data rate, a \textit{Phase and
 The PFD frequency detection capability relies on the use of two clock signals,
 whose frequency is given by the NCO, with 50\% duty cycle and orthogonal with
 each other ($\pi/2$ phase difference). The rising ad falling edges of these two
-signals allos the division of the entire 360 degrees of the clock period into
+signals allows the division of the entire 360 degrees of the clock period into
 four quadrants, as shown in Fig.~\ref{fig:quadrants}. If the data edges drift up
 or down these 4 quadrants, the NCO frequency does not
 match the data rate, and needs to be adjusted.\\
@@ -308,22 +311,22 @@ The first stage for the data-edges quadrant identification is carried out by the
 \textit{Phase Detector Unit} which features a couple of Alexander-type Bang-Bang
 phase detectors~\cite{ref:bbpd} connected to the two orthogonal clock waves.
 Their outputs consists in early/late pulses (early means that the data has its
-edge in the positive half of the clock signal, late correspond to the data edge
+edge in the positive half of the clock period, late correspond to the data edge
 in the negative half) which are then passed, after a filtering stage based off
 an early/late counter, to the \textit{Frequency Detector Unit}. In here two
 modules, the \textit{Quadrant Detector} and the \textit{Quadrant Shifting
   Detector} are able to
 \begin{itemize}
-\item First, detect the current quadrant where the data edges resides, based on
-  the early/late information coming from the two phase detectors of the
-  \textit{Phase Detector Unit}
-\item Second, store and analyze this information in order to monitor the
-  shifting of the data edges quadrant and dictate whether the clock frequency is
-  faster or slower than the data rate.
+\item Detect the current quadrant where the data edges resides
+\item Store and analyze this information in order to monitor the shifting of the
+  data edges quadrant and dictate whether the clock frequency is faster or
+  slower than the data rate.
 \end{itemize}
 When the decision is taken, a \textit{shifting} flag is issued, reporting to the
 \textit{Phase and Frequency Detector Manager} in which direction the data edges
-are 'climbing' the clock quadrants. !!! Figure tutte o solo PFD?? !!!
+are 'climbing' the clock quadrants.
+Figure~\ref{fig:PFD},~\ref{fig:PDU},~\ref{fig:FDU} shows the block diagrams of
+the VHDL modules.
 % \begin{figure}[h]
 %   \centerline{\includegraphics[width=0.4\linewidth]{images/quadrants}}
 %   \caption{Two synchronous clocks with 50\% duty cycle, $I_{CLK}$ (In-phase
@@ -427,8 +430,8 @@ tile.
 The top-level entity \textit{top\_cdr\_fpga} has the following generics:
 \begin{itemize}
 \item \textit{g\_gen\_vio}: if set 'true', the recovered clock frequency is
-  controlled by the user through the Xilinx LogiCORE\texttrademark~IP Virtual
-  Input/Output (VIO) Core.
+  settled and fixed by the user through the Xilinx LogiCORE\texttrademark~IP
+  Virtual Input/Output (VIO) Core.
 \item \textit{g\_check\_jc\_clk}: when 'true', the recovered clock is forwarded
   to its output port through an Output DDR (ODDR) primitive. When 'false', the
   recovered clock dedicated output pin is set to '0'.
@@ -436,7 +439,7 @@ The top-level entity \textit{top\_cdr\_fpga} has the following generics:
   the user the possibility to use two extra ouput pin connected to any top level
   signal, set by the user in the code. If 'false', those output pin are kept at
   '0'.
-\item \textit{g\_number\_of\_bits}: positive number which sets the length of the
+\item \textit{g\_number\_of\_bits}: positive number setting the length of the
   phase accumulator (a.k.a. number of phase-wheel points), in bits. The total
   number of points will therefore be $2^{\text{\textit{g\_number\_of\_bits}}}$.
 \end{itemize}
@@ -474,26 +477,26 @@ KC705 is made through a Tcl script for Xilinx Vivado 2018.3 . Together with the
 core, a 'Makefile' is provided. This will automatically
 generate the VIO core as well as the complete bitstream.\\
 Two more firmware are provided: as explained in the test setup dedicated section
-(Sec. ??) the example design need an incoming data stream. The folders named
-\textit{dummy\_data\_sender} and \textit{dummy\_data\_receiver} provide the
-firmware able to generate a PRBS-7 data stream and redirect it to two output
-ports (Oscilloscope and CDR implementation board in the tests). Since the boards
-used for the implementation of these firmware are custom, the user may need to
-adapt the pin constraints file to their choise of board.
+(Sec.~\ref{sec:cdr_test}) the example design needs an incoming data stream. The
+folders named \textit{dummy\_data\_sender} and \textit{dummy\_data\_receiver}
+provide the firmware able to generate a PRBS-7 data stream and redirect it to
+two output ports (Oscilloscope and CDR implementation board in the tests). Since
+the boards used for the implementation of these firmware are custom, the user
+may need to adapt the pin constraints file to their choise of board.
 
 \subsubsection{MMCM's Voltage Controlled Oscillator Frequency}
 The two MMCMs encountered by the NCO output clock after the loopback (first one
 being the jitter cleaner while the second one being the main phase-controlling
-clock manager) must have their internal Voltage Controlled Oscillator (VCO)
-inside a well defined range, depending on the FPGA model used. The user needs to
-be careful that the VCO frequency stays inside that range while the CDR is
-working. Some generics on the two MMCMs instantiation may need to change to
-comply with the data rate expected.
+clock manager) must have their internal VCO inside a well defined range,
+depending on the FPGA model used. The user needs to be careful that the VCO
+frequency stays inside that range while the CDR is working. Some generics on the
+two MMCMs instantiation may need to change to comply with the data rate
+expected.
 
 \subsubsection{Changing the 'g\_number\_of\_bits' Generic}
 While some applications may find useful to change the 'g\_number\_of\_bits'
 generic in order to increase the frequency resolution, some attention should be
-placed in doing so. The output frequency need to be re-calculated using
+placed in doing so. The output frequency needs to be re-calculated using
 equation~\ref{eq:f_out}, adjusting the number of bits $N$. The change will also
 affect the \textit{frequency\_manager} module as well as the VIO (if used).
 
@@ -510,7 +513,7 @@ to be adjusted.
 \section{Simulation}
 The CDR core source files comes with several test benches to test the behaviour
 of different modules. The simulation files are arranged to be compiled and run
-using the GHDL tool~\cite{ref:ghdl} (testd with GHDL v0.37-dev, llvm version)
+using the GHDL tool~\cite{ref:ghdl} (tested with GHDL v0.37-dev, llvm version)
 but are compatible
 with any other VHDL simulator (\textit{e.g.}, Vivado simualator).\\
 If using GHDL, to compile the simulation run the 'make' command and then run the
@@ -539,11 +542,12 @@ The test bench allows to check the monitoring mechanism of the
 \textit{locker\_manager} module. \bigbreak Path:
 \textit{src/hdl/lock\_manager\_tb}
 
-\section{CDR Test}
-As stated in Sec. ??, the CDR is foreseen to work with data rates of 125 Mbps.
-Despite this, the proposed CDR core has the potential to sustain higher rates,
-therefore the data rate empoyed for testing is 250 Mbps, to which corresponds a
-recovered clock freqency of 250 MHz (4 ns of clock period).
+\section{CDR Test} \label{sec:cdr_test} As stated in
+Sec.~\ref{sec:possible_applications}, the CDR is foreseen to work with data
+rates of 125 Mbps. Despite this, the proposed CDR core has the potential to
+sustain higher rates, therefore the data rate employed for testing is 250 Mbps,
+to which corresponds a recovered clock freqency of 250 MHz (4 ns of clock
+period).
 
 \subsection{Test Setup}
 \begin{wrapfigure}{l}{0.45\textwidth}
@@ -611,7 +615,7 @@ of bits to be decoded without the occurence of any error is about $3 *
 10^{12}$~\cite{ref:ber}, corresponding to 200 minutes of error-free data
 transmission at 250
 Mbps.\\
-The test ran for 200 minutes wit zero errors counted, allowing to reject the
+The test ran for 200 minutes with zero errors counted, allowing to reject the
 possibility of a BER higher the $10^{-12}$ with a CL of 95\%.
 \begin{figure}[H]
   \centerline{\includegraphics[width=0.6\linewidth]{images/eye_width}}
