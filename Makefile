@@ -1,6 +1,9 @@
 all: ip_cores
 	vivado -nolog -nojournal -mode batch -source create_bitstream.tcl
 
+prbs_check: ip_cores
+	vivado -nolog -nojournal -mode batch -source create_bitstream_w_debug.tcl
+
 ip_cores:
 	$(MAKE) -C src/ip_cores
 
