@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-06-19
+-- Last update: 2020-06-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,6 +22,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.freq_utils.all;
+
 library extras;
 use extras.synchronizing.all;
 
@@ -31,10 +33,13 @@ use UNISIM.vcomponents.all;
 
 entity top_cdr_fpga is
   generic (
-    g_gen_vio        : boolean  := false;
-    g_check_jc_clk   : boolean  := true;
-    g_check_pd       : boolean  := false;
-    g_number_of_bits : positive := 28
+    g_gen_vio               : boolean  := false;
+    g_check_jc_clk          : boolean  := true;
+    g_check_pd              : boolean  := false;
+    g_number_of_bits        : positive := 28;
+    g_multiplication_factor : positive := 3;
+    g_freq_in               : real     := 250.0;
+    g_freq_out              : real     := 250.0
     );
   port (
     sysclk_p_i    : in  std_logic;
@@ -45,8 +50,8 @@ entity top_cdr_fpga is
     cdrclk_n_o    : out std_logic;
     cdrclk_p_i    : in  std_logic;
     cdrclk_n_i    : in  std_logic;
-    cdrclk_jc_p_o   : out std_logic;
-    cdrclk_jc_n_o   : out std_logic;
+    cdrclk_jc_p_o : out std_logic;
+    cdrclk_jc_n_o : out std_logic;
     led3_o        : out std_logic;
     led2_o        : out std_logic;
     led1_o        : out std_logic;
@@ -105,13 +110,15 @@ architecture rtl of top_cdr_fpga is
   signal s_psen_p            : std_logic;
   signal s_psincdec_p        : std_logic;
   signal s_psdone_p          : std_logic;
-  signal s_clk_sample : std_logic;
-  signal s_data : std_logic;
-  signal s_error : std_logic;
-  signal s_error_pulse : std_logic;
-  signal s_prbs_counter : std_logic_vector(7 downto 0);
+  signal s_clk_sample        : std_logic;
+  signal s_data              : std_logic;
+  signal s_error             : std_logic;
+  signal s_error_pulse       : std_logic;
+  signal s_prbs_counter      : std_logic_vector(7 downto 0);
+  signal i_M_start           : integer;
+  signal s_M_start           : std_logic_vector(g_number_of_bits - 1 downto 0);
 
-  attribute mark_debug             : string;
+  attribute mark_debug                   : string;
   attribute mark_debug of s_prbs_counter : signal is "true";
   -- attribute mark_debug of s_M      : signal is "true";
   -- attribute mark_debug of s_locked : signal is "true";
@@ -158,7 +165,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_phase_weel_counter_1 : entity work.phase_weel_counter
     generic map (
-      g_number_of_bits => g_number_of_bits
+      g_number_of_bits        => g_number_of_bits,
+      g_multiplication_factor => g_multiplication_factor
       )
     port map (
       clk_i         => s_clk_250,
@@ -168,6 +176,10 @@ begin  -- architecture rtl
       );
 
   s_sysclk_locked_rst <= not s_sysclk_locked;
+
+  -- Define nominal jump size to start
+  i_M_start <= freq_to_M(g_freq_in, g_freq_out, g_multiplication_factor, g_number_of_bits);
+  s_M_start <= std_logic_vector(to_unsigned(i_M_start, g_number_of_bits));
 
   i_frequency_manager_1 : entity work.frequency_manager
     generic map (
@@ -179,7 +191,7 @@ begin  -- architecture rtl
       ctrl_i           => s_M_ctrl,
       change_freq_en_i => s_M_change_en,
       incr_freq_i      => s_M_incr,
-      M_start_i        => x"4000000",
+      M_start_i        => s_M_start,
       M_o              => s_M
       );
 
@@ -351,30 +363,30 @@ begin  -- architecture rtl
     --     O => cdrclk_jc_o,  -- Buffer output (connect directly to top-level port)
     --     I => s_cdrclk_jc_fwd            -- Buffer input 
     --     );
-   OBUFDS_inst : OBUFDS
-   generic map (
-      IOSTANDARD => "DEFAULT", -- Specify the output I/O standard
-      SLEW => "SLOW")          -- Specify the output slew rate
-   port map (
-      O => cdrclk_jc_p_o,     -- Diff_p output (connect directly to top-level port)
-      OB => cdrclk_jc_n_o,   -- Diff_n output (connect directly to top-level port)
-      I => s_cdrclk_jc_fwd      -- Buffer input 
-   );
+    OBUFDS_inst : OBUFDS
+      generic map (
+        IOSTANDARD => "DEFAULT",        -- Specify the output I/O standard
+        SLEW       => "SLOW")           -- Specify the output slew rate
+      port map (
+        O  => cdrclk_jc_p_o,  -- Diff_p output (connect directly to top-level port)
+        OB => cdrclk_jc_n_o,  -- Diff_n output (connect directly to top-level port)
+        I  => s_cdrclk_jc_fwd           -- Buffer input 
+        );
 
   end generate G_CHECK_CLK_AFTER_JC;
 
   G_NOT_CHECK_CLK_AFTER_JC : if not g_check_jc_clk generate
 
     -- cdrclk_jc_o <= s_gpio;
-   OBUFDS_inst : OBUFDS
-   generic map (
-      IOSTANDARD => "DEFAULT", -- Specify the output I/O standard
-      SLEW => "SLOW")          -- Specify the output slew rate
-   port map (
-      O => cdrclk_jc_p_o,     -- Diff_p output (connect directly to top-level port)
-      OB => cdrclk_jc_n_o,   -- Diff_n output (connect directly to top-level port)
-      I => '0'      -- Buffer input 
-   );
+    OBUFDS_inst : OBUFDS
+      generic map (
+        IOSTANDARD => "DEFAULT",        -- Specify the output I/O standard
+        SLEW       => "SLOW")           -- Specify the output slew rate
+      port map (
+        O  => cdrclk_jc_p_o,  -- Diff_p output (connect directly to top-level port)
+        OB => cdrclk_jc_n_o,  -- Diff_n output (connect directly to top-level port)
+        I  => '0'                       -- Buffer input 
+        );
 
   end generate G_NOT_CHECK_CLK_AFTER_JC;
 
@@ -431,13 +443,13 @@ begin  -- architecture rtl
   -- s_data_to_rec <= data_to_rec_i;
 
   IBUF_inst : IBUF
-   generic map (
-      IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
-      IOSTANDARD => "DEFAULT")
-   port map (
-      O => s_data_to_rec,     -- Buffer output
-      I => data_to_rec_i      -- Buffer input (connect directly to top-level port)
-   );
+    generic map (
+      IBUF_LOW_PWR => true,  -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+      IOSTANDARD   => "DEFAULT")
+    port map (
+      O => s_data_to_rec,               -- Buffer output
+      I => data_to_rec_i  -- Buffer input (connect directly to top-level port)
+      );
 
   -----------------------------------------------------------------------------
   -- Phase and Frequency Detector
@@ -484,7 +496,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- Lock Manager
   -----------------------------------------------------------------------------
-  i_lock_manager_1: entity work.lock_manager
+  i_lock_manager_1 : entity work.lock_manager
     generic map (
       g_threshold_bit => 7
       )
@@ -523,7 +535,7 @@ begin  -- architecture rtl
   GEN_PD_CHECK : if g_check_pd generate
     p_sample_output : process (s_clk_sample) is
     begin  -- process p_sample_output
-      if rising_edge(s_clk_sample) then      -- rising clock edge
+      if rising_edge(s_clk_sample) then  -- rising clock edge
         shifting_en_o <= s_data;
         shifting_o    <= '0';
         s_gpio        <= '0';
@@ -543,7 +555,7 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   -- PRBS checker
   -----------------------------------------------------------------------------
-  bit_synchronizer_1: entity extras.bit_synchronizer
+  bit_synchronizer_1 : entity extras.bit_synchronizer
     generic map (
       STAGES             => 2,
       RESET_ACTIVE_LEVEL => '1'
@@ -571,7 +583,7 @@ begin  -- architecture rtl
       DATA_OUT(0) => s_error
       );
 
-  i_prbs_counter_1: entity work.prbs_counter
+  i_prbs_counter_1 : entity work.prbs_counter
     port map (
       clk_i     => s_clk_sample,
       rst_i     => s_jc_locked_rst,

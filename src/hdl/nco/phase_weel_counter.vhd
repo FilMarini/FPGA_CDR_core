@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-07
--- Last update: 2020-03-05
+-- Last update: 2020-06-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,7 +24,8 @@ use ieee.numeric_std.all;
 
 entity phase_weel_counter is
   generic (
-    g_number_of_bits : positive := 28
+    g_number_of_bits : positive := 28;
+    g_multiplication_factor : positive := 3
     );
   port (
     clk_i         : in  std_logic;
@@ -69,7 +70,7 @@ begin  -- architecture rtl
 
   s_phase_wheel_counter(0) <= std_logic_vector(u_phase_wheel_counter(0));
 
-  clk_o(0) <= s_phase_wheel_counter(0)(g_number_of_bits - 3);
+  clk_o(0) <= s_phase_wheel_counter(0)(g_number_of_bits - g_multiplication_factor);
 
   G_DECR_JITTER : for i in 1 to 7 generate
 
@@ -77,7 +78,7 @@ begin  -- architecture rtl
 
     s_phase_wheel_counter(i) <= std_logic_vector(u_phase_wheel_counter(i));
 
-    clk_o(i) <= s_phase_wheel_counter(i)(g_number_of_bits - 3);
+    clk_o(i) <= s_phase_wheel_counter(i)(g_number_of_bits - g_multiplication_factor);
 
   end generate G_DECR_JITTER;
 

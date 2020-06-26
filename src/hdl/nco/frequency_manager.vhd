@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-03
--- Last update: 2020-03-06
+-- Last update: 2020-06-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
+use work.freq_utils.all;
 
 library extras;
 use extras.synchronizing.all;
@@ -50,6 +52,7 @@ architecture rtl of frequency_manager is
   signal sgn_M_start         : signed(g_number_of_bits - 1 downto 0);
   signal s_ctrl              : std_logic;
   signal s_ctrl_df           : std_logic;
+  signal i_M_start : integer;
 
   attribute mark_debug        : string;
   -- attribute mark_debug of s_change_freq_en_re : signal is "true";
