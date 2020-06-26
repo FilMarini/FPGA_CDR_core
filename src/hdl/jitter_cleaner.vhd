@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2020-03-05
+-- Last update: 2020-06-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,9 +26,10 @@ use UNISIM.VComponents.all;
 
 entity jitter_cleaner is
   generic (
-    g_use_ip    : boolean := true;
-    g_bandwidth : string  := "LOW";
-    g_last      : boolean := true
+    g_use_ip      : boolean := true;
+    g_bandwidth   : string  := "LOW";
+    g_last        : boolean := true;
+    g_mult_period : real    := 4.0
     );
   port (
     clk_in  : in  std_logic;
@@ -64,10 +65,10 @@ begin  -- architecture rtl
     MMCME2_ADV_inst : MMCME2_ADV
       generic map (
         BANDWIDTH            => g_bandwidth,  -- Jitter programming (OPTIMIZED, HIGH, LOW)
-        CLKFBOUT_MULT_F      => 4.0,  -- Multiply value for all CLKOUT (2.000-64.000).
+        CLKFBOUT_MULT_F      => g_mult_period,  -- Multiply value for all CLKOUT (2.000-64.000).
         CLKFBOUT_PHASE       => 0.0,  -- Phase offset in degrees of CLKFB (-360.000-360.000).
         -- CLKIN_PERIOD: Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
-        CLKIN1_PERIOD        => 4.0,
+        CLKIN1_PERIOD        => g_mult_period,
         CLKIN2_PERIOD        => 0.0,
         -- CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for CLKOUT (1-128)
         CLKOUT1_DIVIDE       => 1,
@@ -157,7 +158,7 @@ begin  -- architecture rtl
         PSEN         => '0',            -- 1-bit input: Phase shift enable
         PSINCDEC     => '0',  -- 1-bit input: Phase shift increment/decrement
         -- Feedback Clocks: 1-bit (each) input: Clock feedback ports
-        CLKFBIN      => out_clk_fb       -- 1-bit input: Feedback clock
+        CLKFBIN      => out_clk_fb      -- 1-bit input: Feedback clock
         );
 
     -- BUFG_inst : BUFG

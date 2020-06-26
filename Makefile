@@ -7,7 +7,7 @@ ip_cores:
 clean: clean_vivado
 	rm -rf results .Xil .cache
 
-ip_cores_clean: clean
+ip_cores_clean:
 	$(MAKE) -C src/ip_cores clean
 
 dummy_hw:

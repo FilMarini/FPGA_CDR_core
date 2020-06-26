@@ -94,6 +94,7 @@ architecture rtl of top_cdr_fpga is
   signal s_lock_ctrl         : std_logic;
   signal s_pfd_locked        : std_logic;
   signal s_M                 : std_logic_vector(g_number_of_bits - 1 downto 0);
+  signal s_s_M               : std_logic_vector(g_number_of_bits - 1 downto 0);
   signal s_incr_freq_re      : std_logic;
   signal s_clk_to_rec        : std_logic;
   signal s_clk_3125_data     : std_logic;
@@ -170,7 +171,7 @@ begin  -- architecture rtl
       )
     port map (
       clk_i         => s_clk_250,
-      M_i           => s_M,             -- M_i if from user, s_M automatic
+      M_i           => s_s_M,           -- M_i if from user, s_M automatic
       mmcm_locked_i => s_sysclk_locked,
       clk_o         => s_deser_clk
       );
@@ -257,12 +258,14 @@ begin  -- architecture rtl
         probe_out1 => vio_DTMD_en
         );
 
+    s_s_M <= M_i;
+
   end generate G_VIO_GENERATION;
 
   G_FIXED_M : if not g_gen_vio generate
 
-    M_i         <= x"4000010";
     vio_DTMD_en <= '1';
+    s_s_M       <= s_M;
 
   end generate G_FIXED_M;
 
@@ -291,9 +294,10 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_jitter_cleaner_1 : entity work.jitter_cleaner
     generic map (
-      g_use_ip    => false,
-      g_bandwidth => "LOW",
-      g_last      => false
+      g_use_ip      => false,
+      g_bandwidth   => "LOW",
+      g_last        => false,
+      g_mult_period => freq_to_mmcm(g_freq_out)
       )
     port map (
       clk_in  => s_cdrclk,
@@ -304,8 +308,9 @@ begin  -- architecture rtl
 
   i_i_q_clock_gen_1 : entity work.i_q_clock_gen
     generic map (
-      g_bandwidth => "OPTIMIZED",
-      g_last      => true
+      g_bandwidth   => "OPTIMIZED",
+      g_last        => true,
+      g_mult_period => freq_to_mmcm(g_freq_out)
       )
     port map (
       clk_in       => s_cdrclk_jc,

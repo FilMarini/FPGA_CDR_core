@@ -34,6 +34,10 @@ package freq_utils is
     constant g_number_of_bits        : positive)
     return integer;
 
+  function freq_to_mmcm (
+    constant g_freq_out : real)
+    return real;
+
 end package freq_utils;
 
 package body freq_utils is
@@ -59,5 +63,12 @@ package body freq_utils is
     return jump_size;
 
   end function freq_to_m;
+
+  function freq_to_mmcm (
+    constant g_freq_out : real)
+    return real is
+  begin  -- function freq_to_mult
+    return 1000.0 / g_freq_out;
+  end function freq_to_mmcm;
 
 end package body freq_utils;
