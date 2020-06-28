@@ -21,8 +21,13 @@ The generic and ports used by the CDR design are:
 * g_check_jc_clock: boolean, when "true" the recovered clock is forwarded out to the differential pin *cdrclk_jc_p/n_o*
 * g_check_pd: boolean, when "true" some internal signals are forwarded out from the FPGA in order to be checked (with an oscilloscope for istance). Used for debug purposes.
 * g_number_of_bits: positive, this defines the number of bits used by the NCO's phase wheel. The number of bits determine the NCO's output frequency resolution
+* g_multiplication_factor: positive number which is needed to have an output frequency higher than the maximum obtainable frequency of the single phase wheel (due to Nyquist law). The user only need to make sure that :math:`g\_freq\_out / 2^{g\_multiplication\_factor - 1} < g\_freq\_in / 2`
+* g_freq_in: real, system clock frequency (i.e., the frequency of the clock that enters the *i_phase_wheel_counter_1* instance), in MHz
+* g_freq_out: real, NCO nominal output frequency (i.e., the data rate), in MHz
 
-* sysclk_p/n_i: clk from the board crystal
+|
+
+* sysclk_p/n_i: clock from the board crystal
 * data_to_rec_i: data from which the clock is recovered
 * cdrclk_p/n_o: NCO's generated clock which has gone through the OSERDESE2 tile and need an external loopback
 * cdrclk_p/n_i: clock is going back in from the loopback
@@ -30,7 +35,7 @@ The generic and ports used by the CDR design are:
 * ledx_o: several LED showing whether the MMCM are locked, if data is entering the FPGA and if the NCO's clock is actually present
 * shifting_o, shifting_en_o: debug ports
 
-Fig. 2 on the paper shows a block diagram for the CDR design. The corresponding istances in the top level code are:
+On the report, a block diagram of the CDR design is reported. The corresponding istances in the top level code are:
 
 * Numerically Controlled Oscillator <=> *i_phase_wheel_counter_1*
 * Frequency Manager <=> *i_frequency_manager_1*
