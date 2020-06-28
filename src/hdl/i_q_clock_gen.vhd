@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2020-06-26
+-- Last update: 2020-06-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,8 @@ entity i_q_clock_gen is
   generic (
     g_bandwidth : string  := "LOW";
     g_last      : boolean := true;
-    g_mult_period : real := 4.0
+    g_mult_period : real := 4.0;
+    g_out_phase : real := 90.0
     );
   port (
     clk_in       : in  std_logic;
@@ -97,7 +98,7 @@ begin  -- architecture rtl
       CLKOUT0_PHASE        => 0.0,
       CLKOUT1_PHASE        => 90.0,
       CLKOUT2_PHASE        => 0.0,
-      CLKOUT3_PHASE        => 90.0,
+      CLKOUT3_PHASE        => g_out_phase,
       CLKOUT4_PHASE        => 0.0,
       CLKOUT5_PHASE        => 0.0,
       CLKOUT6_PHASE        => 0.0,

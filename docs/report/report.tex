@@ -64,38 +64,39 @@ in]{geometry} \usepackage{hyperref} \usepackage{xcolor} \usepackage{rotating}
 %   {\includegraphics[width=.15\textwidth]{images/Padova.png}}
 % \end{figure}
 % \begin{center}
-%   {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}\large{ P}\normalsize{ADOVA}}
+%   {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}\large{
+%   P}\normalsize{ADOVA}}
 % \end{center}
 
 % \begin{figure}[H]
-%   \centering \vspace{0cm}
-%   {\includegraphics[width=.2\textwidth]{images/infn}}
+%   \centering \vspace{0cm} {\includegraphics[width=.2\textwidth]{images/infn}}
 % \end{figure}
 % \begin{center}
 %   {\large{I}\normalsize{NFN }\large{ P}\normalsize{ADOVA}}
 % \end{center}
 \begin{figure}[]
-  \centering
-\vspace{1cm}
+  \centering \vspace{1cm}
   \begin{minipage}[t]{.45\textwidth}
     \centering \includegraphics[width=.3\linewidth]{images/Padova}
-\begin{center}
-  % {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}\large{ P}\normalsize{ADOVA}}
-  {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}}\\
-  {\large{ P}\normalsize{ADOVA}}
-\end{center}
+    \begin{center}
+      % {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI
+      % DI}\large{ P}\normalsize{ADOVA}}
+      {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}}\\
+      {\large{ P}\normalsize{ADOVA}}
+    \end{center}
   \end{minipage}%
   \hspace{0.5cm}
   \begin{minipage}[t]{.45\textwidth}
     \centering \includegraphics[width=.4\linewidth]{images/infn}
-\begin{center}
-  {\large{I}\normalsize{NFN }\large{ P}\normalsize{ADOVA}}
-\end{center}
+    \begin{center}
+      {\large{I}\normalsize{NFN }\large{ P}\normalsize{ADOVA}}
+    \end{center}
   \end{minipage}
 \end{figure}
 % \vspace{-0.5cm}
 \begin{center}
-  % {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}\large{ P}\normalsize{ADOVA}}\\
+  % {\large{U}\normalsize{NIVERSITÀ DEGLI}\large{ S}\normalsize{TUDI DI}\large{
+  % P}\normalsize{ADOVA}}\\
   % \textit{Corso di Dottorato in Physics}\\
   % {\small{Anno accademico 2018-2019}}\\
   \textit{ }\\
@@ -500,6 +501,7 @@ tile.
   by the \textit{i\_clk\_generator} instance.
 \item \textit{g\_freq\_out}: nominal recovered clock frequency in MHz (equal to
   the data rate in Mbps).
+\item \textit{g\_out\_phase}: Recovered clock-data phase relationship.
 \end{itemize}
 
 \subsection{Ports}

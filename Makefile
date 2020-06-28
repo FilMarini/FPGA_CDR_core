@@ -7,8 +7,8 @@ prbs_check: ip_cores
 ip_cores:
 	$(MAKE) -C src/ip_cores
 
-clean: clean_vivado
-	rm -rf results .Xil .cache
+clean:
+	rm -rf results .Xil .cache vivado* usage_statistics* webtalk*
 
 ip_cores_clean:
 	$(MAKE) -C src/ip_cores clean
@@ -19,5 +19,3 @@ dummy_hw:
 dummy_hw_clean:
 	$(MAKE) -C dummy_data_sender clean
 
-clean_vivado:
-	rm vivado* usage_statistics* webtalk*

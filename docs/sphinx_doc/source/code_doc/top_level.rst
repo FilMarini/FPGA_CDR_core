@@ -24,6 +24,7 @@ The generic and ports used by the CDR design are:
 * g_multiplication_factor: positive number which is needed to have an output frequency higher than the maximum obtainable frequency of the single phase wheel (due to Nyquist law). The user only need to make sure that :math:`g\_freq\_out / 2^{g\_multiplication\_factor - 1} < g\_freq\_in / 2`
 * g_freq_in: real, system clock frequency (i.e., the frequency of the clock that enters the *i_phase_wheel_counter_1* instance), in MHz
 * g_freq_out: real, NCO nominal output frequency (i.e., the data rate), in MHz
+* g_out_phase: recovered cloc - data phase relationship
 
 |
 

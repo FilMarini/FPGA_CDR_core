@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-06-26
+-- Last update: 2020-06-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,7 +39,8 @@ entity top_cdr_fpga is
     g_number_of_bits        : positive := 28;
     g_multiplication_factor : positive := 3;
     g_freq_in               : real     := 250.0;
-    g_freq_out              : real     := 250.0
+    g_freq_out              : real     := 250.0;
+    g_out_phase             : real     := 90.0 
     );
   port (
     sysclk_p_i    : in  std_logic;
@@ -290,7 +291,7 @@ begin  -- architecture rtl
       );
 
   -----------------------------------------------------------------------------
-  -- Jitter cleaner
+  -- Jitter cleanef
   -----------------------------------------------------------------------------
   i_jitter_cleaner_1 : entity work.jitter_cleaner
     generic map (
@@ -310,7 +311,8 @@ begin  -- architecture rtl
     generic map (
       g_bandwidth   => "OPTIMIZED",
       g_last        => true,
-      g_mult_period => freq_to_mmcm(g_freq_out)
+      g_mult_period => freq_to_mmcm(g_freq_out),
+      g_out_phase   => g_out_phase
       )
     port map (
       clk_in       => s_cdrclk_jc,
