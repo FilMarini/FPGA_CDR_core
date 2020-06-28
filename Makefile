@@ -13,9 +13,14 @@ clean:
 ip_cores_clean:
 	$(MAKE) -C src/ip_cores clean
 
-dummy_hw:
+dummy_hw_sender:
 	$(MAKE) -C dummy_data_sender all
 
-dummy_hw_clean:
+dummy_hw_sender_clean:
 	$(MAKE) -C dummy_data_sender clean
 
+dummy_hw_receiver:
+	$(MAKE) -C dummy_data_receiver all
+
+dummy_hw_receiver_clean:
+	$(MAKE) -C dummy_data_receiver clean
