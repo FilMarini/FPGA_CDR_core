@@ -4,6 +4,7 @@ FPGA implementation of a CDR targeting a Xilinx Kintex-7 for data rates up to 25
 **Important links:**
 * [Core Repository](https://github.com/FilMarini/FPGA_CDR_core)
 * [Core Documentation](https://fpga-cdr-core.readthedocs.io/en/latest/)
+* [YouTube Video Presentation](https://youtu.be/oK15voQDpzQ)
 
 **Board Used:** Xilinx KC705
 
@@ -58,5 +59,3 @@ Important: Keep in mind that, during testing, a custom board was used. The user 
 **Step 4:**
 
 Upload the configuration files to the boards. Check the report to understand what the LEDs of the KC705 means.
-
-Link to youtube 2 minutes presentation video: [YouTube Video](https://youtu.be/oK15voQDpzQ)
