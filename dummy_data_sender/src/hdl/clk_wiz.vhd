@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2020-03-06
+-- Last update: 2020-10-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,8 @@ use UNISIM.vcomponents.all;
 
 entity clk_wiz is
   generic (
-    g_bandwidth : string  := "LOW"
+    g_bandwidth : string := "LOW";
+    g_freq_out  : real   := 250.0
     );
   port (
     clk_in     : in  std_logic;         -- 125 MHz
@@ -85,7 +86,7 @@ begin
      CLKOUT0_PHASE       => 0.000,
      CLKOUT0_DUTY_CYCLE  => 0.500,
      CLKOUT0_USE_FINE_PS => false,
-     CLKOUT1_DIVIDE      => 4,
+     CLKOUT1_DIVIDE      => integer(1000.0 / g_freq_out),
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,
@@ -166,7 +167,7 @@ begin
     (O  => clk_out1,
      CE => '1',
      I  => clk_out1_in);
-    
+
 --  BUFR_inst : BUFR
 --   generic map (
 --      BUFR_DIVIDE => "BYPASS",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8" 

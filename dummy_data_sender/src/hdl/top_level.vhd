@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-12-04
--- Last update: 2020-05-06
+-- Last update: 2020-10-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,6 +26,9 @@ use UNISIM.VComponents.all;
 use work.PRBSpack.all;
 
 entity top_level is
+  generic (
+    g_freq_out : real := 125.0
+    );
   port (
     clk_i              : in  std_logic;
     led_o              : out std_logic;
@@ -56,7 +59,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   clk_wiz_1 : entity work.clk_wiz
     generic map (
-      g_bandwidth => "LOW"
+      g_bandwidth => "LOW",
+      g_freq_out => g_freq_out
       )
     port map (
       clk_in     => clk_i,              -- 125 MHz
