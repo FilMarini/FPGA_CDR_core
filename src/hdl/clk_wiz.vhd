@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-05-03
--- Last update: 2019-12-03
+-- Last update: 2020-10-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,8 @@ use unisim.vcomponents.all;
 
 entity clk_wiz is
   generic (
-    g_bandwidth : string  := "LOW"
+    g_bandwidth : string  := "LOW";
+    g_clk_out_divide : real := 4.000
     );
   port (
     clk_in     : in  std_logic;         -- 62.5 MHz
@@ -81,11 +82,11 @@ begin
      DIVCLK_DIVIDE       => 1,
      CLKFBOUT_MULT_F     => 5.000,
      CLKFBOUT_PHASE      => 0.000,
-     CLKOUT0_DIVIDE_F    => 1.000,
+     CLKOUT0_DIVIDE_F    => g_clk_out_divide / 4.0,
      CLKOUT0_PHASE       => 0.000,
      CLKOUT0_DUTY_CYCLE  => 0.500,
      CLKOUT0_USE_FINE_PS => false,
-     CLKOUT1_DIVIDE      => 4,
+     CLKOUT1_DIVIDE      => integer(g_clk_out_divide),
      CLKOUT1_PHASE       => 0.000,
      CLKOUT1_DUTY_CYCLE  => 0.500,
      CLKOUT1_USE_FINE_PS => false,

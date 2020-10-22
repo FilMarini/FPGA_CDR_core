@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-06-28
+-- Last update: 2020-10-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -67,8 +67,8 @@ architecture rtl of top_cdr_fpga is
 
   signal s_gpio              : std_logic;
   signal s_sysclk            : std_logic;
-  signal s_clk_250           : std_logic;
-  signal s_clk_1000          : std_logic;
+  signal s_clk_sys           : std_logic;
+  signal s_clk_oserdes          : std_logic;
   signal s_clk_625           : std_logic;
   signal s_sysclk_locked     : std_logic;
   signal M_i                 : std_logic_vector(g_number_of_bits - 1 downto 0);
@@ -146,13 +146,14 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_clock_generator : entity work.clk_wiz
     generic map (
-      g_bandwidth => "LOW"
+      g_bandwidth => "LOW",
+      g_clk_out_divide => freq_to_mmcm(g_freq_in)
       )
     port map (
       clk_in     => s_sysclk,
       reset      => '0',
-      clk_out0   => s_clk_1000,
-      clk_out1   => s_clk_250,
+      clk_out0   => s_clk_oserdes,
+      clk_out1   => s_clk_sys,
       clk_out2   => s_clk_250_vio,
       clk_out3   => s_clk_625,
       clk_out4   => open,
@@ -171,7 +172,7 @@ begin  -- architecture rtl
       g_multiplication_factor => g_multiplication_factor
       )
     port map (
-      clk_i         => s_clk_250,
+      clk_i         => s_clk_sys,
       M_i           => s_s_M,           -- M_i if from user, s_M automatic
       mmcm_locked_i => s_sysclk_locked,
       clk_o         => s_deser_clk
@@ -188,7 +189,7 @@ begin  -- architecture rtl
       g_number_of_bits => g_number_of_bits
       )
     port map (
-      clk_i            => s_clk_250,
+      clk_i            => s_clk_sys,
       rst_i            => s_sysclk_locked_rst,
       ctrl_i           => s_M_ctrl,
       change_freq_en_i => s_M_change_en,
@@ -202,8 +203,8 @@ begin  -- architecture rtl
   -----------------------------------------------------------------------------
   i_oserdese_manager_1 : entity work.oserdese_manager
     port map (
-      ls_clk_i      => s_clk_250,
-      hs_clk_i      => s_clk_1000,
+      ls_clk_i      => s_clk_sys,
+      hs_clk_i      => s_clk_oserdes,
       deser_clk_i   => s_deser_clk,
       mmcm_locked_i => s_sysclk_locked,
       ser_clk_o     => s_cdrclk_o
@@ -241,7 +242,7 @@ begin  -- architecture rtl
   --     g_number_of_bits => g_number_of_bits
   --     )
   --   port map (
-  --     clk_i             => s_clk_250,
+  --     clk_i             => s_clk_sys,
   --     mmcm_locked_i     => s_sysclk_locked,
   --     partial_ser_clk_i => s_deser_clk(0),
   --     led_o             => led_o
@@ -405,7 +406,7 @@ begin  -- architecture rtl
       g_clk_rise => "TRUE"
       )
     port map (
-      clk_i => s_clk_250,
+      clk_i => s_clk_sys,
       sig_i => s_jc_locked,
       sig_o => s_jc_locked_re
       );
@@ -416,7 +417,7 @@ begin  -- architecture rtl
       g_clk_rise => "TRUE"
       )
     port map (
-      clk_i    => s_clk_250,
+      clk_i    => s_clk_sys,
       sig_i(0) => s_jc_locked_re,
       sig_o(0) => s_jc_locked_re_df
       );
