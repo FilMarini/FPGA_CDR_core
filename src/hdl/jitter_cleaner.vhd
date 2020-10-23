@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-08-19
--- Last update: 2020-06-26
+-- Last update: 2020-10-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ begin  -- architecture rtl
         CLKOUT4_DIVIDE       => 1,
         CLKOUT5_DIVIDE       => 1,
         CLKOUT6_DIVIDE       => 1,
-        CLKOUT0_DIVIDE_F     => 4.0,  -- Divide amount for CLKOUT0 (1.000-128.000).
+        CLKOUT0_DIVIDE_F     => g_mult_period,  -- Divide amount for CLKOUT0 (1.000-128.000).
         -- CLKOUT0_DUTY_CYCLE - CLKOUT6_DUTY_CYCLE: Duty cycle for CLKOUT outputs (0.01-0.99).
         CLKOUT0_DUTY_CYCLE   => 0.5,
         CLKOUT1_DUTY_CYCLE   => 0.5,

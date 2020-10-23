@@ -6,7 +6,7 @@
 -- Author     : Filippo Marini   <filippo.marini@pd.infn.it>
 -- Company    : Universita degli studi di Padova
 -- Created    : 2019-10-02
--- Last update: 2020-10-22
+-- Last update: 2020-10-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ entity top_cdr_fpga is
     g_number_of_bits        : positive := 28;
     g_multiplication_factor : positive := 3;
     g_freq_in               : real     := 125.0;
-    g_freq_out              : real     := 250.0;
+    g_freq_out              : real     := 125.0;
     g_out_phase             : real     := 90.0 
     );
   port (
@@ -181,8 +181,8 @@ begin  -- architecture rtl
   s_sysclk_locked_rst <= not s_sysclk_locked;
 
   -- Define nominal jump size to start
-  -- i_M_start <= freq_to_M(g_freq_in, g_freq_out, g_multiplication_factor, g_number_of_bits);
-  i_M_start <= 67108864;
+  i_M_start <= freq_to_m(g_freq_in, g_freq_out, g_multiplication_factor, g_number_of_bits);
+  -- i_M_start <= 67108864;
   s_M_start <= std_logic_vector(to_unsigned(i_M_start, g_number_of_bits));
 
   i_frequency_manager_1 : entity work.frequency_manager

@@ -6,7 +6,7 @@
 -- Author     : filippo  <filippo@Dell-Precision-3520>
 -- Company    : 
 -- Created    : 2020-06-26
--- Last update: 2020-06-26
+-- Last update: 2020-10-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -48,19 +48,10 @@ package body freq_utils is
     constant g_multiplication_factor : positive;
     constant g_number_of_bits        : positive)
     return integer is
-    variable phase_wheel_freq : real;
-    variable freq_ratio : real;
     variable jump_size_real : real;
-    variable number_of_points : positive;
-    variable jump_size : integer;
   begin  -- function freq_to_m
-    phase_wheel_freq := g_freq_out / real((2**(g_multiplication_factor - 1)));
-    freq_ratio := phase_wheel_freq / g_freq_in;
-    number_of_points := 2**g_number_of_bits;
-    jump_size_real := freq_ratio * real(number_of_points);
-    jump_size_real := round(jump_size_real);
-    jump_size := integer(jump_size_real);
-    return jump_size;
+    jump_size_real := (g_freq_out * real(2.0**(g_number_of_bits))) / (g_freq_in * real(2.0**(g_multiplication_factor - 1)));
+    return integer(jump_size_real);
 
   end function freq_to_m;
 
