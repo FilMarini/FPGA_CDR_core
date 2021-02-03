@@ -39,7 +39,6 @@ connect_debug_port u_ila_0/clk [get_nets [list i_i_q_clock_gen_1/clk_sample_o ]]
 set_property port_width 8 [get_debug_ports u_ila_0/probe0]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
 connect_debug_port u_ila_0/probe0 [get_nets [list {s_prbs_counter[0]} {s_prbs_counter[1]} {s_prbs_counter[2]} {s_prbs_counter[3]} {s_prbs_counter[4]} {s_prbs_counter[5]} {s_prbs_counter[6]} {s_prbs_counter[7]} ]]
-write_checkpoint /home/filippo/git/dds_cdr/results/post_synth.dcp -force
 
 #write checkpoint
 write_checkpoint -force $outputDir/post_synth.dcp
