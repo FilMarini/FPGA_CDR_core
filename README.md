@@ -2,6 +2,7 @@
 FPGA implementation of a CDR targeting a Xilinx Kintex-7 for data rates up to 250 MHz
 
 **Important links:**
+* [F. Marini et al., "FPGA Implementation of an NCO Based CDR for the JUNO Front-End Electronics," in IEEE Transactions on Nuclear Science, vol. 68, no. 8, pp. 1952-1960, Aug. 2021, doi: 10.1109/TNS.2021.3084446.](https://ieeexplore.ieee.org/document/9442732)
 * [Core Repository](https://github.com/FilMarini/FPGA_CDR_core)
 * [Core Documentation](https://fpga-cdr-core.readthedocs.io/en/latest/)
 * [YouTube Video Presentation](https://youtu.be/oK15voQDpzQ)
